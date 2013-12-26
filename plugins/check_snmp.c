@@ -323,7 +323,7 @@ main (int argc, char **argv)
 	for (i = 0; i < numcontext; i++) {
 		command_line[10 + i] = contextargs[i];
 	}
-
+	
 	for (i = 0; i < numauthpriv; i++) {
 		command_line[10 + numcontext + i] = authpriv[i];
 	}
@@ -331,14 +331,13 @@ main (int argc, char **argv)
 	xasprintf (&command_line[10 + numcontext + numauthpriv], "%s:%s", server_address, port);
 
 	/* This is just for display purposes, so it can remain a string */
-	xasprintf(&cl_hidden_auth, "%s -Le -t %d -r %d -m %s -v %s %s %s%s:%s",
-		snmpcmd, command_interval, retries,
-		strlen(miblist) ? miblist : "''",
-		proto, "[authpriv]", ip_version, server_address, port);
+	xasprintf(&cl_hidden_auth, "%s -Le -t %d -r %d -m %s -v %s %s %s %s:%s",
+		snmpcmd, timeout_interval, retries, strlen(miblist) ? miblist : "''", proto, "[context]", "[authpriv]",
+		server_address, port);
 
 	for (i = 0; i < numoids; i++) {
 		command_line[10 + numcontext + numauthpriv + 1 + i] = oids[i];
-		xasprintf(&cl_hidden_auth, "%s %s", cl_hidden_auth, oids[i]);
+		xasprintf(&cl_hidden_auth, "%s %s", cl_hidden_auth, oids[i]);	
 	}
 
 	command_line[10 + numcontext + numauthpriv + 1 + numoids] = NULL;
@@ -736,7 +735,7 @@ process_arguments (int argc, char **argv)
 	}
 
 	while (1) {
-		c = getopt_long (argc, argv, "nhvVO46t:c:w:H:C:o:e:E:d:D:s:t:R:r:l:u:p:m:P:N:L:U:a:x:A:X:",
+		c = getopt_long (argc, argv, "nhvVOt:c:w:H:C:o:e:E:d:D:s:t:R:r:l:u:p:m:P:N:L:U:a:x:A:X:",
 									 longopts, &option);
 
 		if (c == -1 || c == EOF)
@@ -1033,7 +1032,7 @@ validate_arguments ()
 			contextargs[0] = strdup ("-n");
 			contextargs[1] = strdup (context);
 		}
-
+		
 		if (seclevel == NULL)
 			xasprintf(&seclevel, "noAuthNoPriv");
 
@@ -1288,5 +1287,5 @@ print_usage (void)
 	printf ("[-C community] [-s string] [-r regex] [-R regexi] [-t timeout] [-e retries]\n");
 	printf ("[-l label] [-u units] [-p port-number] [-d delimiter] [-D output-delimiter]\n");
 	printf ("[-m miblist] [-P snmp version] [-N context] [-L seclevel] [-U secname]\n");
-	printf ("[-a authproto] [-A authpasswd] [-x privproto] [-X privpasswd] [-4|6]\n");
+	printf ("[-a authproto] [-A authpasswd] [-x privproto] [-X privpasswd]\n");
 }
