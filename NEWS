@@ -1,8 +1,16 @@
 This file documents the major additions and syntax changes between releases.
 
-1.5.1 ...
+1.6 ...
+	ENHANCEMENTS
+	Added performance data to check_mysql_query (sreinhardt)
+	New check_file_age option -i/--ignore-missing which returns OK if file is missing (waja)
+	Added performance data to check_nt UPTIME -l seconds|minutes|hours|days (abrist)
+	
 	FIXES
 	Don't let e.g. check_http's -C option reset SSL version if e.g. -S 1 -C 5 is specified
+	check_ide_smart now defaults to nagios-compatible output (sreinhardt)
+	Fixed misleading timeout message for non-network plugins (sreinhardt)
+	check_swap now fails with 100% usage and a new status output when swap is disabled or missing (abrist)
 
 1.5 2nd October 2013
 	ENHANCEMENTS
