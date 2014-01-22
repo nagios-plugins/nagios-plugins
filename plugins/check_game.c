@@ -31,7 +31,7 @@
 
 const char *progname = "check_game";
 const char *copyright = "2002-2007";
-const char *email = "nagiosplug-devel@lists.sourceforge.net";
+const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"
 #include "utils.h"
@@ -312,7 +312,7 @@ print_help (void)
   printf (" %s\n", "-pf");
   printf ("    %s\n", _("Field number in raw qstat output that contains ping time"));
 
-  printf (UT_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
+  printf (UT_CONN_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
 
   printf ("\n");
   printf ("%s\n", _("Notes:"));

@@ -29,7 +29,7 @@
 const char *progname = "check_disk";
 const char *program_name = "check_disk";  /* Required for coreutils libs */
 const char *copyright = "1999-2008";
-const char *email = "nagiosplug-devel@lists.sourceforge.net";
+const char *email = "devel@nagios-plugins.org";
 
 
 #include "common.h"
@@ -877,7 +877,7 @@ print_help (void)
   printf (" %s\n", "-K, --icritical=PERCENT%");
   printf ("    %s\n", _("Exit with CRITICAL status if less than PERCENT of inode space is free"));
   printf (" %s\n", "-p, --path=PATH, --partition=PARTITION");
-  printf ("    %s\n", _("Path or partition (may be repeated)"));
+  printf ("    %s\n", _("Mounted path or partition (may be repeated)"));
   printf (" %s\n", "-x, --exclude_device=PATH <STRING>");
   printf ("    %s\n", _("Ignore device (only works if -p unspecified)"));
   printf (" %s\n", "-C, --clear");
@@ -911,7 +911,7 @@ print_help (void)
   printf ("    %s\n", _("Regular expression to ignore selected path/partition (case insensitive) (may be repeated)"));
   printf (" %s\n", "-i, --ignore-ereg-path=PATH, --ignore-ereg-partition=PARTITION");
   printf ("    %s\n", _("Regular expression to ignore selected path or partition (may be repeated)"));
-  printf (UT_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
+  printf (UT_PLUG_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
   printf (" %s\n", "-u, --units=STRING");
   printf ("    %s\n", _("Choose bytes, kB, MB, GB, TB (default: MB)"));
   printf (UT_VERBOSE);

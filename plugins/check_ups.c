@@ -34,7 +34,7 @@
 
 const char *progname = "check_ups";
 const char *copyright = "2000-2007";
-const char *email = "nagiosplug-devel@lists.sourceforge.net";
+const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"
 #include "netutils.h"
@@ -625,7 +625,7 @@ print_help (void)
 
 	printf (UT_WARN_CRIT);
 
-	printf (UT_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
+	printf (UT_CONN_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
 
 /* TODO: -v clashing with -v/-variable. Commenting out help text since verbose
          is unused up to now */

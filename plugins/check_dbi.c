@@ -31,7 +31,7 @@
 
 const char *progname = "check_dbi";
 const char *copyright = "2011";
-const char *email = "nagiosplug-devel@lists.sourceforge.net";
+const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"
 #include "utils.h"
@@ -562,7 +562,7 @@ print_help (void)
 	printf ("                   %s\n", _("(ignore the query result)"));
 	printf ("\n");
 
-	printf (UT_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
+	printf (UT_CONN_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
 
 	printf (UT_VERBOSE);
 

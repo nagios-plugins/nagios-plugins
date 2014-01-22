@@ -35,7 +35,7 @@
 
 const char *progname = "check_ide_smart";
 const char *copyright = "1998-2007";
-const char *email = "nagiosplug-devel@lists.sourceforge.net";
+const char *email = "devel@nagios-plugins.org";
 	
 #include "common.h"
 #include "utils.h"
@@ -281,11 +281,12 @@ main (int argc, char *argv[])
 		smart_read_values (fd, &values);
 		smart_read_thresholds (fd, &thresholds);
 		retval = nagios (&values, &thresholds);
+		printf( _("-n, This flag is depricated, and will be removed in a future release. Nagios output is now the default.\n") );
 		break;
 	default:
 		smart_read_values (fd, &values);
 		smart_read_thresholds (fd, &thresholds);
-		print_values (&values, &thresholds);
+		retval = nagios (&values, &thresholds);
 		break;
 	}
 	close (fd);
@@ -368,7 +369,7 @@ values_not_passed (values_t * p, thresholds_t * t)
 	int i;
 	for (i = 0; i < NR_ATTRIBUTES; i++) {
 		if (value->id && threshold->id && value->id == threshold->id) {
-			if (value->value <= threshold->threshold) {
+			if (value->value < threshold->threshold) {
 				++failed;
 			}
 			else {
@@ -397,7 +398,7 @@ nagios (values_t * p, thresholds_t * t)
 	int i;
 	for (i = 0; i < NR_ATTRIBUTES; i++) {
 		if (value->id && threshold->id && value->id == threshold->id) {
-			if (value->value <= threshold->threshold) {
+			if (value->value < threshold->threshold) {
 				++failed;
 				if (value->status & 1) {
 					status = PREFAILURE;
@@ -454,7 +455,7 @@ print_value (value_t * p, threshold_t * t)
 	printf ("Id=%3d, Status=%2d {%s , %s}, Value=%3d, Threshold=%3d, %s\n",
 					p->id, p->status, p->status & 1 ? "PreFailure" : "Advisory   ",
 					p->status & 2 ? "OnLine " : "OffLine", p->value, t->threshold,
-					p->value > t->threshold ? "Passed" : "Failed");
+					p->value >= t->threshold ? "Passed" : "Failed");
 }
 
 

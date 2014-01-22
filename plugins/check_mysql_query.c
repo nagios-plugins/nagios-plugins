@@ -31,7 +31,7 @@
 
 const char *progname = "check_mysql_query";
 const char *copyright = "1999-2007";
-const char *email = "nagiosplug-devel@lists.sourceforge.net";
+const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"
 #include "utils.h"
@@ -152,7 +152,14 @@ main (int argc, char **argv)
 	} else if (status == STATE_CRITICAL) {
 		printf("QUERY %s: ", _("CRITICAL"));
 	}
-	printf(_("'%s' returned %f"), sql_query, value);
+	printf(_("'%s' returned %f | %s"), sql_query, value,
+	 fperfdata("result", value, "",
+	 my_thresholds->warning?TRUE:FALSE, my_thresholds->warning?my_thresholds->warning->end:0,
+	 my_thresholds->critical?TRUE:FALSE, my_thresholds->critical?my_thresholds->critical->end:0,
+	 FALSE, 0,
+	 FALSE, 0)
+	);
+
 	printf("\n");
 
 	return status;

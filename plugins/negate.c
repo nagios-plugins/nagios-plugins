@@ -31,7 +31,7 @@
 
 const char *progname = "negate";
 const char *copyright = "2002-2008";
-const char *email = "nagiosplug-devel@lists.sourceforge.net";
+const char *email = "devel@nagios-plugins.org";
 
 #define DEFAULT_TIMEOUT 11
 
@@ -252,7 +252,7 @@ print_help (void)
 
 	printf (UT_HELP_VRSN);
 
-	printf (UT_TIMEOUT, timeout_interval);
+	printf (UT_PLUG_TIMEOUT, timeout_interval);
 	printf ("    %s\n", _("Keep timeout longer than the plugin timeout to retain CRITICAL status."));
 	printf (" -T, --timeout-result=STATUS\n");
 	printf ("    %s\n", _("Custom result on Negate timeouts; see below for STATUS definition\n"));

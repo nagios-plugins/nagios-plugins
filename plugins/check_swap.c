@@ -29,7 +29,7 @@
 
 const char *progname = "check_swap";
 const char *copyright = "2000-2007";
-const char *email = "nagiosplug-devel@lists.sourceforge.net";
+const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"
 #include "popen.h"
@@ -346,8 +346,11 @@ main (int argc, char **argv)
 # endif /* HAVE_SWAP */
 #endif /* HAVE_PROC_MEMINFO */
 
-	/* if total_swap_mb == 0, let's not divide by 0 */
-	if(total_swap_mb) {
+	/* if total_swap_mb == 0, swap is most likely missing or disabled and should go critical */
+	if(total_swap_mb == 0) {
+		percent_used = 100;
+		status = "- Swap is either disabled, not present, or of zero size. ";
+	} else if(total_swap_mb > 0) {
 		percent_used = 100 * ((double) used_swap_mb) / ((double) total_swap_mb);
 	} else {
 		percent_used = 0;

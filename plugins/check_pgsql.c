@@ -30,7 +30,7 @@
 
 const char *progname = "check_pgsql";
 const char *copyright = "1999-2011";
-const char *email = "nagiosplug-devel@lists.sourceforge.net";
+const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"
 #include "utils.h"
@@ -524,7 +524,7 @@ print_help (void)
 
 	printf (UT_WARN_CRIT);
 
-	printf (UT_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
+	printf (UT_CONN_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
 
 	printf (" %s\n", "-q, --query=STRING");
 	printf ("    %s\n", _("SQL query to run. Only first column in first row will be read"));

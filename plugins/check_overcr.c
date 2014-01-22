@@ -31,7 +31,7 @@
 
 const char *progname = "check_overcr";
 const char *copyright = "2000-2007";
-const char *email = "nagiosplug-devel@lists.sourceforge.net";
+const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"
 #include "netutils.h"
@@ -442,7 +442,7 @@ print_help (void)
   printf ("    %s\n", _("NET<port>     = number of active connections on TCP port <port>"));
   printf ("    %s\n", _("UPTIME        = system uptime in seconds"));
 
-	printf (UT_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
+	printf (UT_CONN_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
 
   printf (UT_VERBOSE);
 

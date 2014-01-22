@@ -30,7 +30,7 @@
 
 const char *progname = "check_radius";
 const char *copyright = "2000-2008";
-const char *email = "nagiosplug-devel@lists.sourceforge.net";
+const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"
 #include "utils.h"
@@ -361,7 +361,7 @@ print_help (void)
   printf (" %s\n", "-r, --retries=INTEGER");
   printf ("    %s\n", _("Number of times to retry a failed connection"));
 
-	printf (UT_TIMEOUT, timeout_interval);
+	printf (UT_CONN_TIMEOUT, timeout_interval);
 
   printf ("\n");
   printf ("%s\n", _("This plugin tests a RADIUS server to see if it is accepting connections."));

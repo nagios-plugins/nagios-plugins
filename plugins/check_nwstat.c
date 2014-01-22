@@ -31,7 +31,7 @@
 
 const char *progname = "check_nwstat";
 const char *copyright = "2000-2007";
-const char *email = "nagiosplug-devel@lists.sourceforge.net";
+const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"
 #include "netutils.h"
@@ -1664,7 +1664,7 @@ void print_help(void)
   printf (" %s\n", "-o, --osversion");
   printf ("    %s\n", _("Include server version string in results"));
 
-	printf (UT_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
+	printf (UT_CONN_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
 
   printf ("\n");
   printf ("%s\n", _("Notes:"));
