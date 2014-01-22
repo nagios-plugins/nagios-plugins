@@ -281,11 +281,12 @@ main (int argc, char *argv[])
 		smart_read_values (fd, &values);
 		smart_read_thresholds (fd, &thresholds);
 		retval = nagios (&values, &thresholds);
+		printf( _("-n, This flag is depricated, and will be removed in a future release. Nagios output is now the default.\n") );
 		break;
 	default:
 		smart_read_values (fd, &values);
 		smart_read_thresholds (fd, &thresholds);
-		print_values (&values, &thresholds);
+		retval = nagios (&values, &thresholds);
 		break;
 	}
 	close (fd);
