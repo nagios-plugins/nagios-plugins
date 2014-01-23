@@ -11,6 +11,11 @@ This file documents the major additions and syntax changes between releases.
 	check_ide_smart now defaults to nagios-compatible output (sreinhardt)
 	Fixed misleading timeout message for non-network plugins (sreinhardt)
 	check_swap now fails with 100% usage and a new status output when swap is disabled or missing (abrist)
+	Removed commas from check_ifstatus perfdata - should now output valid perfdata in nagios format (waja)
+	check_ping should now gracefully handle the "time of day goes back" error.  This issue is rare, most will not notice the change (waja)
+	check_disk help output was clarified that it supports mount paths or partitions instead of just paths and partitions (waja)
+	Fixed check_ide_smart attribute comparison (waja)
+	Fixed bug in check_ntp_time average time calculation (larsi)
 
 1.5 2nd October 2013
 	ENHANCEMENTS
