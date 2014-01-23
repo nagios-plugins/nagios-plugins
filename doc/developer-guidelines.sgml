@@ -678,11 +678,6 @@ To run a test, from the top level directory, run "make test". This will run
 all the current tests and report an overall success rate.
 </para>
 
-<para>
-See the <ulink url="http://tinderbox.opsera.com">Nagios Plugins Tinderbox server</ulink>
-for the daily test results.
-</para>
-
 <section><title>Test cases for plugins</title>
 <para>These use perl's Test::More. To do a one time test, run "cd plugins && perl t/check_disk.t".
 </para>
@@ -699,7 +694,7 @@ This runs the test in a summary format.
 
 <para>
 For a good and amusing tutorial on using Test::More, see this 
-<ulink url="http://search.cpan.org/~mschwern/Test-Simple-0.62/lib/Test/Tutorial.pod">
+<ulink url="http://search.cpan.org/dist/Test-Simple/lib/Test/Tutorial.pod">
 link</ulink>
 </para>
 
