@@ -25,6 +25,7 @@ This file documents the major additions and syntax changes between releases.
 	Fixed newlines in parse.ini output (dermoth)
 	check_dig: fix wrong IPv6 arguments order (Stéphane Bortzmeyer)
 	check_dig: now honors timeout value specified by switch -t (Jethro Carr) (abrist)
+	Configure option --enable-extra-opts is now enabled by default (dermoth)
 
 	WARNINGS
 	check_procs now ignores its parent process to avoid unexpected results when invoked via certain shells
