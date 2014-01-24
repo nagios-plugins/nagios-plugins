@@ -5,6 +5,7 @@ This file documents the major additions and syntax changes between releases.
 	Added performance data to check_mysql_query (sreinhardt)
 	New check_file_age option -i/--ignore-missing which returns OK if file is missing (waja)
 	Added performance data to check_nt UPTIME -l seconds|minutes|hours|days (abrist)
+	New check_hpjd -p option for port specification (abrist)
 
 	FIXES
 	Don't let e.g. check_http's -C option reset SSL version if e.g. -S 1 -C 5 is specified
