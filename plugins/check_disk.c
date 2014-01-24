@@ -935,7 +935,9 @@ print_help (void)
   printf (" %s\n", "-X, --exclude-type=TYPE");
   printf ("    %s\n", _("Ignore all filesystems of indicated type (may be repeated)"));
   printf (" %s\n", "-N, --include-type=TYPE");
-  printf ("    %s\n", _("Check only filesystems of indicated type (may be repeated)"));
+  printf ("    %s\in", _("Check only filesystems of indicated type (may be repeated)"));
+  printf (" %s\n", "-n, --newlines");
+  printf ("    %s\n", _("Output each disk's status information on a new line"));
 
   printf ("\n");
   printf ("%s\n", _("Examples:"));
@@ -958,7 +960,7 @@ print_usage (void)
   printf ("%s\n", _("Usage:"));
   printf (" %s -w limit -c limit [-W limit] [-K limit] {-p path | -x device}\n", progname);
   printf ("[-C] [-E] [-e] [-f] [-g group ] [-k] [-l] [-M] [-m] [-R path ] [-r path ]\n");
-  printf ("[-t timeout] [-u unit] [-v] [-X type] [-N type]\n");
+  printf ("[-t timeout] [-u unit] [-v] [-X type] [-N type] [-n]\n");
 }
 
 void
