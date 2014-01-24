@@ -135,7 +135,7 @@ char *exclude_device;
 char *units;
 uintmax_t mult = 1024 * 1024;
 int verbose = 0;
-int newline = FALSE;
+int newlines = FALSE;
 int erronly = FALSE;
 int display_mntp = FALSE;
 int exact_match = FALSE;
@@ -346,7 +346,7 @@ main (int argc, char **argv)
                 units,
                 path->dfree_pct);
       /* Whether or not to put all disks on new line */
-      if (newline) {
+      if (newlines) {
         if (path->dused_inodes_percent < 0) {
           xasprintf(&output, "%s inode=-);\n", output);
         } else {
@@ -375,7 +375,7 @@ main (int argc, char **argv)
   if (verbose >= 2)
     xasprintf (&output, "%s%s", output, details);
 
-  if (newline) {
+  if (newlines) {
     printf ("DISK %s%s\n%s|%s\n", state_text (result), (erronly && result==STATE_OK) ? "" : preamble, output, perf);
   } else {
     printf ("DISK %s%s%s|%s\n", state_text (result), (erronly && result==STATE_OK) ? "" : preamble, output, perf);
@@ -618,7 +618,7 @@ process_arguments (int argc, char **argv)
       np_add_name(&fs_include_list, optarg);
       break;
     case 'n':                 /* show each disk on a new line */
-      newline = TRUE;
+      newlines = TRUE;
       break;
     case 'v':                 /* verbose */
       verbose++;
@@ -935,9 +935,9 @@ print_help (void)
   printf (" %s\n", "-X, --exclude-type=TYPE");
   printf ("    %s\n", _("Ignore all filesystems of indicated type (may be repeated)"));
   printf (" %s\n", "-N, --include-type=TYPE");
-  printf ("    %s\in", _("Check only filesystems of indicated type (may be repeated)"));
+  printf ("    %s\n", _("Check only filesystems of indicated type (may be repeated)"));
   printf (" %s\n", "-n, --newlines");
-  printf ("    %s\n", _("Output each disk's status information on a new line"));
+  printf ("    %s\n", _("Multi-line output of each disk's status information on a new line"));
 
   printf ("\n");
   printf ("%s\n", _("Examples:"));
