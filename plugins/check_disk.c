@@ -135,6 +135,7 @@ char *exclude_device;
 char *units;
 uintmax_t mult = 1024 * 1024;
 int verbose = 0;
+int newlines = FALSE;
 int erronly = FALSE;
 int display_mntp = FALSE;
 int exact_match = FALSE;
@@ -344,10 +345,19 @@ main (int argc, char **argv)
                 path->dfree_units,
                 units,
                 path->dfree_pct);
-      if (path->dused_inodes_percent < 0) {
-        xasprintf(&output, "%s inode=-);", output);
+      /* Whether or not to put all disks on new line */
+      if (newlines) {
+        if (path->dused_inodes_percent < 0) {
+          xasprintf(&output, "%s inode=-);\n", output);
+        } else {
+          xasprintf(&output, "%s inode=%.0f%%);\n", output, path->dfree_inodes_percent );
+        }
       } else {
-        xasprintf(&output, "%s inode=%.0f%%);", output, path->dfree_inodes_percent );
+        if (path->dused_inodes_percent < 0) {
+          xasprintf(&output, "%s inode=-);", output);
+        } else {
+          xasprintf(&output, "%s inode=%.0f%%);", output, path->dfree_inodes_percent );
+        }
       }
 
       /* TODO: Need to do a similar debug line
@@ -365,8 +375,11 @@ main (int argc, char **argv)
   if (verbose >= 2)
     xasprintf (&output, "%s%s", output, details);
 
-
-  printf ("DISK %s%s%s|%s\n", state_text (result), (erronly && result==STATE_OK) ? "" : preamble, output, perf);
+  if (newlines) {
+    printf ("DISK %s%s\n%s|%s\n", state_text (result), (erronly && result==STATE_OK) ? "" : preamble, output, perf);
+  } else {
+    printf ("DISK %s%s%s|%s\n", state_text (result), (erronly && result==STATE_OK) ? "" : preamble, output, perf);
+  }
   return result;
 }
 
@@ -427,6 +440,7 @@ process_arguments (int argc, char **argv)
     {"exclude_device", required_argument, 0, 'x'},
     {"exclude-type", required_argument, 0, 'X'},
     {"include-type", required_argument, 0, 'N'},
+    {"newlines", no_argument, 0, 'n'},
     {"group", required_argument, 0, 'g'},
     {"eregi-path", required_argument, 0, 'R'},
     {"eregi-partition", required_argument, 0, 'R'},
@@ -461,7 +475,7 @@ process_arguments (int argc, char **argv)
       strcpy (argv[c], "-t");
 
   while (1) {
-    c = getopt_long (argc, argv, "+?VqhvefCt:c:w:K:W:u:p:x:X:N:mklLg:R:r:i:I:MEA", longopts, &option);
+    c = getopt_long (argc, argv, "+?VqhvefCt:c:w:K:W:u:p:x:X:N:mklLg:R:r:i:I:MEAn", longopts, &option);
 
     if (c == -1 || c == EOF)
       break;
@@ -602,6 +616,9 @@ process_arguments (int argc, char **argv)
       break;
     case 'N':                 /* include file system type */
       np_add_name(&fs_include_list, optarg);
+      break;
+    case 'n':                 /* show each disk on a new line */
+      newlines = TRUE;
       break;
     case 'v':                 /* verbose */
       verbose++;
@@ -919,6 +936,8 @@ print_help (void)
   printf ("    %s\n", _("Ignore all filesystems of indicated type (may be repeated)"));
   printf (" %s\n", "-N, --include-type=TYPE");
   printf ("    %s\n", _("Check only filesystems of indicated type (may be repeated)"));
+  printf (" %s\n", "-n, --newlines");
+  printf ("    %s\n", _("Multi-line output of each disk's status information on a new line"));
 
   printf ("\n");
   printf ("%s\n", _("Examples:"));
@@ -941,7 +960,7 @@ print_usage (void)
   printf ("%s\n", _("Usage:"));
   printf (" %s -w limit -c limit [-W limit] [-K limit] {-p path | -x device}\n", progname);
   printf ("[-C] [-E] [-e] [-f] [-g group ] [-k] [-l] [-M] [-m] [-R path ] [-r path ]\n");
-  printf ("[-t timeout] [-u unit] [-v] [-X type] [-N type]\n");
+  printf ("[-t timeout] [-u unit] [-v] [-X type] [-N type] [-n]\n");
 }
 
 void
