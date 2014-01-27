@@ -6,6 +6,7 @@ This file documents the major additions and syntax changes between releases.
 	New check_file_age option -i/--ignore-missing which returns OK if file is missing (waja)
 	Added performance data to check_nt UPTIME -l seconds|minutes|hours|days (abrist)
 	New check_hpjd -p option for port specification (abrist)
+	New check_disk -n option for multi-line output (tmcnag)
 
 	FIXES
 	Don't let e.g. check_http's -C option reset SSL version if e.g. -S 1 -C 5 is specified
@@ -17,10 +18,13 @@ This file documents the major additions and syntax changes between releases.
 	check_disk help output was clarified that it supports mount paths or partitions instead of just paths and partitions (waja)
 	Fixed check_ide_smart attribute comparison (waja)
 	Fixed bug in check_ntp_time average time calculation (larsi)
+	Fixed empty NPTest.cache file blocking writing to the file (dermoth)
+	Fixed newlines in parse.ini output (dermoth)
 
 	WARNINGS
 	check_procs now ignores its parent process to avoid unexpected results when invoked via certain shells
-	utils.sh no longer defines ECHO
+	utils.sh no longer defines ECHO (weiss)
+	check_ide_smart now default to nagios output, -n kept for legacy support (sreinhardt)
 
 1.5 2nd October 2013
 	ENHANCEMENTS
