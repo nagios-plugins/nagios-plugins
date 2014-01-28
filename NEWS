@@ -20,6 +20,7 @@ This file documents the major additions and syntax changes between releases.
 	Fixed bug in check_ntp_time average time calculation (larsi)
 	Fixed empty NPTest.cache file blocking writing to the file (dermoth)
 	Fixed newlines in parse.ini output (dermoth)
+	check_dig: fix wrong IPv6 arguments order (Stéphane Bortzmeyer)
 
 	WARNINGS
 	check_procs now ignores its parent process to avoid unexpected results when invoked via certain shells
