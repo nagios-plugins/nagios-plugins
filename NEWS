@@ -9,6 +9,7 @@ This file documents the major additions and syntax changes between releases.
 	New check_disk -n option for multi-line output (tmcnag)
 	New check_mysql_query -f/-g options for reading for mysql options file (awiddersheim)
 	check_mailq now supports nullmailer in the mailserver -M switch (Luca Corti)
+	New check_dig -r option for specifying number of retries (abrist)
 
 	FIXES
 	Don't let e.g. check_http's -C option reset SSL version if e.g. -S 1 -C 5 is specified
@@ -23,6 +24,7 @@ This file documents the major additions and syntax changes between releases.
 	Fixed empty NPTest.cache file blocking writing to the file (dermoth)
 	Fixed newlines in parse.ini output (dermoth)
 	check_dig: fix wrong IPv6 arguments order (Stéphane Bortzmeyer)
+	check_dig: now honors timeout value specified by switch -t (Jethro Carr) (abrist)
 
 	WARNINGS
 	check_procs now ignores its parent process to avoid unexpected results when invoked via certain shells
