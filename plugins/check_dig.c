@@ -49,7 +49,7 @@ void print_usage (void);
 #define UNDEFINED 0
 #define DEFAULT_PORT 53
 #define DEFAULT_TRIES 3
-#define DEFAULT_TIMEOUT 10
+#define DEFAULT_TIMEOUT 15
 
 char *query_address = NULL;
 char *record_type = "A";
@@ -92,7 +92,10 @@ main (int argc, char **argv)
     usage_va(_("Could not parse arguments"));
 
   /* dig applies the timeout to each try, so we need to work around this */
-  int timeout_interval_dig = ceil((double) timeout_interval / (double) number_tries);
+  int timeout_interval_dig = timeout_interval / number_tries;
+
+  if (timeout_interval_dig < 1)
+    usage_va(_("Division of timeout value by retries value is less than one"));
 
   /* get the command to run */
   xasprintf (&command_line, "%s @%s -p %d %s -t %s %s %s +tries=%d +time=%d",
@@ -200,6 +203,7 @@ process_arguments (int argc, char **argv)
     {"warning", required_argument, 0, 'w'},
     {"critical", required_argument, 0, 'c'},
     {"timeout", required_argument, 0, 't'},
+    {"retries", required_argument, 0, 'r'},
     {"dig-arguments", required_argument, 0, 'A'},
     {"verbose", no_argument, 0, 'v'},
     {"version", no_argument, 0, 'V'},
@@ -216,7 +220,7 @@ process_arguments (int argc, char **argv)
     return ERROR;
 
   while (1) {
-    c = getopt_long (argc, argv, "hVvt:l:H:w:c:T:p:a:A:46", longopts, &option);
+    c = getopt_long (argc, argv, "hVvt:l:H:w:c:T:p:a:A:46r:", longopts, &option);
 
     if (c == -1 || c == EOF)
       break;
@@ -265,6 +269,14 @@ process_arguments (int argc, char **argv)
       }
       else {
         usage_va(_("Timeout interval must be a positive integer - %s"), optarg);
+      }
+      break;
+    case 'r':                 /* retires */
+      if (is_intnonneg (optarg)) {
+        number_tries = atoi (optarg);
+      }
+      else {
+        usage_va(_("Number of retries must be a positive integer - %s"), optarg);
       }
       break;
     case 'A':                 /* dig arguments */
@@ -354,6 +366,10 @@ print_help (void)
   printf ("    %s\n",_("was in -l"));
   printf (" %s\n","-A, --dig-arguments=STRING");
   printf ("    %s\n",_("Pass STRING as argument(s) to dig"));
+  printf (" %s\n","-t, --timeout=INTEGER");
+  printf ("    %s\n",_("Timeout value (seconds) passed to dig (Default: 15)"));
+  printf (" %s\n","-r, --retries=INTEGER");
+  printf ("    %s\n",_("Number of retries passed to dig, timeout is divided by this value (Default: 3)"));
   printf (UT_WARN_CRIT);
   printf (UT_CONN_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
   printf (UT_VERBOSE);
@@ -374,5 +390,5 @@ print_usage (void)
   printf ("%s\n", _("Usage:"));
   printf ("%s -l <query_address> [-H <host>] [-p <server port>]\n", progname);
   printf (" [-T <query type>] [-w <warning interval>] [-c <critical interval>]\n");
-  printf (" [-t <timeout>] [-a <expected answer address>] [-v]\n");
+  printf (" [-t <timeout>] [-r <retries>] [-a <expected answer address>] [-v]\n");
 }
