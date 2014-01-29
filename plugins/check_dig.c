@@ -95,7 +95,7 @@ main (int argc, char **argv)
   int timeout_interval_dig = timeout_interval / number_tries;
 
   if (timeout_interval_dig < 1)
-    usage_va(_("Division of timeout value by retries value is less than one"));
+    usage_va(_("Division of timeout value by retries value cannot be less than one"));
 
   /* get the command to run */
   xasprintf (&command_line, "%s @%s -p %d %s -t %s %s %s +tries=%d +time=%d",
