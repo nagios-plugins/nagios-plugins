@@ -92,10 +92,7 @@ main (int argc, char **argv)
     usage_va(_("Could not parse arguments"));
 
   /* dig applies the timeout to each try, so we need to work around this */
-  int timeout_interval_dig = timeout_interval / number_tries;
-
-  if (timeout_interval_dig < 1)
-    usage_va(_("Division of timeout value by retries value cannot be less than one"));
+  int timeout_interval_dig = ceil((double) timeout_interval / (double) number_tries);
 
   /* get the command to run */
   xasprintf (&command_line, "%s @%s -p %d %s -t %s %s %s +tries=%d +time=%d",
@@ -366,8 +363,6 @@ print_help (void)
   printf ("    %s\n",_("was in -l"));
   printf (" %s\n","-A, --dig-arguments=STRING");
   printf ("    %s\n",_("Pass STRING as argument(s) to dig"));
-  printf (" %s\n","-t, --timeout=INTEGER");
-  printf ("    %s\n",_("Timeout value (seconds) passed to dig (Default: 15)"));
   printf (" %s\n","-r, --retries=INTEGER");
   printf ("    %s\n",_("Number of retries passed to dig, timeout is divided by this value (Default: 3)"));
   printf (UT_WARN_CRIT);
