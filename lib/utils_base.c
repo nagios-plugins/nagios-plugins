@@ -30,6 +30,8 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <unistd.h>
+#include <sys/types.h>
 
 #define np_free(ptr) { if(ptr) { free(ptr); ptr = NULL; } }
 
@@ -415,10 +417,15 @@ void _cleanup_state_data() {
 char* _np_state_calculate_location_prefix(){
 	char *env_dir;
 
-	env_dir = getenv("NAGIOS_PLUGIN_STATE_DIRECTORY");
-	if(env_dir && env_dir[0] != '\0')
-		return env_dir;
-	return NP_STATE_DIR_PREFIX;
+	/* Do not allow passing NP_STATE_DIRECTORY in setuid plugins
+	 * for security reasons */
+
+	if (np_suid() == FALSE) {
+		env_dir = getenv("NAGIOS_PLUGIN_STATE_DIRECTORY");
+		if(env_dir && env_dir[0] != '\0')
+			return env_dir;
+		return NP_STATE_DIR_PREFIX;
+	}
 }
 
 /*

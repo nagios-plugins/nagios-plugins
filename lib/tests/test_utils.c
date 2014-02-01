@@ -38,7 +38,7 @@ main (int argc, char **argv)
 	state_data *temp_state_data;
 	time_t	current_time;
 
-	plan_tests(150);
+	plan_tests(151);
 
 	ok( this_nagios_plugin==NULL, "nagios_plugin not initialised");
 
@@ -439,6 +439,8 @@ main (int argc, char **argv)
 	np_cleanup();
 
 	ok( this_nagios_plugin==NULL, "Free'd this_nagios_plugin" );
+
+	ok( np_suid() == FALSE, "test aren't suid" );
 
 	return exit_status();
 }
