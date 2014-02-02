@@ -80,6 +80,12 @@ int np_check_if_root(void);
 int np_warn_if_not_root(void);
 
 /*
+ * Read a string representing a state (ok, warning... or numeric: 0, 1) and
+ * return the corresponding NP_STATE or ERROR)
+ */
+int translate_state (char *);
+
+/*
  * Extract the value from key/value pairs, or return NULL. The value returned
  * can be free()ed.
  * This function can be used to parse NTP control packet data and performance
