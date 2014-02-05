@@ -236,7 +236,11 @@ main (int argc, char **argv)
   /* check if authoritative */
   if (result == STATE_OK && expect_authority && non_authoritative) {
     result = STATE_CRITICAL;
-    xasprintf(&msg, _("server %s is not authoritative for %s"), dns_server, query_address);
+
+    if (strncmp(dns_server, "", 2))
+      xasprintf(&msg, _("server %s is not authoritative for %s"), dns_server, query_address);
+    else
+      xasprintf(&msg, _("there is no authoritative server for %s"), query_address);
   }
 
   microsec = deltime (tv);
