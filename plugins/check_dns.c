@@ -94,7 +94,7 @@ main (int argc, char **argv)
   int n_addresses = 0;
   char *msg = NULL;
   char *temp_buffer = NULL;
-  int non_authoritative = FALSE;
+  int non_authoritative = TRUE;
   int result = STATE_UNKNOWN;
   double elapsed_time;
   long microsec;
@@ -154,8 +154,10 @@ main (int argc, char **argv)
       }
     }
 
-    if (strstr (chld_out.line[i], "Authoritative answers can be found from:"))
+    if (strstr (chld_out.line[i], "Authoritative answers can be found from:")) {
+      non_authoritative = FALSE;
       break;
+    }
     /* the server is responding, we just got the host name... */
     if (strstr (chld_out.line[i], "Name:"))
       parse_address = TRUE;
@@ -234,7 +236,7 @@ main (int argc, char **argv)
   }
 
   /* check if authoritative */
-  if (result == STATE_OK && expect_authority && non_authoritative) {
+  if (result == STATE_OK && expect_authority && !non_authoritative) {
     result = STATE_CRITICAL;
 
     if (strncmp(dns_server, "", 2))
