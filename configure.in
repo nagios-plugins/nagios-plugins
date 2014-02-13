@@ -347,6 +347,22 @@ if test "$FOUNDINCLUDE" = "yes" ; then
 	EXTRAS="$EXTRAS check_ide_smart"
 fi
 
+dnl Check for headers used by check_uptime
+case $host in
+  *linux*)
+    AC_CHECK_HEADER(sys/time.h, FOUNDINCLUDE=yes, FOUNDINCLUDE=no)
+    if test "$FOUNDINCLUDE" = "no" ; then
+	AC_MSG_WARN([Skipping check_uptime plugin.])
+	AC_MSG_WARN([check_uptime requires sys/time.h])
+    else
+        EXTRAS="$EXTRAS check_uptime"
+    fi
+  ;;
+  *)
+    AC_MSG_WARN([Skipping check_uptime plugin.])
+    AC_MSG_WARN([check_uptime works only on Linux])
+esac
+
 dnl Check for mysql libraries
 np_mysqlclient
 if test $with_mysql = "no" ; then

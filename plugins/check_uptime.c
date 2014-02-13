@@ -103,7 +103,6 @@ int main (int argc, char **argv) {
 
 } // end main
 
-#ifdef HAVE_CLOCK_GETTIME
 int getuptime () {
 
 	struct timespec t;
@@ -116,7 +115,6 @@ int getuptime () {
 	}
 
 } // end getuptime
-#endif
 
 static int process_arguments (int argc, char **argv) {
 
