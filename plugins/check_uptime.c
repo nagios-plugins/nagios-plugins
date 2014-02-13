@@ -1,13 +1,13 @@
 /*********************************************************************************
 *
-* Nagios check_gearmand plugin
+* Nagios check_uptime plugin
 *
 * License: GPL
 * Copyright (c) 2013-2014 Nagios Plugin Development Team
 *
 * Description:
 *
-* This file contains the check_gearmand plugin
+* This file contains the check_uptime plugin
 *
 *
 * This program is free software: you can redistribute it and/or modify
