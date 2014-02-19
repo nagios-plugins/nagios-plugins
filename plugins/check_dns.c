@@ -146,15 +146,6 @@ main (int argc, char **argv)
     if (verbose)
       puts(chld_out.line[i]);
 
-    if (strstr (chld_out.line[i], ".in-addr.arpa")) {
-      if ((temp_buffer = strstr (chld_out.line[i], "name = ")))
-        addresses[n_addresses++] = strdup (temp_buffer + 7);
-      else {
-        msg = (char *)_("Warning plugin error");
-        result = STATE_WARNING;
-      }
-    }
-
     if (strstr (chld_out.line[i], "Authoritative answers can be found from:")) {
       non_authoritative = FALSE;
       break;
@@ -168,12 +159,6 @@ main (int argc, char **argv)
       temp_buffer = rindex (chld_out.line[i], ' ');
       addresses[n_addresses++] = check_new_address(temp_buffer);
       strncpy(query_found, "-querytype=AAAA", sizeof(query_found));
-    }
-    else if (strstr (chld_out.line[i], "text =")) {
-      if (verbose) printf("Found TXT record\n");
-      temp_buffer = index (chld_out.line[i], '=');
-      addresses[n_addresses++] = check_new_address(temp_buffer);
-      strncpy(query_found, "-querytype=TXT", sizeof(query_found));
     }
     else if (strstr (chld_out.line[i], "exchanger =")) {
       if (verbose) printf("Found MX record\n");
@@ -194,6 +179,7 @@ main (int argc, char **argv)
       strncpy(query_found, "-querytype=CNAME", sizeof(query_found));
     }
     else if (parse_address == TRUE && (strstr (chld_out.line[i], "Address:") || strstr (chld_out.line[i], "Addresses:"))) {
+      if (verbose) printf("Found A record\n");
       temp_buffer = index (chld_out.line[i], ':');
       addresses[n_addresses++] = check_new_address(temp_buffer);
       strncpy(query_found, "-querytype=A", sizeof(query_found));
@@ -241,7 +227,6 @@ main (int argc, char **argv)
     if (strstr (chld_out.line[i], _("Non-authoritative answer:"))) {
       non_authoritative = TRUE;
     }
-
 
     result = error_scan (chld_out.line[i]);
     if (result != STATE_OK) {
