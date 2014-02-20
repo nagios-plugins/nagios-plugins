@@ -17,25 +17,25 @@ my $successOutput = '/DNS OK: [\.0-9]+ seconds? response time/';
 my $hostname_valid = getTestParameter( 
 			"NP_HOSTNAME_VALID",
 			"A valid (known to DNS) hostname",
-			"nagios.com"
+			"nagios-plugins.org"
 			);
 
 my $hostname_valid_ip = getTestParameter(
 			"NP_HOSTNAME_VALID_IP",
 			"The IP address of the valid hostname $hostname_valid",
-			"66.118.156.50",
+			"72.14.186.43",
 			);
 
 my $hostname_valid_reverse = getTestParameter(
 			"NP_HOSTNAME_VALID_REVERSE",
 			"The hostname of $hostname_valid_ip",
-			"66-118-156-50.static.sagonet.net.",
+			"nagios-plugins.org.",
 			);
 
 my $hostname_invalid = getTestParameter( 
 			"NP_HOSTNAME_INVALID", 
 			"An invalid (not known to DNS) hostname",
-			"nosuchhost.altinity.com",
+			"nosuchhost.nagios-plugins.org",
 			);
 
 my $dns_server       = getTestParameter(
