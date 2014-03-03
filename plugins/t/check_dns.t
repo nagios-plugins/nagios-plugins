@@ -97,7 +97,7 @@ cmp_ok( $res->return_code, '==', 0, "Got expected fqdn");
 like  ( $res->output, $successOutput, "Output OK");
 
 SKIP: {
-        skip "No server specified for checking TXT records", 6 unless $hostname_valid_txt;
+        skip "No server specified for checking TXT records", 2 unless $hostname_valid_txt;
 
 	$res = NPTest->testCmd("./check_dns -H $hostname_valid_txt -s $dns_server -q TXT");
 	cmp_ok( $res->return_code, '==', 0, "Found $hostname_valid_txt");
@@ -105,7 +105,7 @@ SKIP: {
 }
 
 SKIP: {
-        skip "No server specified for checking SRV records", 6 unless $hostname_valid_srv;
+        skip "No server specified for checking SRV records", 2 unless $hostname_valid_srv;
 
 	$res = NPTest->testCmd("./check_dns -H $hostname_valid_srv -s $dns_server -q SRV");
 	cmp_ok( $res->return_code, '==', 0, "Found $hostname_valid_srv");
@@ -113,7 +113,7 @@ SKIP: {
 }
 
 SKIP: {
-        skip "No server specified for checking AAAA records", 6 unless $hostname_valid_aaaa;
+        skip "No server specified for checking AAAA records", 2 unless $hostname_valid_aaaa;
 
 	$res = NPTest->testCmd("./check_dns -H $hostname_valid_aaaa -s $dns_server -q AAAA");
 	cmp_ok( $res->return_code, '==', 0, "Found $hostname_valid_aaaa");
