@@ -187,6 +187,7 @@ NP-VERSION-FILE
 /plugins/check_time
 /plugins/check_udp
 /plugins/check_ups
+/plugins/check_uptime
 /plugins/check_users
 /plugins/check_vsz
 /plugins/config.h
