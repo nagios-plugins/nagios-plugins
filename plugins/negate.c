@@ -3,7 +3,7 @@
 * Nagios negate plugin
 * 
 * License: GPL
-* Copyright (c) 2002-2008 Nagios Plugins Development Team
+* Copyright (c) 2002-2014 Nagios Plugins Development Team
 * 
 * Description:
 * 
@@ -30,7 +30,7 @@
 *****************************************************************************/
 
 const char *progname = "negate";
-const char *copyright = "2002-2008";
+const char *copyright = "2002-2014";
 const char *email = "devel@nagios-plugins.org";
 
 #define DEFAULT_TIMEOUT 11
