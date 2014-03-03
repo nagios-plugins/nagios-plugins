@@ -8,7 +8,7 @@ use strict;
 use Test::More;
 use NPTest;
 
-plan tests => 5;
+plan tests => 11;
 
 my $host_tcp_smtp = getTestParameter( 
 			"NP_HOST_TCP_SMTP",
@@ -20,6 +20,12 @@ my $host_tcp_pop = getTestParameter(
 			"NP_HOST_TCP_POP",
 			"A host providing a POP Service (a mail server)",
 			$host_tcp_smtp
+			);
+
+my $host_tcp_pop_ssl = getTestParameter(
+			"NP_HOST_TCP_POP_SSL",
+			"Enable SSL for the host providing a POP Service (a mail server)",
+			"disabled"
 			);
 
 my $host_nonresponsive = getTestParameter(
@@ -39,14 +45,31 @@ my %exceptions = ( 2 => "No POP Server present?" );
 my $t;
 my $res;
 
-$res = NPTest->testCmd( "./check_pop $host_tcp_pop" );
-cmp_ok( $res->return_code, '==', 0, "POP server ok");
+SKIP: {
+        skip "SSL Disabled", 6 unless ($host_tcp_pop_ssl ne "disabled");
 
-$res = NPTest->testCmd( "./check_pop -H $host_tcp_pop -p 110 -w 9 -c 9 -t 10 -e '+OK'");
-cmp_ok( $res->return_code, '==', 0, "POP server returned +OK");
+	$res = NPTest->testCmd( "./check_pop -H $host_tcp_pop -S -p 995" );
+	cmp_ok( $res->return_code, '==', 0, "SSL POP server ok");
 
-$res = NPTest->testCmd( "./check_pop $host_tcp_pop -p 110 -wt 9 -ct 9 -to 10 -e '+OK'");
-cmp_ok( $res->return_code, '==', 0, "Old syntax");
+	$res = NPTest->testCmd( "./check_pop -H $host_tcp_pop -p 995 -w 9 -c 9 -t 10 -S -e '+OK'");
+	cmp_ok( $res->return_code, '==', 0, "SSL POP server returned +OK");
+
+	$res = NPTest->testCmd( "./check_pop $host_tcp_pop -p 995 -wt 9 -ct 9 -to 10 -S -e '+OK'");
+	cmp_ok( $res->return_code, '==', 0, "SSL Old syntax");
+}
+
+SKIP: {
+        skip "SSL Enabled", 6 unless ($host_tcp_pop_ssl eq "disabled");
+	
+	$res = NPTest->testCmd( "./check_pop $host_tcp_pop" );
+	cmp_ok( $res->return_code, '==', 0, "POP server ok");
+
+	$res = NPTest->testCmd( "./check_pop -H $host_tcp_pop -p 110 -w 9 -c 9 -t 10 -e '+OK'");
+	cmp_ok( $res->return_code, '==', 0, "POP server returned +OK");
+
+	$res = NPTest->testCmd( "./check_pop $host_tcp_pop -p 110 -wt 9 -ct 9 -to 10 -e '+OK'");
+	cmp_ok( $res->return_code, '==', 0, "Old syntax");
+}
 
 $res = NPTest->testCmd( "./check_pop $host_nonresponsive" );
 cmp_ok( $res->return_code, '==', 2, "Non responsive host");
