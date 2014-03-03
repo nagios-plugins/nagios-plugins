@@ -3,7 +3,7 @@
 * utils_base.c
 *
 * License: GPL
-* Copyright (c) 2006 Nagios Plugins Development Team
+* Copyright (c) 2006-2014 Nagios Plugins Development Team
 *
 * Library of useful functions for plugins
 * 
