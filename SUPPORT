@@ -1,4 +1,24 @@
-SUPPORT
+FORUMS SUPPORT
+--------------
+
+Even though the mailing list are still used for support, the forums are
+by far the fastest and best way to receive support these days.
+
+General plugin usage and Nagios integration questions can be posted at:
+
+    http://support.nagios.com/forum/viewforum.php?f=7
+
+Bug reports and development queries should be posted to the development
+forums:
+
+    http://support.nagios.com/forum/viewforum.php?f=35
+
+The mailing lists are still alive and you are welcome to post your
+questions to the list if you are inclined to do so:
+
+
+MAILING LIST SUPPORT
+--------------------
 
 Using the mailing lists and tracker databases at SourceForge are the
 best ways to obtain direct support for the Nagios Plugins. There may
@@ -19,16 +39,18 @@ you interest to do a modest amount of legwork before posting to either
 of these lists.
 
 Plugins that are in the contrib directories are provided as-is. We will 
-try to help, but sometimes the plugins have dependencies that the nagios-plugin
-developers do not have access to. You may be able to try the authors
-directly.
+try to help, but sometimes the plugins have dependencies that the
+nagios-plugin developers do not have access to. You may be able to try
+the authors directly.
 
 In brief, always provide the version of the software that you are
 using, and when requesting features or reporting bugs, first check to
 see that the issue has not already been addressed in the current Git
 code.
 
+
 GETTING HELP
+------------
 
 Requests to 'help' require posting the version number of the
 plugin. The best place to include the version information is in the
@@ -44,7 +66,9 @@ plugins) will provide a description of their use when invoked with the
 '--help' option. Please read the help carefully and in it's entirety
 before asking for support.
 
+
 REPORTING BUGS AND SUBMITTING PATCHES
+-------------------------------------
 
 Bug reports, investigations of possible bugs, feature requests, and
 patch submissions should be submitted to the development list at
