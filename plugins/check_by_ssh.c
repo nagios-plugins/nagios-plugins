@@ -3,7 +3,7 @@
 * Nagios check_by_ssh plugin
 * 
 * License: GPL
-* Copyright (c) 2000-2008 Nagios Plugins Development Team
+* Copyright (c) 2000-2014 Nagios Plugins Development Team
 * 
 * Description:
 * 
@@ -27,7 +27,7 @@
 *****************************************************************************/
 
 const char *progname = "check_by_ssh";
-const char *copyright = "2000-2008";
+const char *copyright = "2000-2014";
 const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"
