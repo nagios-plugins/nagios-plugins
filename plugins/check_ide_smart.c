@@ -7,7 +7,7 @@
 * Copyright (C) 1998-1999 Ragnar Hojland Espinosa <ragnar@lightside.dhis.org>
 *               1998      Gadi Oxman <gadio@netvision.net.il>
 * Copyright (c) 2000 Robert Dale <rdale@digital-mission.com>
-* Copyright (c) 2000-2007 Nagios Plugins Development Team
+* Copyright (c) 2000-2014 Nagios Plugins Development Team
 * 
 * Description:
 * 
@@ -34,7 +34,7 @@
 *****************************************************************************/
 
 const char *progname = "check_ide_smart";
-const char *copyright = "1998-2007";
+const char *copyright = "1998-2014";
 const char *email = "devel@nagios-plugins.org";
 	
 #include "common.h"
