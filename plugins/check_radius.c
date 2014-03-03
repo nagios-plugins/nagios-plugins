@@ -3,7 +3,7 @@
 * Nagios check_radius plugin
 * 
 * License: GPL
-* Copyright (c) 1999-2008 Nagios Plugins Development Team
+* Copyright (c) 1999-2014 Nagios Plugins Development Team
 * 
 * Description:
 * 
@@ -29,7 +29,7 @@
 *****************************************************************************/
 
 const char *progname = "check_radius";
-const char *copyright = "2000-2008";
+const char *copyright = "2000-2014";
 const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"
