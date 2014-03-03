@@ -3,7 +3,7 @@
 * Nagios plugins popen
 * 
 * License: GPL
-* Copyright (c) 2005-2007 Nagios Plugins Development Team
+* Copyright (c) 2005-2014 Nagios Plugins Development Team
 * 
 * Description:
 * 

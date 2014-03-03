@@ -1,7 +1,7 @@
 # translation of de.po to 
 # German Language Translation File.
 # This file is distributed under the same license as the nagios-plugins package.
-# Copyright (C) 2004 Nagios Plugin Development Group.
+# Copyright (C) 2004-2014 Nagios Plugin Development Group.
 # Karl DeBisschop <kdebisschop@users.sourceforge.net>, 2003, 2004.
 #
 #

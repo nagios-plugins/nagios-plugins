@@ -3,7 +3,7 @@
 * Nagios check_ldap plugin
 * 
 * License: GPL
-* Copyright (c) 2000-2008 Nagios Plugins Development Team
+* Copyright (c) 2000-2014 Nagios Plugins Development Team
 * 
 * Description:
 * 
@@ -28,7 +28,7 @@
 
 /* progname may be check_ldaps */
 char *progname = "check_ldap";
-const char *copyright = "2000-2008";
+const char *copyright = "2000-2014";
 const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"

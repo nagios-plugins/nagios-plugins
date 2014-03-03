@@ -3,7 +3,7 @@
 * Nagios run command utilities
 * 
 * License: GPL
-* Copyright (c) 2005-2006 Nagios Plugins Development Team
+* Copyright (c) 2005-2014 Nagios Plugins Development Team
 * 
 * Description :
 * 

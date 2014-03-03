@@ -1,5 +1,5 @@
 # np_mysqlclient.m4
-dnl Copyright (C) 2007 Nagios Plugins Team
+dnl Copyright (C) 2007-2014 Nagios Plugins Team
 dnl This file is free software; the Nagios Plugin Team
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.

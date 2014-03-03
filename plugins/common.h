@@ -4,7 +4,7 @@
 * 
 * License: GPL
 * Copyright (c) 1999 Ethan Galstad (nagios@nagios.org)
-* Copyright (c) 2003-2007 Nagios Plugins Development Team
+* Copyright (c) 2003-2014 Nagios Plugins Development Team
 * 
 * Description:
 * 

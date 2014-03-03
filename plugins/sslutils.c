@@ -3,7 +3,7 @@
 * Nagios plugins SSL utilities
 * 
 * License: GPL
-* Copyright (c) 2005-2010 Nagios Plugins Development Team
+* Copyright (c) 2005-2014 Nagios Plugins Development Team
 * 
 * Description:
 * 
