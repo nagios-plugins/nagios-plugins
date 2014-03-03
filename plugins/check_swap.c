@@ -4,7 +4,7 @@
 * 
 * License: GPL
 * Copyright (c) 2000 Karl DeBisschop (kdebisschop@users.sourceforge.net)
-* Copyright (c) 2000-2007 Nagios Plugins Development Team
+* Copyright (c) 2000-2014 Nagios Plugins Development Team
 * 
 * Description:
 * 
@@ -28,7 +28,7 @@
 *****************************************************************************/
 
 const char *progname = "check_swap";
-const char *copyright = "2000-2007";
+const char *copyright = "2000-2014";
 const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"
