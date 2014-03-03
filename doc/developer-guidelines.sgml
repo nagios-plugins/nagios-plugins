@@ -22,7 +22,7 @@
     </revhistory>
 
 	<copyright>
-		<year>2000 - 2013</year>
+		<year>2000 - 2014</year>
 		<holder>Nagios Plugins Development Team</holder>
 	</copyright>
 
@@ -34,7 +34,7 @@
     the plugin developers and encourage the standarization of the
     different kind of plugins: C, shell, perl, python, etc.</para>
 
-        <para>Nagios Plugin Development Guidelines Copyright (C) 2000-2013
+        <para>Nagios Plugin Development Guidelines Copyright (C) 2000-2014
         (Nagios Plugins Team)</para>
 
         <para>Permission is granted to make and distribute verbatim
