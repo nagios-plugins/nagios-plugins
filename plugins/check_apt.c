@@ -3,7 +3,7 @@
 * Nagios check_apt plugin
 * 
 * License: GPL
-* Copyright (c) 2006-2008 Nagios Plugins Development Team
+* Copyright (c) 2006-2014 Nagios Plugins Development Team
 * 
 * Original author: Sean Finney
 * 
@@ -30,7 +30,7 @@
 *****************************************************************************/
 
 const char *progname = "check_apt";
-const char *copyright = "2006-2008";
+const char *copyright = "2006-2014";
 const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"

@@ -3,7 +3,7 @@
 * Nagios check_tcp plugin
 *
 * License: GPL
-* Copyright (c) 1999-2013 Nagios Plugins Development Team
+* Copyright (c) 1999-2014 Nagios Plugins Development Team
 *
 * Description:
 *
@@ -29,7 +29,7 @@
 
 /* progname "check_tcp" changes depending on symlink called */
 char *progname;
-const char *copyright = "1999-2008";
+const char *copyright = "1999-2014";
 const char *email = "devel@nagios-plugins.org";
 
 #include <ctype.h>
@@ -354,8 +354,13 @@ main (int argc, char **argv)
 			printf("Unexpected response from host/socket on ");
 		else
 			printf("%.3f second response time on ", elapsed_time);
-		if(server_address[0] != '/')
-			printf("port %d", server_port);
+		if(server_address[0] != '/') {
+			if (host_specified)
+				printf("%s port %d",
+				       server_address, server_port);
+			else
+				printf("port %d", server_port);
+		}
 		else
 			printf("socket %s", server_address);
 	}

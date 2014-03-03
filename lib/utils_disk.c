@@ -3,7 +3,7 @@
 * Library for check_disk
 * 
 * License: GPL
-* Copyright (c) 1999-2007 Nagios Plugins Development Team
+* Copyright (c) 1999-2014 Nagios Plugins Development Team
 * 
 * Description:
 * 

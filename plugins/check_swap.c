@@ -4,11 +4,11 @@
 * 
 * License: GPL
 * Copyright (c) 2000 Karl DeBisschop (kdebisschop@users.sourceforge.net)
-* Copyright (c) 2000-2007 Nagios Plugins Development Team
+* Copyright (c) 2000-2014 Nagios Plugins Development Team
 * 
 * Description:
 * 
-* This file contains the check_disk plugin
+* This file contains the check_swap plugin
 * 
 * 
 * This program is free software: you can redistribute it and/or modify
@@ -28,7 +28,7 @@
 *****************************************************************************/
 
 const char *progname = "check_swap";
-const char *copyright = "2000-2007";
+const char *copyright = "2000-2014";
 const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"
@@ -541,13 +541,14 @@ print_help (void)
   printf (" %s\n", "-c, --critical=INTEGER");
   printf ("    %s\n", _("Exit with CRITICAL status if less than INTEGER bytes of swap space are free"));
   printf (" %s\n", "-c, --critical=PERCENT%%");
-  printf ("    %s\n", _("Exit with CRITCAL status if less than PERCENT of swap space is free"));
+  printf ("    %s\n", _("Exit with CRITICAL status if less than PERCENT of swap space is free"));
   printf (" %s\n", "-a, --allswaps");
   printf ("    %s\n", _("Conduct comparisons for all swap partitions, one by one"));
 	printf (UT_VERBOSE);
 
 	printf ("\n");
   printf ("%s\n", _("Notes:"));
+  printf (" %s\n", _("Both INTEGER and PERCENT thresholds can be specified, they are all checked."));
   printf (" %s\n", _("On AIX, if -a is specified, uses lsps -a, otherwise uses lsps -s."));
 
 	printf (UT_SUPPORT);
@@ -559,6 +560,6 @@ void
 print_usage (void)
 {
 	printf ("%s\n", _("Usage:"));
-  printf ("%s [-av] -w <percent_free>%% -c <percent_free>%%\n",progname);
-  printf ("%s [-av] -w <bytes_free> -c <bytes_free>\n", progname);
+  printf (" %s [-av] -w <percent_free>%% -c <percent_free>%%\n",progname);
+  printf ("  -w <bytes_free> -c <bytes_free> [-n <state>}\n");
 }

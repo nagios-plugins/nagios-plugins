@@ -3,7 +3,7 @@
 * Nagios check_procs plugin
 * 
 * License: GPL
-* Copyright (c) 2000-2008 Nagios Plugins Development Team
+* Copyright (c) 2000-2014 Nagios Plugins Development Team
 * 
 * Description:
 * 
@@ -33,7 +33,7 @@
 
 const char *progname = "check_procs";
 const char *program_name = "check_procs";  /* Required for coreutils libs */
-const char *copyright = "2000-2008";
+const char *copyright = "2000-2014";
 const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"

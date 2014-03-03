@@ -6,6 +6,7 @@ AC_CONFIG_FILES([gl/Makefile
 	nagios-plugins.spec])
 AC_CONFIG_AUX_DIR(build-aux)
 AM_INIT_AUTOMAKE([1.8.3])
+AM_MAINTAINER_MODE([enable])
 AC_CONFIG_HEADERS([config.h])
 AC_CANONICAL_HOST
 
@@ -194,7 +195,7 @@ AC_ARG_ENABLE(extra-opts,
   AC_HELP_STRING([--enable-extra-opts],
 		[Enables parsing of plugins ini config files for extra options (default: no)]),
 	[enable_extra_opts=$enableval],
-	[enable_extra_opts=no])
+	[enable_extra_opts=yes])
 AM_CONDITIONAL([USE_PARSE_INI],[test "$enable_extra_opts" = "yes"])
 if test "$enable_extra_opts" = "yes" ; then
 	AC_DEFINE(NP_EXTRA_OPTS,[1],[Enable INI file parsing.])
@@ -1472,9 +1473,12 @@ else
 fi
 
 AC_PATH_PROG(PATH_TO_QMAIL_QSTAT,qmail-qstat)
-if test -x "$PATH_TO_QMAIL_QSTAT"
+AC_ARG_WITH(qmail_qstat_command,
+            ACX_HELP_STRING([--with-qmail-qstat-command=PATH],
+                            [sets path to qmail-qstat]), PATH_TO_QMAIL_QSTAT=$withval)
+if test -n "$PATH_TO_QMAIL_QSTAT"
 then
-	AC_DEFINE_UNQUOTED(PATH_TO_MAILQ,"$PATH_TO_QMAIL_QSTAT",[path to qmail-qstat])
+	AC_DEFINE_UNQUOTED(PATH_TO_QMAIL_QSTAT,"$PATH_TO_QMAIL_QSTAT",[path to qmail-qstat])
 else
 	AC_MSG_WARN([Could not find qmail-qstat or eqivalent])
 fi

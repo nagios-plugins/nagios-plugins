@@ -3,7 +3,7 @@
 * Nagios check_mrtg plugin
 * 
 * License: GPL
-* Copyright (c) 1999-2007 Nagios Plugins Development Team
+* Copyright (c) 1999-2014 Nagios Plugins Development Team
 * 
 * Description:
 * 
@@ -30,7 +30,7 @@
 *****************************************************************************/
 
 const char *progname = "check_mrtg";
-const char *copyright = "1999-2007";
+const char *copyright = "1999-2014";
 const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"

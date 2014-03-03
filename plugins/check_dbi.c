@@ -3,7 +3,7 @@
 * Nagios check_dbi plugin
 * 
 * License: GPL
-* Copyright (c) 2011 Nagios Plugins Development Team
+* Copyright (c) 2011-2014 Nagios Plugins Development Team
 * Author: Sebastian 'tokkee' Harl <sh@teamix.net>
 * 
 * Description:
@@ -30,7 +30,7 @@
 *****************************************************************************/
 
 const char *progname = "check_dbi";
-const char *copyright = "2011";
+const char *copyright = "2014";
 const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"

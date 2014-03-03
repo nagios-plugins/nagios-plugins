@@ -22,25 +22,25 @@ my $successOutput = '/DNS OK - [\.0-9]+ seconds? response time/';
 my $hostname_valid = getTestParameter(
 			"NP_HOSTNAME_VALID",
 			"A valid (known to DNS) hostname",
-			"orwell.monitoring-plugins.org"
+			"nagios-plugins.org"
 			);
 
 my $hostname_valid_ip = getTestParameter(
 			"NP_HOSTNAME_VALID_IP",
 			"The IP address of the valid hostname $hostname_valid",
-			"130.133.8.40",
+			"72.14.186.43",
 			);
 
 my $hostname_valid_reverse = getTestParameter(
 			"NP_HOSTNAME_VALID_REVERSE",
 			"The hostname of $hostname_valid_ip",
-			"orwell.monitoring-plugins.org.",
+			"nagios-plugins.org",
 			);
 
 my $hostname_invalid = getTestParameter(
 			"NP_HOSTNAME_INVALID",
 			"An invalid (not known to DNS) hostname",
-			"nosuchhost.monitoring-plugins.org",
+			"nosuchhost.nagios-plugins.org",
 			);
 
 my $dns_server       = getTestParameter(
@@ -61,7 +61,7 @@ SKIP: {
 	$res = NPTest->testCmd("./check_dig -H $dns_server -l $hostname_valid -t 5 -w 0.000001 -c 0.00001");
 	cmp_ok( $res->return_code, '==', 2, "Critical threshold passed");
 
-	$res = NPTest->testCmd("./check_dig -H $dns_server -l $hostname_valid -t 5 -w 0.000001 -c 5");
+	$res = NPTest->testCmd("./check_dig -H $dns_server -l $hostname_valid -t 5 -w 0.000001");
 	cmp_ok( $res->return_code, '==', 1, "Warning threshold passed");
 
 	$res = NPTest->testCmd("./check_dig -H $dns_server -t 1");

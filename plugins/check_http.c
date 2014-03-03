@@ -3,7 +3,7 @@
 * Nagios check_http plugin
 *
 * License: GPL
-* Copyright (c) 1999-2013 Nagios Plugins Development Team
+* Copyright (c) 1999-2014 Nagios Plugins Development Team
 *
 * Description:
 *
@@ -34,7 +34,7 @@
 /* splint -I. -I../../plugins -I../../lib/ -I/usr/kerberos/include/ ../../plugins/check_http.c */
 
 const char *progname = "check_http";
-const char *copyright = "1999-2013";
+const char *copyright = "1999-2014";
 const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"

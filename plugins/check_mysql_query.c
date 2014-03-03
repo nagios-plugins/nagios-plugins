@@ -3,7 +3,7 @@
 * Nagios check_mysql_query plugin
 * 
 * License: GPL
-* Copyright (c) 2006-2009 Nagios Plugins Development Team
+* Copyright (c) 2006-2014 Nagios Plugins Development Team
 * Original code from check_mysql, copyright 1999 Didi Rieder
 * 
 * Description:
@@ -30,7 +30,7 @@
 *****************************************************************************/
 
 const char *progname = "check_mysql_query";
-const char *copyright = "1999-2007";
+const char *copyright = "1999-2014";
 const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"
