@@ -1,6 +1,6 @@
 This file contains the origin of code copied verbatim into some or all of the Nagios plugins.
 
-The NagiosPlugin team thanks the original authors.
+The NagiosPlugin team would like to thank the Ethan Galstad and all the other original authors.
 
 Copied code is cited in the source by indented comments of the form
 

@@ -8,6 +8,11 @@ A: All plugins that comply with minimal development guideline for
    can be read executing plugin with the -h or --help option. If 
    the '-h' option does not work, that is a bug.
 
+   Additionally, the man pages for the plugins are available on the
+   nagios-plugins website at:
+
+   http://nagios-plugins.org/doc/man/index.html
+
 
 Q: What version of <insert name> plugin am I running?
 
@@ -15,7 +20,7 @@ A: All plugins that comply with minimal development guideline for
    this project include detailed version information.  When executed
    with the '-V' option, a version string will be printed:
 
-   check_radius v1.4.16 (nagios-plugins 1.4.16)
+   check_radius v2.0 (nagios-plugins 2.0)
 
    All bug reports and help requests should reference this
    information.
@@ -67,7 +72,8 @@ A: Beginning with the 1.2.9-1 release, you may run
 
 Q: I get an error like
 
-   Warning: Return code of 127 for check of service 'PING' on host 'anyhost' was out of bounds.
+   Warning: Return code of 127 for check of service 'PING' on host 
+   'anyhost' was out of bounds.
 
    when I run Nagios. (Often check_ping runs just fine on the
    command line).
@@ -84,8 +90,19 @@ A: Commonly, system administrators will make security as tight as
 
 Q: I have a plugin to offer. What can I do?
 
-A: You can make it available on NagiosExchange (http://nagiosexchange.org)
-   where other people can find it for use.
+A: Contact a nagios-plugins team member in one of the following ways:
 
-   You can also get feedback on improving the plugin via the 
-   devel@nagios-plugins.org mailing list.
+   a) Forums:  
+	http://support.nagios.com/forum/viewforum.php?f=35
+
+   b) Mailing-list: 
+	http://lists.nagios.com/mailman/listinfo/nagiosplugin-devel 
+
+   c) Github:
+	https://github.com/nagios-plugins/nagios-plugins
+
+   d) If all else fails, post it to the Nagios Exchange:
+	http://exchange.nagios.org/
+
+   You can also get feedback on improving the plugin via any of the 
+   methods above.
