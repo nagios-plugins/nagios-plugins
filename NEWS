@@ -19,7 +19,7 @@ This file documents the major additions and syntax changes between releases.
 	check_tcp - Status output now includes hostname when host_specified is set (madrisan)
 	check_mysql - New -n/--ignore_auth option to ignore authentication failure (Julius Kriukas)
 	check_ssh - New -P/--remote-protocol option to monitor the ssh protocol version (monitoring-user)
-	check_ntp - New -o/--time-offset option to compensate for the ntp server's offset relative to teh local server (monitoring-user)
+	check_ntp - New -o/--time-offset option to compensate for the ntp server's offset relative to the local server (monitoring-user)
 	configure.ac - Added support for --disable-maintainer-mode (weiss)
 
 	FIXES
