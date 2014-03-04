@@ -10,7 +10,7 @@ use NPTest;
 
 plan skip_all => "check_dns not compiled" unless (-x "check_dns");
 
-plan tests => 13;
+plan tests => 19;
 
 my $successOutput = '/DNS OK: [\.0-9]+ seconds? response time/';
 
@@ -38,11 +38,31 @@ my $hostname_invalid = getTestParameter(
 			"nosuchhost.nagios-plugins.org",
 			);
 
-my $dns_server       = getTestParameter(
+my $dns_server = getTestParameter(
 			"NP_DNS_SERVER",
 			"A non default (remote) DNS server",
 			);
 
+my $hostname_valid_aaaa = getTestParameter( 
+			"NP_HOSTNAME_VALID_AAAA", 
+			"A valid hostname for AAAA records"
+			);
+
+my $hostname_valid_mx = getTestParameter( 
+			"NP_HOSTNAME_VALID_MX", 
+			"A valid hostname for MX records",
+			"nagios-plugins.org",
+			);
+
+my $hostname_valid_srv = getTestParameter( 
+			"NP_HOSTNAME_VALID_SRV", 
+			"A valid hostname for SRV records"
+			); 
+
+my $hostname_valid_txt = getTestParameter( 
+			"NP_HOSTNAME_VALID_TXT", 
+			"A valid hostname for TXT records"
+			); 
 my $res;
 
 $res = NPTest->testCmd("./check_dns -H $hostname_valid -t 5");
@@ -76,3 +96,26 @@ $res = NPTest->testCmd("./check_dns -H $hostname_valid_ip -a $hostname_valid_rev
 cmp_ok( $res->return_code, '==', 0, "Got expected fqdn");
 like  ( $res->output, $successOutput, "Output OK");
 
+SKIP: {
+        skip "No server specified for checking TXT records", 2 unless $hostname_valid_txt;
+
+	$res = NPTest->testCmd("./check_dns -H $hostname_valid_txt -s $dns_server -q TXT");
+	cmp_ok( $res->return_code, '==', 0, "Found $hostname_valid_txt");
+	like  ( $res->output, $successOutput, "TXT Output OK" );
+}
+
+SKIP: {
+        skip "No server specified for checking SRV records", 2 unless $hostname_valid_srv;
+
+	$res = NPTest->testCmd("./check_dns -H $hostname_valid_srv -s $dns_server -q SRV");
+	cmp_ok( $res->return_code, '==', 0, "Found $hostname_valid_srv");
+	like  ( $res->output, $successOutput, "SRV Output OK" );
+}
+
+SKIP: {
+        skip "No server specified for checking AAAA records", 2 unless $hostname_valid_aaaa;
+
+	$res = NPTest->testCmd("./check_dns -H $hostname_valid_aaaa -s $dns_server -q AAAA");
+	cmp_ok( $res->return_code, '==', 0, "Found $hostname_valid_aaaa");
+	like  ( $res->output, $successOutput, "TXT Output OK" );
+}
