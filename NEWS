@@ -1,37 +1,67 @@
 This file documents the major additions and syntax changes between releases.
 
-1.6 ...
+2.0 4th March 2014
+	ADDITIONS
+	check_uptime - New plugin (only supports linux due to dependency on clock.gettime().  More supported platforms to follow.	
+
 	ENHANCEMENTS
-	Added performance data to check_mysql_query (sreinhardt)
-	New check_file_age option -i/--ignore-missing which returns OK if file is missing (waja)
-	Added performance data to check_nt UPTIME -l seconds|minutes|hours|days (abrist)
-	New check_hpjd -p option for port specification (abrist)
-	New check_disk -n option for multi-line output (tmcnag)
-	New check_mysql_query -f/-g options for reading for mysql options file (awiddersheim)
-	check_mailq now supports nullmailer in the mailserver -M switch (Luca Corti)
-	New check_dig -r option for specifying number of retries (abrist)
+	check_mysql_query - Added performance data (sreinhardt)
+	check_file_age - New option -i/--ignore-missing which returns OK if file is missing (waja)
+	check_nt - Added performance data to UPTIME -l seconds|minutes|hours|days (abrist)
+	check_hpjd - New -p option for port specification (abrist)
+	check_disk - new -n option for multi-line output (tmcnag)
+	check_mysql_query - New -f/-g options for reading for mysql options file (awiddersheim)
+	check_mailq - New -M option for nullmailer support in the mailserver (Luca Corti)
+	check_dig - New -r option for specifying number of retries (abrist)
 	check_ntp_peer - Added state output for each checked metric (abrist)
+	check_dns - Warning and critical thresholds added to perfdata (jccomputing) (abrist)
+	check_dns - New -q options for several query types (AAAA,TXT,SRV,MX) (sreinhardt)
+	check_tcp - Status output now includes hostname when host_specified is set (madrisan)
+	check_mysql - New -n/--ignore_auth option to ignore authentication failure (Julius Kriukas)
+	check_ssh - New -P/--remote-protocol option to monitor the ssh protocol version (monitoring-user)
+	check_ntp - New -o/--time-offset option to compensate for the ntp server's offset relative to teh local server (monitoring-user)
+	configure.ac - Added support for --disable-maintainer-mode (weiss)
 
 	FIXES
-	Don't let e.g. check_http's -C option reset SSL version if e.g. -S 1 -C 5 is specified
-	check_ide_smart now defaults to nagios-compatible output (sreinhardt)
+	check_http - The -C option no longer resets SSL version if e.g. -S 1 -C 5 is specified
+	check_ide_smart - Now defaults to nagios-compatible output (sreinhardt)
 	Fixed misleading timeout message for non-network plugins (sreinhardt)
-	check_swap now fails with 100% usage and a new status output when swap is disabled or missing (abrist)
-	Removed commas from check_ifstatus perfdata - should now output valid perfdata in nagios format (waja)
-	check_ping should now gracefully handle the "time of day goes back" error.  This issue is rare, most will not notice the change (waja)
-	check_disk help output was clarified that it supports mount paths or partitions instead of just paths and partitions (waja)
-	Fixed check_ide_smart attribute comparison (waja)
-	Fixed bug in check_ntp_time average time calculation (larsi)
-	Fixed empty NPTest.cache file blocking writing to the file (dermoth)
-	Fixed newlines in parse.ini output (dermoth)
-	check_dig: fix wrong IPv6 arguments order (Stéphane Bortzmeyer)
-	check_dig: now honors timeout value specified by switch -t (Jethro Carr) (abrist)
-	Configure option --enable-extra-opts is now enabled by default (dermoth)
+	check_swap - Now fails with 100% usage and a new status output when swap is disabled or missing (abrist)
+	check_ifstatus - Removed commas from perfdata - should now output valid perfdata in nagios format (waja)
+	check_ping - Now gracefully handle the "time of day goes back" error.  This issue is rare, most will not notice the change (waja)
+	check_disk - Help output was clarified that it supports mount paths or partitions instead of just paths and partitions (waja)
+	check_ide_smart - Fixed attribute comparison (waja)
+	check_ntp_time - Fixed average time calculation (larsi)
+	NPTest.cache - Empty or Missing file no longer blocks writing to the file (dermoth)
+	parse.ini - Fixed newlines in output (dermoth)
+	check_dig - Fixed wrong IPv6 arguments order (Stéphane Bortzmeyer)
+	check_dig - Now honors timeout value specified by switch -t (Jethro Carr) (abrist)
+	configure.in - Renamed to configure.ac to avoid deprecation warning (abrist)
+	configure.ac - The option --enable-extra-opts is now enabled by default (dermoth)
+	check_snmp - Now handles negative values properly (Stephane Lapie)
 
 	WARNINGS
-	check_procs now ignores its parent process to avoid unexpected results when invoked via certain shells
-	utils.sh no longer defines ECHO (weiss)
+	check_procs - Now ignores its parent process to avoid unexpected results when invoked via certain shells
+	utils.sh - No longer defines ECHO (weiss)
 	check_ide_smart now default to nagios output, -n kept for legacy support (sreinhardt)
+	check_ntp_peer - Status output changed, now includes individual state for offset, truechimers, stratum, and jitter (abrist)
+	check_tcp - Status output has changed, now includes hostname (madrisan)
+
+	TESTS
+	check_procs - Performance data tests added (dermoth)
+	check_snmp - Added tests for negative thresholds (dermoth)
+	check_hpjd - Added tests for port options (abrist)
+	check_dns - Added new tests for query types (abrist)
+	check_pop - Added option to enable ssl for the test (abrist)
+	check_jabber - Fixed status output tests to account for hostname (abrist)
+	check_procs - Tests no longer fail if uid 501 is not present (sni)
+	check_mysql - Test prompts clarified (dermoth)
+	check_file_age - Added tests for --ignore-missing (waja)
+
+	OTHER
+	Numerous small typos fixed.
+	Help output has been changed in many places for clarity and verbosity.
+	
 
 1.5 2nd October 2013
 	ENHANCEMENTS
