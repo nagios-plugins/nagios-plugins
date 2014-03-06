@@ -52,6 +52,7 @@ int main (int argc, char **argv) {
 	double value, uptime;
 	char* perf;
 	char* output_message;
+  	struct timeval tv;
 
 	/* Parse extra opts if any */
 	argv = np_extra_opts (&argc, argv, progname);
@@ -59,7 +60,16 @@ int main (int argc, char **argv) {
 	if (process_arguments (argc, argv) == ERROR)
 		usage4 (_("Could not parse arguments"));
 
+	/* Set signal handling and alarm timeout */
+	if (signal (SIGALRM, timeout_alarm_handler) == SIG_ERR) {
+		die (STATE_UNKNOWN, _("Cannot catch SIGALRM"));
+	}
+	
+	alarm (timeout_interval);
+	gettimeofday (&tv, NULL);
+	
 	value = getuptime();
+	
 	if (verbose >= 3) {
 		printf("Uptime in seconds returned from timespec struct: %f\n", value);
 	}
@@ -126,6 +136,7 @@ static int process_arguments (int argc, char **argv) {
         static struct option longopts[] = {
                 {"critical", required_argument, 0, 'c'},
                 {"warning", required_argument, 0, 'w'},
+    		{"timeout", required_argument, 0, 't'},
                 {"timeunit", required_argument, 0, 'u'},
                 {"verbose", no_argument, 0, 'v'},
                 {"version", no_argument, 0, 'V'},
@@ -135,7 +146,7 @@ static int process_arguments (int argc, char **argv) {
 
 	while ( 1 ) {
 
-		c = getopt_long ( argc, argv, "+hvVu:c:w:", longopts, &option );
+		c = getopt_long ( argc, argv, "+hvVu:c:w:t:", longopts, &option );
 
 		if ( c == -1 || c == EOF || c == 1 ) break;
 	
@@ -162,6 +173,12 @@ static int process_arguments (int argc, char **argv) {
 				break;
 			case 'w':
 				warning = optarg;
+				break;
+			case 't': /* timeout period */
+				if (!is_intpos (optarg))
+					usage2 (_("Timeout interval must be a positive integer"), optarg);
+				else
+					timeout_interval = atoi (optarg);
 				break;
 			} // end case
 		} // end while
@@ -199,7 +216,7 @@ void print_usage (void) {
 	
 	printf( "%s\n", _("Usage:") );
 	printf( "%s", _("check_uptime ") );
-	printf( "%s\n", _("[-u uom] [-w threshold] [-c threshold] [-h] [-v] [-V]") );
+	printf( "%s\n", _("[-u uom] [-w threshold] [-c threshold] [-t] [-h] [-v] [-V]") );
 
 } // end usage
 
@@ -216,7 +233,7 @@ void print_help (void) {
 	printf ( UT_HELP_VRSN );
 	printf ( UT_EXTRA_OPTS );
 
-        printf ( "%s\n", _("-t, Connection timeout, default 10 seconds") );
+        printf ( "%s\n", _("-t, Plugin timeout, default 10 seconds") );
         printf ( "%s\n", _("-c, Critcal threshold") );
 	printf ( "%s\n", _("-w, Warning threshold") );
 	printf ( "%s\n", _("-u, Time unit of measurement (seconds|minutes|hours|days) (default: minutes)") );
