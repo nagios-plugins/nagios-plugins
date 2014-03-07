@@ -1,5 +1,12 @@
 This file documents the major additions and syntax changes between releases.
 
+2.0.1 ...
+	ENHANCMENTS
+	check_snmp.c - Added thresholds to performance data (jccomputing)
+
+	FIXES
+	check_uptime.c - Fixed timeout option (abrist)
+
 2.0 4th March 2014
 	ADDITIONS
 	check_uptime - New plugin (only supports linux due to dependency on clock.gettime().  More supported platforms to follow.	
