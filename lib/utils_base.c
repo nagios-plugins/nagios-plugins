@@ -3,7 +3,7 @@
 * utils_base.c
 *
 * License: GPL
-* Copyright (c) 2006 Nagios Plugins Development Team
+* Copyright (c) 2006-2014 Nagios Plugins Development Team
 *
 * Library of useful functions for plugins
 * 
@@ -30,6 +30,8 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <unistd.h>
+#include <sys/types.h>
 
 #define np_free(ptr) { if(ptr) { free(ptr); ptr = NULL; } }
 
@@ -368,6 +370,22 @@ char *np_extract_value(const char *varlist, const char *name, char sep) {
 }
 
 /*
+ * Read a string representing a state (ok, warning... or numeric: 0, 1) and
+ * return the corresponding STATE_ value or ERROR)
+ */
+int translate_state (char *state_text) {
+       if (!strcasecmp(state_text,"OK") || !strcmp(state_text,"0"))
+               return STATE_OK;
+       if (!strcasecmp(state_text,"WARNING") || !strcmp(state_text,"1"))
+               return STATE_WARNING;
+       if (!strcasecmp(state_text,"CRITICAL") || !strcmp(state_text,"2"))
+               return STATE_CRITICAL;
+       if (!strcasecmp(state_text,"UNKNOWN") || !strcmp(state_text,"3"))
+               return STATE_UNKNOWN;
+       return ERROR;
+}
+
+/*
  * Returns a string to use as a keyname, based on an md5 hash of argv, thus
  * hopefully a unique key per service/plugin invocation. Use the extra-opts
  * parse of argv, so that uniqueness in parameters are reflected there.
@@ -415,10 +433,15 @@ void _cleanup_state_data() {
 char* _np_state_calculate_location_prefix(){
 	char *env_dir;
 
-	env_dir = getenv("NAGIOS_PLUGIN_STATE_DIRECTORY");
-	if(env_dir && env_dir[0] != '\0')
-		return env_dir;
-	return NP_STATE_DIR_PREFIX;
+	/* Do not allow passing NP_STATE_DIRECTORY in setuid plugins
+	 * for security reasons */
+
+	if (np_suid() == FALSE) {
+		env_dir = getenv("NAGIOS_PLUGIN_STATE_DIRECTORY");
+		if(env_dir && env_dir[0] != '\0')
+			return env_dir;
+		return NP_STATE_DIR_PREFIX;
+	}
 }
 
 /*

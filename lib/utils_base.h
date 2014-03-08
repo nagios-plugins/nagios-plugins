@@ -62,7 +62,7 @@ int check_range(double, range *);
 int get_status(double, thresholds *);
 
 /* All possible characters in a threshold range */
-#define NP_THRESHOLDS_CHARS "0123456789.:@~"
+#define NP_THRESHOLDS_CHARS "-0123456789.:@~"
 
 char *np_escaped_string (const char *);
 
@@ -78,6 +78,12 @@ int np_check_if_root(void);
 /* and a helpful wrapper around that.  it returns the same status
  * code from the above function, in case it's helpful for testing */
 int np_warn_if_not_root(void);
+
+/*
+ * Read a string representing a state (ok, warning... or numeric: 0, 1) and
+ * return the corresponding NP_STATE or ERROR)
+ */
+int translate_state (char *);
 
 /*
  * Extract the value from key/value pairs, or return NULL. The value returned
@@ -101,5 +107,9 @@ void np_state_write_string(time_t, char *);
 void np_init(char *, int argc, char **argv);
 void np_set_args(int argc, char **argv);
 void np_cleanup();
+
+/* np_suid() returns true if the real and effective uids differs, such as when
++ * running a suid plugin */
+#define np_suid() (getuid() != geteuid())
 
 #endif /* _UTILS_BASE_ */

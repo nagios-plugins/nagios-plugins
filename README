@@ -81,6 +81,35 @@ That's it!  If you have any problems or questions, feel free to send an
 email to <help@nagios-plugins.org>.
 
 
+Testing With libtap
+-------------------
+
+1.  The nagios-plugins source includes a perl testing suite.  the libtap 
+    library and headers are included with the source.  Configure with:
+
+	./configure --enable-libtap
+
+    Note: "--enable-extra-opts" used to be required as well, but is no 
+    longer required as it is a default configure option.
+
+2.  Make and then make test:
+
+	make
+	make test
+
+3.  Testing is pseudo intelligent and will try to autodetect which plugins
+    to test.  You may need to look at the REQUIREMENTS doc as to what
+    dependencies are required to satisfy the test.
+
+    Additionally, default and user supplied (at runtime) testing parameters
+    are saved in the file:
+
+	/var/tmp/NPTest.cache
+
+    If you need to change any testing parameters, edit them in this file
+    or just remove the line to force the test to re-prompt you for input.
+
+
 License Notice
 --------------
 

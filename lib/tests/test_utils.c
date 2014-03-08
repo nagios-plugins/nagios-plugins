@@ -32,13 +32,13 @@ main (int argc, char **argv)
 	range	*range;
 	double	temp;
 	thresholds *thresholds = NULL;
-	int	rc;
+	int	i, rc;
 	char	*temp_string;
 	state_key *temp_state_key = NULL;
 	state_data *temp_state_data;
 	time_t	current_time;
 
-	plan_tests(150);
+	plan_tests(185);
 
 	ok( this_nagios_plugin==NULL, "nagios_plugin not initialised");
 
@@ -181,6 +181,21 @@ main (int argc, char **argv)
 	ok( get_status(15.3, thresholds) == STATE_OK, "15.3 - ok");
 	ok( get_status(30.0001, thresholds) == STATE_WARNING, "30.0001 - warning");
 	ok( get_status(69, thresholds) == STATE_CRITICAL, "69 - critical");
+
+	rc = _set_thresholds(&thresholds, "-10:-2", "-30:20");
+	ok( rc == 0, "Thresholds ('-30:20', '-10:-2') set");
+	ok( thresholds->warning->start == -10, "Warning start set correctly");
+	ok( thresholds->warning->end == -2, "Warning end set correctly");
+	ok( thresholds->critical->start == -30, "Critical start set correctly");
+	ok( thresholds->critical->end == 20, "Critical end set correctly");
+	ok( get_status(-31, thresholds) == STATE_CRITICAL, "-31 - critical");
+	ok( get_status(-29, thresholds) == STATE_WARNING, "-29 - warning");
+	ok( get_status(-11, thresholds) == STATE_WARNING, "-11 - warning");
+	ok( get_status(-10, thresholds) == STATE_OK, "-10 - ok");
+	ok( get_status(-2, thresholds) == STATE_OK, "-2 - ok");
+	ok( get_status(-1, thresholds) == STATE_WARNING, "-1 - warning");
+	ok( get_status(19, thresholds) == STATE_WARNING, "19 - warning");
+	ok( get_status(21, thresholds) == STATE_CRITICAL, "21 - critical");
 
 	char *test;
 	test = np_escaped_string("bob\\n");
@@ -438,7 +453,54 @@ main (int argc, char **argv)
 
 	np_cleanup();
 
-	ok( this_nagios_plugin==NULL, "Free'd this_nagios_plugin" );
+	ok(this_nagios_plugin==NULL, "Free'd this_nagios_plugin" );
+
+	ok(np_suid() == FALSE, "Tests aren't suid" );
+
+	/* base states with random case */
+	char *states[] = {
+		"Ok",
+		"wArnINg",
+		"cRiTIcaL",
+		"UnKNoWN",
+		NULL
+	};
+
+	for (i=0; states[i]!=NULL; i++) {
+		/* out of the random case states, create the lower and upper versions + numeric string one */
+		char *statelower = strdup(states[i]);
+		char *stateupper = strdup(states[i]);
+		char statenum[2];
+		char *temp_ptr;
+		for (temp_ptr = statelower; *temp_ptr; temp_ptr++) {
+			*temp_ptr = tolower(*temp_ptr);
+		}
+		for (temp_ptr = stateupper; *temp_ptr; temp_ptr++) {
+			*temp_ptr = toupper(*temp_ptr);
+		}
+		snprintf(statenum, 2, "%i", i);
+
+		/* Base test names, we'll append the state string */
+		char testname[64] = "Translate state string: ";
+		int tlen = strlen(testname);
+
+		strcpy(testname+tlen, states[i]);
+		ok(i==translate_state(states[i]), testname);
+
+		strcpy(testname+tlen, statelower);
+		ok(i==translate_state(statelower), testname);
+
+		strcpy(testname+tlen, stateupper);
+		ok(i==translate_state(stateupper), testname);
+
+		strcpy(testname+tlen, statenum);
+		ok(i==translate_state(statenum), testname);
+	}
+	ok(ERROR==translate_state("warningfewgw"), "Translate state string with garbage");
+	ok(ERROR==translate_state("00"), "Translate state string: bad numeric string 1");
+	ok(ERROR==translate_state("01"), "Translate state string: bad numeric string 2");
+	ok(ERROR==translate_state("10"), "Translate state string: bad numeric string 3");
+	ok(ERROR==translate_state(""), "Translate state string: empty string");
 
 	return exit_status();
 }

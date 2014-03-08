@@ -4,7 +4,7 @@
 * 
 * License: GPL
 * Copyright (c) 2006 Sean Finney <seanius@seanius.net>
-* Copyright (c) 2006-2008 Nagios Plugins Development Team
+* Copyright (c) 2006-2014 Nagios Plugins Development Team
 * 
 * Description:
 * 
@@ -35,7 +35,7 @@
 *****************************************************************************/
 
 const char *progname = "check_ntp_time";
-const char *copyright = "2006-2008";
+const char *copyright = "2006-2014";
 const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"
@@ -48,6 +48,7 @@ static int verbose=0;
 static int quiet=0;
 static char *owarn="60";
 static char *ocrit="120";
+static int time_offset=0;
 
 int process_arguments (int, char **);
 thresholds *offset_thresholds = NULL;
@@ -399,7 +400,7 @@ double offset_request(const char *host, int *status){
 				gettimeofday(&recv_time, NULL);
 				DBG(print_ntp_message(&req[i]));
 				respnum=servers[i].num_responses++;
-				servers[i].offset[respnum]=calc_offset(&req[i], &recv_time);
+				servers[i].offset[respnum]=calc_offset(&req[i], &recv_time)+time_offset;
 				if(verbose) {
 					printf("offset %.10g\n", servers[i].offset[respnum]);
 				}
@@ -454,6 +455,7 @@ int process_arguments(int argc, char **argv){
 		{"use-ipv4", no_argument, 0, '4'},
 		{"use-ipv6", no_argument, 0, '6'},
 		{"quiet", no_argument, 0, 'q'},
+		{"time-offset", optional_argument, 0, 'o'},
 		{"warning", required_argument, 0, 'w'},
 		{"critical", required_argument, 0, 'c'},
 		{"timeout", required_argument, 0, 't'},
@@ -467,7 +469,7 @@ int process_arguments(int argc, char **argv){
 		usage ("\n");
 
 	while (1) {
-		c = getopt_long (argc, argv, "Vhv46qw:c:t:H:p:", longopts, &option);
+		c = getopt_long (argc, argv, "Vhv46qw:c:t:H:p:o:", longopts, &option);
 		if (c == -1 || c == EOF || c == 1)
 			break;
 
@@ -503,6 +505,9 @@ int process_arguments(int argc, char **argv){
 		case 't':
 			socket_timeout=atoi(optarg);
 			break;
+		case 'o':
+			time_offset=atoi(optarg);
+                        break;
 		case '4':
 			address_family = AF_INET;
 			break;
@@ -615,6 +620,8 @@ void print_help(void){
 	printf ("    %s\n", _("Offset to result in warning status (seconds)"));
 	printf (" %s\n", "-c, --critical=THRESHOLD");
 	printf ("    %s\n", _("Offset to result in critical status (seconds)"));
+	printf (" %s\n", "-o, --time_offset=INTEGER");
+	printf ("    %s\n", _("Expected offset of the ntp server relative to local server (seconds)"));
 	printf (UT_CONN_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
 	printf (UT_VERBOSE);
 
@@ -627,6 +634,8 @@ void print_help(void){
 	printf("%s\n", _("Notes:"));
 	printf(" %s\n", _("If you'd rather want to monitor an NTP server, please use"));
 	printf(" %s\n", _("check_ntp_peer."));
+	printf(" %s\n", _("--time-offset is usefull for compensating for servers with known"));
+	printf(" %s\n", _("and expected clock skew."));
 	printf("\n");
 	printf(UT_THRESHOLDS_NOTES);
 
@@ -641,6 +650,6 @@ void
 print_usage(void)
 {
 	printf ("%s\n", _("Usage:"));
-	printf(" %s -H <host> [-4|-6] [-w <warn>] [-c <crit>] [-v verbose]\n", progname);
+	printf(" %s -H <host> [-4|-6] [-w <warn>] [-c <crit>] [-v verbose] [-o <time offset>]\n", progname);
 }
 

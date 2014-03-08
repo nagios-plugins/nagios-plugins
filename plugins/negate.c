@@ -3,7 +3,7 @@
 * Nagios negate plugin
 * 
 * License: GPL
-* Copyright (c) 2002-2008 Nagios Plugins Development Team
+* Copyright (c) 2002-2014 Nagios Plugins Development Team
 * 
 * Description:
 * 
@@ -30,7 +30,7 @@
 *****************************************************************************/
 
 const char *progname = "negate";
-const char *copyright = "2002-2008";
+const char *copyright = "2002-2014";
 const char *email = "devel@nagios-plugins.org";
 
 #define DEFAULT_TIMEOUT 11
@@ -45,7 +45,6 @@ const char *email = "devel@nagios-plugins.org";
 
 static const char **process_arguments (int, char **);
 int validate_arguments (char **);
-int translate_state (char *);
 void print_help (void);
 void print_usage (void);
 int subst_text = FALSE;
@@ -217,24 +216,6 @@ validate_arguments (char **command_line)
 		usage4 (_("Require path to command"));
 }
 
-
-int
-translate_state (char *state_text)
-{
-	char *temp_ptr;
-	for (temp_ptr = state_text; *temp_ptr; temp_ptr++) {
-		*temp_ptr = toupper(*temp_ptr);
-	}
-	if (!strcmp(state_text,"OK") || !strcmp(state_text,"0"))
-		return STATE_OK;
-	if (!strcmp(state_text,"WARNING") || !strcmp(state_text,"1"))
-		return STATE_WARNING;
-	if (!strcmp(state_text,"CRITICAL") || !strcmp(state_text,"2"))
-		return STATE_CRITICAL;
-	if (!strcmp(state_text,"UNKNOWN") || !strcmp(state_text,"3"))
-		return STATE_UNKNOWN;
-	return ERROR;
-}
 
 void
 print_help (void)

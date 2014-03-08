@@ -3,7 +3,7 @@
 * Nagios check_ssh plugin
 * 
 * License: GPL
-* Copyright (c) 2000-2007 Nagios Plugins Development Team
+* Copyright (c) 2000-2014 Nagios Plugins Development Team
 * 
 * Description:
 * 
@@ -29,7 +29,7 @@
 *****************************************************************************/
 
 const char *progname = "check_ssh";
-const char *copyright = "2000-2007";
+const char *copyright = "2000-2014";
 const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"
@@ -46,6 +46,7 @@ const char *email = "devel@nagios-plugins.org";
 int port = -1;
 char *server_name = NULL;
 char *remote_version = NULL;
+char *remote_protocol = NULL;
 int verbose = FALSE;
 
 int process_arguments (int, char **);
@@ -53,7 +54,7 @@ int validate_arguments (void);
 void print_help (void);
 void print_usage (void);
 
-int ssh_connect (char *haddr, int hport, char *remote_version);
+int ssh_connect (char *haddr, int hport, char *remote_version, char *remote_protocol);
 
 
 
@@ -78,7 +79,7 @@ main (int argc, char **argv)
 	alarm (socket_timeout);
 
 	/* ssh_connect exits if error is found */
-	result = ssh_connect (server_name, port, remote_version);
+	result = ssh_connect (server_name, port, remote_version, remote_protocol);
 
 	alarm (0);
 
@@ -105,6 +106,7 @@ process_arguments (int argc, char **argv)
 		{"timeout", required_argument, 0, 't'},
 		{"verbose", no_argument, 0, 'v'},
 		{"remote-version", required_argument, 0, 'r'},
+		{"remote-protcol", required_argument, 0, 'P'},
 		{0, 0, 0, 0}
 	};
 
@@ -116,7 +118,7 @@ process_arguments (int argc, char **argv)
 			strcpy (argv[c], "-t");
 
 	while (1) {
-		c = getopt_long (argc, argv, "+Vhv46t:r:H:p:", longopts, &option);
+		c = getopt_long (argc, argv, "+Vhv46t:r:H:p:P:", longopts, &option);
 
 		if (c == -1 || c == EOF)
 			break;
@@ -151,6 +153,9 @@ process_arguments (int argc, char **argv)
 			break;
 		case 'r':									/* remote version */
 			remote_version = optarg;
+			break;
+		case 'P':									/* remote version */
+			remote_protocol = optarg;
 			break;
 		case 'H':									/* host */
 			if (is_host (optarg) == FALSE)
@@ -206,7 +211,7 @@ validate_arguments (void)
 
 
 int
-ssh_connect (char *haddr, int hport, char *remote_version)
+ssh_connect (char *haddr, int hport, char *remote_version, char *remote_protocol)
 {
 	int sd;
 	int result;
@@ -250,7 +255,14 @@ ssh_connect (char *haddr, int hport, char *remote_version)
 			printf
 				(_("SSH WARNING - %s (protocol %s) version mismatch, expected '%s'\n"),
 				 ssh_server, ssh_proto, remote_version);
-			recv (sd, output, BUFF_SZ, 0);
+			close(sd);
+			exit (STATE_WARNING);
+		}
+
+		if (remote_protocol && strcmp(remote_protocol, ssh_proto)) {
+			printf
+				(_("SSH WARNING - %s (protocol %s) protocol version mismatch, expected '%s'\n"),
+				 ssh_server, ssh_proto, remote_protocol);
 			close(sd);
 			exit (STATE_WARNING);
 		}
@@ -261,7 +273,6 @@ ssh_connect (char *haddr, int hport, char *remote_version)
 			(_("SSH OK - %s (protocol %s) | %s\n"),
 			 ssh_server, ssh_proto, fperfdata("time", elapsed_time, "s",
 			 FALSE, 0, FALSE, 0, TRUE, 0, TRUE, (int)socket_timeout));
-		recv (sd, output, BUFF_SZ, 0);
 		close(sd);
 		exit (STATE_OK);
 	}
@@ -297,6 +308,9 @@ print_help (void)
 
 	printf (" %s\n", "-r, --remote-version=STRING");
   printf ("    %s\n", _("Warn if string doesn't match expected server version (ex: OpenSSH_3.9p1)"));
+
+	printf (" %s\n", "-P, --remote-protocol=STRING");
+  printf ("    %s\n", _("Warn if protocol doesn't match expected protocol version (ex: 2.0)"));
 
 	printf (UT_VERBOSE);
 

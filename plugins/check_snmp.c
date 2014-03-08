@@ -3,7 +3,7 @@
 * Nagios check_snmp plugin
 * 
 * License: GPL
-* Copyright (c) 1999-2007 Nagios Plugins Development Team
+* Copyright (c) 1999-2014 Nagios Plugins Development Team
 * 
 * Description:
 * 
@@ -29,7 +29,7 @@
 *****************************************************************************/
 
 const char *progname = "check_snmp";
-const char *copyright = "1999-2007";
+const char *copyright = "1999-2014";
 const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"
@@ -463,7 +463,7 @@ main (int argc, char **argv)
 		/* Process this block for numeric comparisons */
 		/* Make some special values,like Timeticks numeric only if a threshold is defined */
 		if (thlds[i]->warning || thlds[i]->critical || calculate_rate) {
-			ptr = strpbrk (show, "0123456789");
+			ptr = strpbrk (show, "-0123456789");
 			if (ptr == NULL)
 				die (STATE_UNKNOWN,_("No valid data returned (%s)\n"), show);
 			while (i >= response_size) {
@@ -573,6 +573,25 @@ main (int argc, char **argv)
 
 			if (type)
 				strncat(perfstr, type, sizeof(perfstr)-strlen(perfstr)-1);
+			if (nunits > (size_t)0 && (size_t)i < nunits && unitv[i] != NULL) {
+				xasprintf (&temp_string, "%s", unitv[i]);
+				strncat(perfstr, temp_string, sizeof(perfstr)-strlen(perfstr)-1);
+				}
+
+
+			if (thlds[i]->warning || thlds[i]->critical) {
+				strncat(perfstr, ";", sizeof(perfstr)-strlen(perfstr)-1);
+				if (thlds[i]->warning) {
+					xasprintf (&temp_string, "%.0f", thlds[i]->warning->end);
+					strncat(perfstr, temp_string, sizeof(perfstr)-strlen(perfstr)-1);
+				}
+				strncat(perfstr, ";", sizeof(perfstr)-strlen(perfstr)-1);
+				if (thlds[i]->critical) {
+					xasprintf (&temp_string, "%.0f", thlds[i]->critical->end);
+					strncat(perfstr, temp_string, sizeof(perfstr)-strlen(perfstr)-1);
+				}
+				strncat(perfstr, ";", sizeof(perfstr)-strlen(perfstr)-1);
+			}
 			strncat(perfstr, " ", sizeof(perfstr)-strlen(perfstr)-1);
 		}
 	}

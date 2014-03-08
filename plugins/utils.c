@@ -4,7 +4,7 @@
 * 
 * License: GPL
 * Copyright (c) 2000 Karl DeBisschop (karl@debisschop.net)
-* Copyright (c) 2002-2007 Nagios Plugin Development Team
+* Copyright (c) 2002-2014 Nagios Plugin Development Team
 * 
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -629,4 +629,24 @@ char *fperfdata (const char *label,
 	}
 
 	return data;
+}
+
+// set entire string to lower, no need to return as it works on string in place
+void strntolower (char * test_char, int size) {
+
+        char * ptr = test_char;
+
+        for (; ptr < test_char+size; ++ptr)
+                *ptr = tolower(*ptr);
+
+}
+
+// set entire string to lower, no need to return as it works on string in place
+void strntoupper (char * test_char, int size) {
+
+        char * ptr = test_char;
+
+        for (; ptr < test_char+size; ++ptr)
+                *ptr = toupper(*ptr);
+
 }
