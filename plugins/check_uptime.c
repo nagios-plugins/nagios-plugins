@@ -52,7 +52,6 @@ int main (int argc, char **argv) {
 	double value, uptime;
 	char* perf;
 	char* output_message;
-  	struct timeval tv;
 
 	/* Parse extra opts if any */
 	argv = np_extra_opts (&argc, argv, progname);
@@ -66,7 +65,6 @@ int main (int argc, char **argv) {
 	}
 	
 	alarm (timeout_interval);
-	gettimeofday (&tv, NULL);
 	
 	value = getuptime();
 	
