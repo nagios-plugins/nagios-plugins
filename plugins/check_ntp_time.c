@@ -418,7 +418,11 @@ double offset_request(const char *host, int *status){
 	}
 
 	if (one_read == 0) {
-		die(STATE_CRITICAL, "NTP CRITICAL: No response from NTP server\n");
+		*status=STATE_UNKNOWN;
+		if (verbose) {
+			printf("no response from NTP server\n");
+		}
+		goto cleanup;
 	}
 
 	/* now, pick the best server from the list */
@@ -432,8 +436,9 @@ double offset_request(const char *host, int *status){
 		}
 		avg_offset/=servers[best_index].num_responses;
 	}
+	if(verbose) printf("overall average offset: %.10g\n", avg_offset);
 
-	/* cleanup */
+cleanup:
 	for(j=0; j<num_hosts; j++){ close(socklist[j]); }
 	free(socklist);
 	free(ufds);
@@ -441,7 +446,6 @@ double offset_request(const char *host, int *status){
 	free(req);
 	freeaddrinfo(ai);
 
-	if(verbose) printf("overall average offset: %.10g\n", avg_offset);
 	return avg_offset;
 }
 
