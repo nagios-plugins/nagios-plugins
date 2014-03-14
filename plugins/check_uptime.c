@@ -216,7 +216,7 @@ void print_usage (void) {
 	
 	printf( "%s\n", _("Usage:") );
 	printf( "%s", _("check_uptime ") );
-	printf( "%s\n", _("[-u uom] [-w threshold] [-c threshold] [-t] [-h] [-v] [-V]") );
+	printf( "%s\n", _("[-u uom] [-w threshold] [-c threshold] [-t] [-h] [-vvv] [-V]") );
 
 } // end usage
 
@@ -237,8 +237,8 @@ void print_help (void) {
         printf ( "%s\n", _("-c, Critcal threshold") );
 	printf ( "%s\n", _("-w, Warning threshold") );
 	printf ( "%s\n", _("-u, Time unit of measurement (seconds|minutes|hours|days) (default: minutes)") );
-        printf ( "%s\n", _("-v, Enable verbose output") );
-        printf ( "%s\n", _("-h, Print help and usage") );
+        printf ( "%s\n", _("-vvv, Enable verbose output") );
+        //printf ( "%s\n", _("-h, Print help and usage") );
 
        printf ( UT_SUPPORT );
 
