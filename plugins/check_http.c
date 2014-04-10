@@ -912,6 +912,12 @@ check_http (void)
       xasprintf (&buf, "%sHost: %s:%d\r\n", buf, host_name, server_port);
   }
 
+  /* Inform server we accept any MIME type response
+   * TODO: Take an arguement to determine what type(s) to accept,
+   * so that we can alert if a response is of an invalid type.
+  */
+  xasprintf(&buf, "%sAccept: */*\r\n", buf);
+
   /* optionally send any other header tag */
   if (http_opt_headers_count) {
     for (i = 0; i < http_opt_headers_count ; i++) {
