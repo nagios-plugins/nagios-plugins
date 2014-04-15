@@ -3,9 +3,24 @@ This file documents the major additions and syntax changes between releases.
 2.0.1 ...
 	ENHANCMENTS
 	check_snmp.c - Added thresholds to performance data (jccomputing)
+	check_http.c - Added */* MIME support (Alex Gottschalk)
+	check_mailq.pl - Added autodetection for mailq implementation (evgeni)
+	check_mailq.pl - Added autodetected version to output (evgeni)
 
 	FIXES
+	check_dns.c - Record type corrections for default check (sreinhardt)
+	utils.c - Changed comment type - now supported by AIX and should no longer fail compile (hkpatv)
 	check_uptime.c - Fixed timeout option (abrist)
+	check_uptime.c - Fixed help output and updated verbose usage (abrist)
+	check_uptime.c - Removed executable permissions on check_uptime.c (abrist)
+	check_uptime.c - Removed old code (madrisian)
+	check_pgsql.c - Fixed help output (weiss)
+	lib/Makefile.am - Avoid deprecated includes (madrasian)
+	lib/tests/Makefile.am - Avoid deprecated includes (madrasian)
+	plugins/Makefile.am - Avoid deprecated includes (madrasian)
+	check_apt.c - Removed the verbose flag suggestion (skottler)
+	check_oracle.c - Changed regex to compensate for tns string match edge cases (waja)
+	check_snmp.c - Always privides the security name when noAuthPriv is specified (catharsis)
 
 2.0 4th March 2014
 	ADDITIONS
