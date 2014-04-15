@@ -1,6 +1,6 @@
 This file documents the major additions and syntax changes between releases.
 
-2.0.1 ...
+2.0.1 15th April 2014
 	ENHANCMENTS
 	check_snmp.c - Added thresholds to performance data (jccomputing)
 	check_http.c - Added */* MIME support (Alex Gottschalk)
