@@ -352,15 +352,22 @@ main (int argc, char **argv)
 	if (chld_out.lines == 0)
 		external_error=1;
 	if (external_error) {
-		if (chld_err.lines > 0) {
+		if ((chld_err.lines > 0) && strstr(chld_err.line[0], "Timeout")) {
 			printf (_("External command error: %s\n"), chld_err.line[0]);
 			for (i = 1; i < chld_err.lines; i++) {
 				printf ("%s\n", chld_err.line[i]);
 			}
+			exit (runcmd_timeout_state);
+		} else if (chld_err.lines > 0) {
+			printf (_("External command error: %s\n"), chld_err.line[0]);
+			for (i = 1; i < chld_err.lines; i++) {
+				printf ("%s\n", chld_err.line[i]);
+			}
+			exit (STATE_UNKNOWN);
 		} else {
 			printf(_("External command error with no output (return code: %d)\n"), return_code);
+			exit (STATE_UNKNOWN);
 		}
-		exit (STATE_UNKNOWN);
 	}
 
 	if (verbose) {
@@ -660,6 +667,7 @@ process_arguments (int argc, char **argv)
 		{"output-delimiter", required_argument, 0, 'D'},
 		{"string", required_argument, 0, 's'},
 		{"timeout", required_argument, 0, 't'},
+		{"timeoutstate", required_argument, 0, 'Z'},
 		{"regex", required_argument, 0, 'r'},
 		{"ereg", required_argument, 0, 'r'},
 		{"eregi", required_argument, 0, 'R'},
@@ -698,7 +706,7 @@ process_arguments (int argc, char **argv)
 	}
 
 	while (1) {
-		c = getopt_long (argc, argv, "nhvVOt:c:w:H:C:o:e:E:d:D:s:t:R:r:l:u:p:m:P:L:U:a:x:A:X:",
+		c = getopt_long (argc, argv, "nhvVOt:c:w:H:C:o:e:E:d:D:s:t:R:r:l:u:p:m:P:L:U:a:x:A:X:Z:",
 									 longopts, &option);
 
 		if (c == -1 || c == EOF)
@@ -760,6 +768,9 @@ process_arguments (int argc, char **argv)
 			else
 				timeout_interval = atoi (optarg);
 			break;
+                case 'Z':
+                        set_runcmd_timeout_state(optarg);
+                        break;
 
 	/* Test parameters */
 		case 'c':									/* critical threshold */

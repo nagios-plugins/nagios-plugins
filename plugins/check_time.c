@@ -198,6 +198,7 @@ process_arguments (int argc, char **argv)
 		{"port", required_argument, 0, 'p'},
 		{"udp", no_argument, 0, 'u'},
 		{"timeout", required_argument, 0, 't'},
+		{"timeoutstate",  required_argument,0,'Z'},
 		{"version", no_argument, 0, 'V'},
 		{"help", no_argument, 0, 'h'},
 		{0, 0, 0, 0}
@@ -220,7 +221,7 @@ process_arguments (int argc, char **argv)
 	}
 
 	while (1) {
-		c = getopt_long (argc, argv, "hVH:w:c:W:C:p:t:u", longopts,
+		c = getopt_long (argc, argv, "hVH:w:c:W:C:p:t:uZ:", longopts,
 									 &option);
 
 		if (c == -1 || c == EOF)
@@ -303,6 +304,9 @@ process_arguments (int argc, char **argv)
 			else
 				socket_timeout = atoi (optarg);
 			break;
+                case 'Z':
+                        set_socket_timeout_state(optarg);
+                        break;
 		case 'u':									/* udp */
 			use_udp = TRUE;
 		}

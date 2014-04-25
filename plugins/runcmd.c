@@ -67,6 +67,8 @@
  * occur in any number of threads simultaneously. */
 static pid_t *np_pids = NULL;
 
+unsigned int runcmd_timeout_state = STATE_CRITICAL;
+
 /* Try sysconf(_SC_OPEN_MAX) first, as it can be higher than OPEN_MAX.
  * If that fails and the macro isn't defined, we fall back to an educated
  * guess. There's no guarantee that our guess is adequate and the program
@@ -267,7 +269,14 @@ runcmd_timeout_alarm_handler (int signo)
 		if(np_pids[i] != 0) kill(np_pids[i], SIGKILL);
 	}
 
-	exit (STATE_CRITICAL);
+	exit (runcmd_timeout_state);
+}
+
+void
+set_runcmd_timeout_state (char *state)
+{
+        if ((runcmd_timeout_state = translate_state(state)) == ERROR)
+                usage4 (_("Timeout result must be a valid state name (OK, WARNING, CRITICAL, UNKNOWN) or integer (0-3)."));
 }
 
 

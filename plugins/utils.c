@@ -177,6 +177,13 @@ timeout_alarm_handler (int signo)
 	}
 }
 
+void
+set_timeout_state (char *state)
+{
+        if ((timeout_state = translate_state(state)) == ERROR)
+                usage4 (_("Timeout result must be a valid state name (OK, WARNING, CRITICAL, UNKNOWN) or integer (0-3)."));
+}
+
 int
 is_numeric (char *number)
 {

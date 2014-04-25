@@ -509,6 +509,7 @@ int process_arguments(int argc, char **argv){
 	{
 		{"port",     required_argument,0,'p'},
 		{"timeout",  required_argument,0,'t'},
+		{"timeoutstate",  required_argument,0,'Z'},
 		{"critical", required_argument,0,'c'},
 		{"warning",  required_argument,0,'w'},
 		{"variable", required_argument,0,'v'},
@@ -543,7 +544,7 @@ int process_arguments(int argc, char **argv){
 	}
 
 	while (1) {
-		c = getopt_long(argc,argv,"+hVH:t:c:w:p:v:l:s:d:u",longopts,&option);
+		c = getopt_long(argc,argv,"+hVH:t:c:w:p:v:l:s:d:uZ:",longopts,&option);
 
 		if (c==-1||c==EOF||c==1)
 			break;
@@ -617,6 +618,9 @@ int process_arguments(int argc, char **argv){
 				socket_timeout=atoi(optarg);
 				if(socket_timeout<=0)
 					return ERROR;
+			case 'Z':
+				set_socket_timeout_state(optarg);
+				break;
 			}
 
 	}
