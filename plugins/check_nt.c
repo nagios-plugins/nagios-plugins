@@ -615,8 +615,7 @@ int process_arguments(int argc, char **argv){
 				socket_timeout_state=STATE_UNKNOWN;
 				break;
 			case 't': /* timeout */
-				socket_timeout = parse_timeout_string(optarg,"socket");
-				printf("%d",socket_timeout);
+				socket_timeout = parse_socket_timeout_string(optarg);
 				if(socket_timeout<=0)
 					return ERROR;
 				break;

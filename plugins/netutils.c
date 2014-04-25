@@ -53,13 +53,33 @@ socket_timeout_alarm_handler (int sig)
 	exit (socket_timeout_state);
 }
 
-void
-set_socket_timeout_state (char *state)
+int
+parse_socket_timeout_string (char *timeout_str)
 {
-	if ((socket_timeout_state = translate_state(state)) == ERROR)
-		usage4 (_("Timeout result must be a valid state name (OK, WARNING, CRITICAL, UNKNOWN) or integer (0-3).")); 
+        char *seperated_str;
+        int timeout_value;
+        if ( strstr(timeout_str, ":") == NULL) {
+                return atoi(timeout_str);
+        } else {
+                seperated_str = strtok(timeout_str, ":");
+                timeout_value = atoi(seperated_str);
+                seperated_str = strtok(NULL, ":");
+
+                if (seperated_str != NULL) {
+                        set_socket_timeout_state(seperated_str);
+                }
+
+                if (timeout_value != NULL) {
+                        return timeout_value;
+                }
+        }
 }
 
+void
+set_socket_timeout_state (char *state) {
+        if ((socket_timeout_state = translate_state(state)) == ERROR)
+                usage4 (_("Timeout result must be a valid state name (OK, WARNING, CRITICAL, UNKNOWN) or integer (0-3)."));
+}
 
 /* connects to a host on a specified tcp port, sends a string, and gets a
 	 response. loops on select-recv until timeout or eof to get all of a
