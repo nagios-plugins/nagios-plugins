@@ -544,7 +544,7 @@ int process_arguments(int argc, char **argv){
 	}
 
 	while (1) {
-		c = getopt_long(argc,argv,"+hVH:t:c:w:p:v:l:s:d:uZ:",longopts,&option);
+		c = getopt_long(argc,argv,"+hVH:t:c:w:p:v:l:s:d:u",longopts,&option);
 
 		if (c==-1||c==EOF||c==1)
 			break;
@@ -615,11 +615,10 @@ int process_arguments(int argc, char **argv){
 				socket_timeout_state=STATE_UNKNOWN;
 				break;
 			case 't': /* timeout */
-				socket_timeout=atoi(optarg);
+				socket_timeout = parse_timeout_string(optarg,"socket");
+				printf("%d",socket_timeout);
 				if(socket_timeout<=0)
 					return ERROR;
-			case 'Z':
-				set_socket_timeout_state(optarg);
 				break;
 			}
 

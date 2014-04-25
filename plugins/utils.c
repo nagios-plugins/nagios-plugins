@@ -167,6 +167,60 @@ state_text (int result)
 	}
 }
 
+/* New timeout sytax:
+ * -t <timeout>:<state>
+ * Will exit with <state> when timeout occurs
+ * parse_timeout_string(<optarg>, <timeout type>)
+ * Supported timeout types:
+ *
+ * plugin: Plugin timeout (utils.c)
+ * socket: Socket timeout (netutils.c)
+ * runcmd: Command timeout (runcmd.c)
+ *
+ * Make sure that the timeout type matches the ALARM
+ * and the include.
+ *
+ */
+
+int
+parse_timeout_string (char *tmout_str, char *tmout_type) 
+{
+	char *seperated_str;
+	int timeout_value;
+	if ( strstr(tmout_str, ":") == NULL) {
+		return atoi(tmout_str);
+	} else {
+ 		seperated_str = strtok(tmout_str, ":");
+		timeout_value = atoi(seperated_str);	
+		seperated_str = strtok(NULL, ":");
+		
+		printf("%s",tmout_type);
+		int test = strncmp(tmout_type,"socket",7);
+		printf("%d",test);
+		if (seperated_str != NULL) {
+			if (strncmp(tmout_type,"plugin",7) == 0)
+				set_timeout_state(seperated_str);
+#ifdef _NETUTILS_H_ 
+			else if (strncmp(tmout_type,"socket",7) == 0) {
+				set_socket_timeout_state(seperated_str);
+			}
+#endif
+#ifdef NAGIOSPLUG_RUNCMD_H 
+			else if (strncmp(tmout_type,"runcmd",6) == 0)
+				set_runcmd_timeout_state(seperated_str);
+#endif
+			else {
+				printf("Error: parse_timeout_string(<optarg>,<timeout_type>) expects plugin,socket, or runcmd for <timeout_type>");
+				exit (3);
+			}
+			
+		}
+		if (timeout_value != NULL) {
+			return timeout_value;
+		}
+	}
+}
+
 void
 timeout_alarm_handler (int signo)
 {
