@@ -667,6 +667,7 @@ process_arguments (int argc, char **argv)
 		{"output-delimiter", required_argument, 0, 'D'},
 		{"string", required_argument, 0, 's'},
 		{"timeout", required_argument, 0, 't'},
+		{"regex", required_argument, 0, 'r'},
 		{"ereg", required_argument, 0, 'r'},
 		{"eregi", required_argument, 0, 'R'},
 		{"label", required_argument, 0, 'l'},
