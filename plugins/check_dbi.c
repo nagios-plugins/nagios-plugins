@@ -35,9 +35,7 @@ const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"
 #include "utils.h"
-
 #include "netutils.h"
-
 #include "regex.h"
 
 /* required for NAN */
@@ -47,9 +45,7 @@ const char *email = "devel@nagios-plugins.org";
 
 #include <assert.h>
 #include <math.h>
-
 #include <dbi/dbi.h>
-
 #include <stdarg.h>
 
 typedef enum {
@@ -420,10 +416,8 @@ process_arguments (int argc, char **argv)
 				usage2 (_("Invalid metric"), optarg);
 			break;
 		case 't':     /* timeout */
-			if (!is_intnonneg (optarg))
-				usage2 (_("Timeout interval must be a positive integer"), optarg);
-			else
-				timeout_interval = atoi (optarg);
+			timeout_interval = parse_timeout_string(optarg);
+			break;
 
 		case 'H':     /* host */
 			if (!is_host (optarg))

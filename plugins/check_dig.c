@@ -260,12 +260,7 @@ process_arguments (int argc, char **argv)
       }
       break;
     case 't':                 /* timeout */
-      if (is_intnonneg (optarg)) {
-        timeout_interval = atoi (optarg);
-      }
-      else {
-        usage_va(_("Timeout interval must be a positive integer - %s"), optarg);
-      }
+      timeout_interval = parse_runcmd_timeout_string (optarg);
       break;
     case 'r':                 /* retires */
       if (is_intnonneg (optarg)) {

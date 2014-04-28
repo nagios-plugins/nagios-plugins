@@ -168,7 +168,7 @@ int process_arguments (int argc, char **argv) {
 			verbose++;
 			break;
 		case 't':
-			timeout_interval=atoi(optarg);
+			timeout_interval=parse_runcmd_timeout_string(optarg);
 			break;
 		case 'd':
 			upgrade=DIST_UPGRADE;

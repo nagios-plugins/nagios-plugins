@@ -216,10 +216,7 @@ process_arguments (int argc, char **argv)
 			verbose = TRUE;
 			break;
 		case 't':									/* timeout period */
-			if (!is_integer (optarg))
-				usage_va(_("Timeout interval must be a positive integer"));
-			else
-				timeout_interval = atoi (optarg);
+			timeout_interval = parse_timeout_string (optarg);
 			break;
 		case 'H':									/* host */
 			host_or_die(optarg);

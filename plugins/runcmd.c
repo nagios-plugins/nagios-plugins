@@ -263,7 +263,7 @@ runcmd_timeout_alarm_handler (int signo)
 	size_t i;
 
 	if (signo == SIGALRM)
-		puts(_("CRITICAL - Plugin timed out while executing system call\n"));
+		printf("%s - Plugin timed out while executing system call\n", state_text(runcmd_timeout_state));
 
 	if(np_pids) for(i = 0; i < maxfd; i++) {
 		if(np_pids[i] != 0) kill(np_pids[i], SIGKILL);
@@ -277,6 +277,28 @@ set_runcmd_timeout_state (char *state)
 {
         if ((runcmd_timeout_state = translate_state(state)) == ERROR)
                 usage4 (_("Timeout result must be a valid state name (OK, WARNING, CRITICAL, UNKNOWN) or integer (0-3)."));
+}
+
+int
+parse_runcmd_timeout_string (char *timeout_str)
+{
+        char *seperated_str;
+        int timeout_value;
+        if ( strstr(timeout_str, ":") == NULL) {
+                return atoi(timeout_str);
+        } else {
+                seperated_str = strtok(timeout_str, ":");
+                timeout_value = atoi(seperated_str);
+                seperated_str = strtok(NULL, ":");
+
+                if (seperated_str != NULL) {
+                        set_runcmd_timeout_state(seperated_str);
+                }
+
+                if (timeout_value != NULL) {
+                        return timeout_value;
+                }
+        }
 }
 
 

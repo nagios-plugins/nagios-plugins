@@ -667,8 +667,6 @@ process_arguments (int argc, char **argv)
 		{"output-delimiter", required_argument, 0, 'D'},
 		{"string", required_argument, 0, 's'},
 		{"timeout", required_argument, 0, 't'},
-		{"timeoutstate", required_argument, 0, 'Z'},
-		{"regex", required_argument, 0, 'r'},
 		{"ereg", required_argument, 0, 'r'},
 		{"eregi", required_argument, 0, 'R'},
 		{"label", required_argument, 0, 'l'},
@@ -706,7 +704,7 @@ process_arguments (int argc, char **argv)
 	}
 
 	while (1) {
-		c = getopt_long (argc, argv, "nhvVOt:c:w:H:C:o:e:E:d:D:s:t:R:r:l:u:p:m:P:L:U:a:x:A:X:Z:",
+		c = getopt_long (argc, argv, "nhvVOt:c:w:H:C:o:e:E:d:D:s:t:R:r:l:u:p:m:P:L:U:a:x:A:X:",
 									 longopts, &option);
 
 		if (c == -1 || c == EOF)
@@ -763,15 +761,8 @@ process_arguments (int argc, char **argv)
 			privpasswd = optarg;
 			break;
 		case 't':	/* timeout period */
-			if (!is_integer (optarg))
-				usage2 (_("Timeout interval must be a positive integer"), optarg);
-			else
-				timeout_interval = atoi (optarg);
+			timeout_interval = parse_runcmd_timeout_string (optarg);
 			break;
-                case 'Z':
-                        set_runcmd_timeout_state(optarg);
-                        break;
-
 	/* Test parameters */
 		case 'c':									/* critical threshold */
 			critical_thresholds = optarg;
