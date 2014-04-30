@@ -464,7 +464,7 @@ process_arguments (int argc, char **argv)
       verbose = TRUE;
       break;
     case 't': /* timeout period */
-      timeout_interval = atoi (optarg);
+      timeout_interval = parse_timeout_string (optarg);
       break;
     case 'H': /* hostname */
       if (strlen (optarg) >= ADDRESS_LENGTH)

@@ -509,7 +509,6 @@ int process_arguments(int argc, char **argv){
 	{
 		{"port",     required_argument,0,'p'},
 		{"timeout",  required_argument,0,'t'},
-		{"timeoutstate",  required_argument,0,'Z'},
 		{"critical", required_argument,0,'c'},
 		{"warning",  required_argument,0,'w'},
 		{"variable", required_argument,0,'v'},
@@ -616,8 +615,6 @@ int process_arguments(int argc, char **argv){
 				break;
 			case 't': /* timeout */
 				socket_timeout = parse_socket_timeout_string(optarg);
-				if(socket_timeout<=0)
-					return ERROR;
 				break;
 			}
 

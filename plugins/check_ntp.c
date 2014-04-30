@@ -472,7 +472,7 @@ double offset_request(const char *host, int *status){
 	}
 
 	if (one_read == 0) {
-		die(STATE_CRITICAL, "NTP CRITICAL: No response from NTP server\n");
+		die(socket_timeout_state, "%s: No response from NTP server\n", state_text(socket_timeout_state));
 	}
 
 	/* now, pick the best server from the list */
@@ -712,7 +712,7 @@ int process_arguments(int argc, char **argv){
 			server_address = strdup(optarg);
 			break;
 		case 't':
-			socket_timeout=atoi(optarg);
+			socket_timeout = parse_socket_timeout_string(optarg);
 			break;
 		case '4':
 			address_family = AF_INET;

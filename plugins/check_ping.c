@@ -231,7 +231,7 @@ process_arguments (int argc, char **argv)
 			exit (STATE_OK);
 			break;
 		case 't':	/* timeout period */
-			timeout_interval = atoi (optarg);
+			timeout_interval = parse_timeout_string(optarg);
 			break;
 		case 'v':	/* verbose mode */
 			verbose++;

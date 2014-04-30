@@ -501,7 +501,7 @@ int process_arguments(int argc, char **argv){
 			port=atoi(optarg);
 			break;
 		case 't':
-			socket_timeout=atoi(optarg);
+			socket_timeout = parse_socket_timeout_string(optarg);
 			break;
 		case '4':
 			address_family = AF_INET;

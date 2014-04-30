@@ -253,11 +253,7 @@ process_arguments (int argc, char **argv)
 				     _("Expiration time must be an integer (seconds)\n"));
 			break;
 		case 't':									/* timeout */
-			if (is_intnonneg (optarg))
-				timeout_interval = atoi (optarg);
-			else
-				die (STATE_UNKNOWN,
-				     _("Timeout must be an integer (seconds)\n"));
+			timeout_interval = parse_timeout_string (optarg);
 			break;
 		case 'v':
 			verbose++;

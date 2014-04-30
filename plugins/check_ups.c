@@ -549,12 +549,7 @@ process_arguments (int argc, char **argv)
 				usage2 (_("Unrecognized UPS variable"), optarg);
 			break;
 		case 't':									/* timeout */
-			if (is_intnonneg (optarg)) {
-				socket_timeout = atoi (optarg);
-			}
-			else {
-				usage4 (_("Timeout interval must be a positive integer"));
-			}
+			socket_timeout = parse_socket_timeout_string (optarg);
 			break;
 		case 'V':									/* version */
 			print_revision (progname, NP_VERSION);

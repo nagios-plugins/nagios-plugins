@@ -274,10 +274,7 @@ process_arguments (int argc, char **argv)
       exit (STATE_OK);
       break;
     case 't': /* timeout period */
-      if (!is_intnonneg (optarg))
-        usage2 (_("Timeout interval must be a positive integer"), optarg);
-      else
-        socket_timeout = atoi (optarg);
+      socket_timeout = parse_socket_timeout_string(optarg);
       break;
     case 'c': /* critical time threshold */
       critical_thresholds = optarg;

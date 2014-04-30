@@ -506,10 +506,7 @@ process_arguments (int argc, char **argv)
 			warn_codes[warn_codes_count - 1] = optarg;
 			break;
 		case 't':                 /* timeout */
-			if (!is_intpos (optarg))
-				usage4 (_("Timeout interval must be a positive integer"));
-			else
-				socket_timeout = atoi (optarg);
+			socket_timeout = parse_socket_timeout_string (optarg);
 			break;
 		case 'p':                 /* port */
 			if (!is_intpos (optarg))

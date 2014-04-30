@@ -68,6 +68,7 @@
 static pid_t *np_pids = NULL;
 
 unsigned int runcmd_timeout_state = STATE_CRITICAL;
+unsigned int runcmd_timeout = DEFAULT_SOCKET_TIMEOUT;
 
 /* Try sysconf(_SC_OPEN_MAX) first, as it can be higher than OPEN_MAX.
  * If that fails and the macro isn't defined, we fall back to an educated
@@ -282,25 +283,36 @@ set_runcmd_timeout_state (char *state)
 int
 parse_runcmd_timeout_string (char *timeout_str)
 {
-        char *seperated_str;
-        int timeout_value;
-        if ( strstr(timeout_str, ":") == NULL) {
-                return atoi(timeout_str);
+	char *seperated_str;
+        char *timeout_val = "";
+	char *timeout_sta;
+        if ( strstr(timeout_str, ":" ) == NULL) {
+		timeout_val = timeout_str;
+        } else if ( strncmp(timeout_str, ":", 1 ) == 0) {
+		seperated_str = strtok(timeout_str, ":");
+                if ( seperated_str != NULL ) {
+                	timeout_sta = seperated_str;
+		}
         } else {
-                seperated_str = strtok(timeout_str, ":");
-                timeout_value = atoi(seperated_str);
+		seperated_str = strtok(timeout_str, ":");
+                timeout_val = seperated_str;
                 seperated_str = strtok(NULL, ":");
-
                 if (seperated_str != NULL) {
-                        set_runcmd_timeout_state(seperated_str);
-                }
-
-                if (timeout_value != NULL) {
-                        return timeout_value;
+                        timeout_sta = seperated_str;
                 }
         }
+        if ( timeout_sta != NULL ) {
+		set_runcmd_timeout_state(timeout_sta);
+	}
+	if (( timeout_val == NULL ) || ( timeout_val[0] == '\0' )) {
+		return runcmd_timeout;
+	} else if (is_intpos(timeout_val)) {
+		return atoi(timeout_val);
+	} else {
+		usage4 (_("Socket timeout value must be a positive integer"));
+		exit (STATE_UNKNOWN);
+	}
 }
-
 
 static int
 np_fetch_output(int fd, output *op, int flags)

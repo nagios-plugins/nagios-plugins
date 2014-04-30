@@ -395,9 +395,7 @@ process_arguments (int argc, char **argv)
 			check_critical_value = TRUE;
 			break;
 		case 't':									/* timeout */
-			socket_timeout = atoi (optarg);
-			if (socket_timeout <= 0)
-				return ERROR;
+			socket_timeout = parse_socket_timeout_string (optarg);
 		}
 
 	}

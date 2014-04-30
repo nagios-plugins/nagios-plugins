@@ -482,14 +482,8 @@ process_arguments (int argc, char **argv)
 
     switch (c) {
     case 't':                 /* timeout period */
-      if (is_integer (optarg)) {
-        timeout_interval = atoi (optarg);
-        break;
-      }
-      else {
-        usage2 (_("Timeout interval must be a positive integer"), optarg);
-      }
-
+      timeout_interval = parse_timeout_string(optarg);
+      break;
     /* See comments for 'c' */
     case 'w':                 /* warning threshold */
       if (strstr(optarg, "%")) {

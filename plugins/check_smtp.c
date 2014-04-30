@@ -574,12 +574,7 @@ process_arguments (int argc, char **argv)
 			ignore_send_quit_failure++;             /* ignore problem sending QUIT */
 			break;
 		case 't':									/* timeout */
-			if (is_intnonneg (optarg)) {
-				socket_timeout = atoi (optarg);
-			}
-			else {
-				usage4 (_("Timeout interval must be a positive integer"));
-			}
+			socket_timeout = parse_socket_timeout_string (optarg);
 			break;
 		case 'S':
 		/* starttls */
