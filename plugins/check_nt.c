@@ -711,7 +711,7 @@ void print_help(void)
 	printf ("   %s", _("Parameters passed to specified check (see below)"));
 	printf (" %s\n", "-d, --display={SHOWALL}");
 	printf ("   %s", _("Display options (currently only SHOWALL works)"));
-	printf (" %s\n", "-u, --unknown-timeout");
+	printf (" %s\n", "-u, --unknown-timeout  (DEPRECATED)");
 	printf ("   %s", _("Return UNKNOWN on timeouts"));
 	printf ("%d)\n", DEFAULT_SOCKET_TIMEOUT);
 	printf (" %s\n", "-h, --help");
@@ -795,6 +795,6 @@ void print_usage(void)
 {
 	printf ("%s\n", _("Usage:"));
 	printf ("%s -H host -v variable [-p port] [-w warning] [-c critical]\n",progname);
-	printf ("[-l params] [-d SHOWALL] [-u] [-t timeout]\n");
+	printf ("[-l params] [-d SHOWALL] [-u](DEPRECATED) [-t timeout]\n");
 }
 
