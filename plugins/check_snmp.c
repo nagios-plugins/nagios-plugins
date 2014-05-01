@@ -41,7 +41,6 @@ const char *email = "devel@nagios-plugins.org";
 #define DEFAULT_PORT "161"
 #define DEFAULT_MIBLIST "ALL"
 #define DEFAULT_PROTOCOL "1"
-#define DEFAULT_TIMEOUT 1
 #define DEFAULT_RETRIES 5
 #define DEFAULT_AUTH_PROTOCOL "MD5"
 #define DEFAULT_PRIV_PROTOCOL "DES"
@@ -205,6 +204,7 @@ main (int argc, char **argv)
 	time_t duration;
 	char *conv = "12345678";
 	int is_counter=0;
+	int command_interval;
 
 	setlocale (LC_ALL, "");
 	bindtextdomain (PACKAGE, LOCALEDIR);
@@ -224,7 +224,6 @@ main (int argc, char **argv)
 	outbuff = strdup ("");
 	delimiter = strdup (" = ");
 	output_delim = strdup (DEFAULT_OUTPUT_DELIMITER);
-	timeout_interval = DEFAULT_TIMEOUT;
 	retries = DEFAULT_RETRIES;
 
 	np_init( (char *) progname, argc, argv );
@@ -238,6 +237,12 @@ main (int argc, char **argv)
 
 	if (process_arguments (argc, argv) == ERROR)
 		usage4 (_("Could not parse arguments"));
+	
+	command_interval = timeout_interval / retries;
+	if (command_interval < 1) {
+		usage4 (_("Command timeout must be 1 second or greater. Please increase timeout (-t) value or decrease retries (-e) value."));
+		exit (STATE_UNKNOWN);
+	}
 
 	if(calculate_rate) {
 		if (!strcmp(label, "SNMP"))
@@ -258,6 +263,7 @@ main (int argc, char **argv)
 			}
 		}
 	}
+
 
 	/* Populate the thresholds */
 	th_warn=warning_thresholds;
@@ -302,7 +308,7 @@ main (int argc, char **argv)
 	command_line[0] = snmpcmd;
 	command_line[1] = strdup ("-Le");
 	command_line[2] = strdup ("-t");
-	xasprintf (&command_line[3], "%d", timeout_interval);
+	xasprintf (&command_line[3], "%d", command_interval);
 	command_line[4] = strdup ("-r");
 	xasprintf (&command_line[5], "%d", retries);
 	command_line[6] = strdup ("-m");
@@ -318,7 +324,7 @@ main (int argc, char **argv)
 
 	/* This is just for display purposes, so it can remain a string */
 	xasprintf(&cl_hidden_auth, "%s -Le -t %d -r %d -m %s -v %s %s %s:%s",
-		snmpcmd, timeout_interval, retries, strlen(miblist) ? miblist : "''", proto, "[authpriv]",
+		snmpcmd, command_interval, retries, strlen(miblist) ? miblist : "''", proto, "[authpriv]",
 		server_address, port);
 
 	for (i = 0; i < numoids; i++) {
@@ -335,7 +341,7 @@ main (int argc, char **argv)
 	if (signal (SIGALRM, runcmd_timeout_alarm_handler) == SIG_ERR) {
 		usage4 (_("Cannot catch SIGALRM"));
 	}
-	alarm(timeout_interval * retries + 5);
+	alarm(timeout_interval + 1);
 
 	/* Run the command */
 	return_code = cmd_run_array (command_line, &chld_out, &chld_err, 0);
