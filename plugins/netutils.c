@@ -30,9 +30,6 @@
 #include "common.h"
 #include "netutils.h"
 
-unsigned int socket_timeout = DEFAULT_SOCKET_TIMEOUT;
-unsigned int socket_timeout_state = STATE_CRITICAL;
-
 int econn_refuse_state = STATE_CRITICAL;
 int was_refused = FALSE;
 #if USE_IPV6
@@ -46,51 +43,11 @@ void
 socket_timeout_alarm_handler (int sig)
 {
 	if (sig == SIGALRM)
-		printf (_("%s - Socket timeout after %d seconds\n"), state_text(socket_timeout_state),  socket_timeout);
+		printf (_("%s - Socket timeout after %d seconds\n"), state_text(timeout_state),  timeout_interval);
 	else
-		printf (_("%s - Abnormal timeout after %d seconds\n"), state_text(socket_timeout_state), socket_timeout);
+		printf (_("%s - Abnormal timeout after %d seconds\n"), state_text(timeout_state), timeout_interval);
 
-	exit (socket_timeout_state);
-}
-
-void
-set_socket_timeout_state (char *state) {
-        if ((socket_timeout_state = translate_state(state)) == ERROR)
-                usage4 (_("Timeout result must be a valid state name (OK, WARNING, CRITICAL, UNKNOWN) or integer (0-3)."));
-}
-
-int
-parse_socket_timeout_string (char *timeout_str)
-{
-	char *seperated_str;
-        char *timeout_val = "";
-	char *timeout_sta;
-        if ( strstr(timeout_str, ":" ) == NULL) {
-		timeout_val = timeout_str;
-        } else if ( strncmp(timeout_str, ":", 1 ) == 0) {
-		seperated_str = strtok(timeout_str, ":");
-                if ( seperated_str != NULL ) {
-                	timeout_sta = seperated_str;
-		}
-        } else {
-		seperated_str = strtok(timeout_str, ":");
-                timeout_val = seperated_str;
-                seperated_str = strtok(NULL, ":");
-                if (seperated_str != NULL) {
-                        timeout_sta = seperated_str;
-                }
-        }
-        if ( timeout_sta != NULL ) {
-		set_socket_timeout_state(timeout_sta);
-	}
-	if (( timeout_val == NULL ) || ( timeout_val[0] == '\0' )) {
-		return socket_timeout;
-	} else if (is_intpos(timeout_val)) {
-		return atoi(timeout_val);
-	} else {
-		usage4 (_("Socket timeout value must be a positive integer"));
-		exit (STATE_UNKNOWN);
-	}
+	exit (timeout_state);
 }
 
 /* connects to a host on a specified tcp port, sends a string, and gets a
@@ -122,7 +79,7 @@ process_tcp_request2 (const char *server_address, int server_port,
 	while (1) {
 		/* wait up to the number of seconds for socket timeout
 		   minus one for data from the host */
-		tv.tv_sec = socket_timeout - 1;
+		tv.tv_sec = timeout_interval - 1;
 		tv.tv_usec = 0;
 		FD_ZERO (&readfds);
 		FD_SET (sd, &readfds);
@@ -323,7 +280,7 @@ send_request (int sd, int proto, const char *send_buffer, char *recv_buffer, int
 
 	/* wait up to the number of seconds for socket timeout minus one
 	   for data from the host */
-	tv.tv_sec = socket_timeout - 1;
+	tv.tv_sec = timeout_interval - 1;
 	tv.tv_usec = 0;
 	FD_ZERO (&readfds);
 	FD_SET (sd, &readfds);

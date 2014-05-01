@@ -173,7 +173,7 @@ main (int argc, char **argv)
 
   /* initialize alarm signal handling, set socket timeout, start timer */
   (void) signal (SIGALRM, socket_timeout_alarm_handler);
-  (void) alarm (socket_timeout);
+  (void) alarm (timeout_interval);
   gettimeofday (&tv, NULL);
 
   result = check_http ();
@@ -274,7 +274,7 @@ process_arguments (int argc, char **argv)
       exit (STATE_OK);
       break;
     case 't': /* timeout period */
-      socket_timeout = parse_socket_timeout_string(optarg);
+      timeout_interval = parse_timeout_string(optarg);
       break;
     case 'c': /* critical time threshold */
       critical_thresholds = optarg;
@@ -530,8 +530,8 @@ process_arguments (int argc, char **argv)
 
   set_thresholds(&thlds, warning_thresholds, critical_thresholds);
 
-  if (critical_thresholds && thlds->critical->end>(double)socket_timeout)
-    socket_timeout = (int)thlds->critical->end + 1;
+  if (critical_thresholds && thlds->critical->end>(double)timeout_interval)
+    timeout_interval = (int)thlds->critical->end + 1;
 
   if (http_method == NULL)
     http_method = strdup ("GET");

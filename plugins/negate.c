@@ -159,10 +159,7 @@ process_arguments (int argc, char **argv)
 			print_revision (progname, NP_VERSION);
 			exit (EXIT_SUCCESS);
 		case 't':     /* timeout period */
-			if (!is_integer (optarg))
-				usage2 (_("Timeout interval must be a positive integer"), optarg);
-			else
-				timeout_interval = atoi (optarg);
+			timeout_interval = parse_timeout_string (optarg);
 			break;
 		case 'T':     /* Result to return on timeouts */
 			if ((timeout_state = translate_state(optarg)) == ERROR)

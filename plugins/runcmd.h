@@ -26,9 +26,7 @@
 
 #include "common.h"
 #include "utils_cmd.h" /* for the "output" type */
-
-extern unsigned int runcmd_timeout_state;
-extern unsigned int runcmd_timeout;
+#include "utils.h"
 
 /** prototypes **/
 int np_runcmd(const char *, output *, output *, int);

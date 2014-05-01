@@ -353,11 +353,11 @@ main (int argc, char **argv)
 		external_error=1;
 	if (external_error) {
 		if ((chld_err.lines > 0) && strstr(chld_err.line[0], "Timeout")) {
-			printf (_("%s - External command error: %s\n"), state_text(runcmd_timeout_state), chld_err.line[0]);
+			printf (_("%s - External command error: %s\n"), state_text(timeout_state), chld_err.line[0]);
 			for (i = 1; i < chld_err.lines; i++) {
 				printf ("%s\n", chld_err.line[i]);
 			}
-			exit (runcmd_timeout_state);
+			exit (timeout_state);
 		} else if (chld_err.lines > 0) {
 			printf (_("External command error: %s\n"), chld_err.line[0]);
 			for (i = 1; i < chld_err.lines; i++) {
@@ -762,7 +762,7 @@ process_arguments (int argc, char **argv)
 			privpasswd = optarg;
 			break;
 		case 't':	/* timeout period */
-			timeout_interval = parse_runcmd_timeout_string (optarg);
+			timeout_interval = parse_timeout_string (optarg);
 			break;
 	/* Test parameters */
 		case 'c':									/* critical threshold */

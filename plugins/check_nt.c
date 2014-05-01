@@ -130,7 +130,7 @@ int main(int argc, char **argv){
 	signal(SIGALRM,socket_timeout_alarm_handler);
 
 	/* set socket timeout */
-	alarm(socket_timeout);
+	alarm(timeout_interval);
 
 	switch (vars_to_check) {
 
@@ -611,10 +611,10 @@ int process_arguments(int argc, char **argv){
 					show_all = TRUE;
 				break;
 			case 'u':
-				socket_timeout_state=STATE_UNKNOWN;
+				timeout_state=STATE_UNKNOWN;
 				break;
 			case 't': /* timeout */
-				socket_timeout = parse_socket_timeout_string(optarg);
+				timeout_interval = parse_timeout_string(optarg);
 				break;
 			}
 

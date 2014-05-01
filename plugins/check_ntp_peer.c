@@ -501,7 +501,7 @@ int process_arguments(int argc, char **argv){
 			port=atoi(optarg);
 			break;
 		case 't':
-			socket_timeout = parse_socket_timeout_string(optarg);
+			timeout_interval = parse_timeout_string(optarg);
 			break;
 		case '4':
 			address_family = AF_INET;
@@ -583,7 +583,7 @@ int main(int argc, char *argv[]){
 	signal (SIGALRM, socket_timeout_alarm_handler);
 
 	/* set socket timeout */
-	alarm (socket_timeout);
+	alarm (timeout_interval);
 
 	/* This returns either OK or WARNING (See comment preceeding ntp_request) */
 	result = ntp_request(server_address, &offset, &offset_result, &jitter, &stratum, &num_truechimers);

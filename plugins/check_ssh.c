@@ -76,7 +76,7 @@ main (int argc, char **argv)
 	/* initialize alarm signal handling */
 	signal (SIGALRM, socket_timeout_alarm_handler);
 
-	alarm (socket_timeout);
+	alarm (timeout_interval);
 
 	/* ssh_connect exits if error is found */
 	result = ssh_connect (server_name, port, remote_version, remote_protocol);
@@ -136,7 +136,7 @@ process_arguments (int argc, char **argv)
 			verbose = TRUE;
 			break;
 		case 't':									/* timeout period */
-			socket_timeout = parse_socket_timeout_string (optarg);
+			timeout_interval = parse_timeout_string (optarg);
 			break;
 		case '4':
 			address_family = AF_INET;
@@ -269,7 +269,7 @@ ssh_connect (char *haddr, int hport, char *remote_version, char *remote_protocol
 		printf
 			(_("SSH OK - %s (protocol %s) | %s\n"),
 			 ssh_server, ssh_proto, fperfdata("time", elapsed_time, "s",
-			 FALSE, 0, FALSE, 0, TRUE, 0, TRUE, (int)socket_timeout));
+			 FALSE, 0, FALSE, 0, TRUE, 0, TRUE, (int)timeout_interval));
 		close(sd);
 		exit (STATE_OK);
 	}

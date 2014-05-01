@@ -232,7 +232,7 @@ main (int argc, char **argv)
 
 	/* set up the timer */
 	signal (SIGALRM, socket_timeout_alarm_handler);
-	alarm (socket_timeout);
+	alarm (timeout_interval);
 
 	/* try to connect to the host at the given port number */
 	gettimeofday (&tv, NULL);
@@ -377,7 +377,7 @@ main (int argc, char **argv)
 				(flags & FLAG_TIME_WARN ? TRUE : FALSE), 0,
 				(flags & FLAG_TIME_CRIT ? TRUE : FALSE), 0,
 				TRUE, 0,
-				TRUE, socket_timeout)
+				TRUE, timeout_interval)
 			);
 	else
 		printf("|%s",
@@ -385,7 +385,7 @@ main (int argc, char **argv)
 				(flags & FLAG_TIME_WARN ? TRUE : FALSE), warning_time,
 				(flags & FLAG_TIME_CRIT ? TRUE : FALSE), critical_time,
 				TRUE, 0,
-				TRUE, socket_timeout)
+				TRUE, timeout_interval)
 			);
 
 	putchar('\n');
@@ -506,7 +506,7 @@ process_arguments (int argc, char **argv)
 			warn_codes[warn_codes_count - 1] = optarg;
 			break;
 		case 't':                 /* timeout */
-			socket_timeout = parse_socket_timeout_string (optarg);
+			timeout_interval = parse_timeout_string (optarg);
 			break;
 		case 'p':                 /* port */
 			if (!is_intpos (optarg))

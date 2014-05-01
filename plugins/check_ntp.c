@@ -416,7 +416,7 @@ double offset_request(const char *host, int *status){
 	/* now do AVG_NUM checks to each host.  we stop before timeout/2 seconds
 	 * have passed in order to ensure post-processing and jitter time. */
 	now_time=start_ts=time(NULL);
-	while(servers_completed<num_hosts && now_time-start_ts <= socket_timeout/2){
+	while(servers_completed<num_hosts && now_time-start_ts <= timeout_interval/2){
 		/* loop through each server and find each one which hasn't
 		 * been touched in the past second or so and is still lacking
 		 * some responses.  for each of these servers, send a new request,
@@ -472,7 +472,7 @@ double offset_request(const char *host, int *status){
 	}
 
 	if (one_read == 0) {
-		die(socket_timeout_state, "%s: No response from NTP server\n", state_text(socket_timeout_state));
+		die(timeout_state, "%s: No response from NTP server\n", state_text(timeout_state));
 	}
 
 	/* now, pick the best server from the list */
@@ -712,7 +712,7 @@ int process_arguments(int argc, char **argv){
 			server_address = strdup(optarg);
 			break;
 		case 't':
-			socket_timeout = parse_socket_timeout_string(optarg);
+			timeout_interval = parse_timeout_string(optarg);
 			break;
 		case '4':
 			address_family = AF_INET;
@@ -778,7 +778,7 @@ int main(int argc, char *argv[]){
 	signal (SIGALRM, socket_timeout_alarm_handler);
 
 	/* set socket timeout */
-	alarm (socket_timeout);
+	alarm (timeout_interval);
 
 	offset = offset_request(server_address, &offset_result);
 	/* check_ntp used to always return CRITICAL if offset_result == STATE_UNKNOWN.

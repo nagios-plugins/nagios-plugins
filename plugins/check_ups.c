@@ -125,7 +125,7 @@ main (int argc, char **argv)
 	signal (SIGALRM, socket_timeout_alarm_handler);
 
 	/* set socket timeout */
-	alarm (socket_timeout);
+	alarm (timeout_interval);
 
 	/* get the ups status if possible */
 	if (determine_status () != OK)
@@ -549,7 +549,7 @@ process_arguments (int argc, char **argv)
 				usage2 (_("Unrecognized UPS variable"), optarg);
 			break;
 		case 't':									/* timeout */
-			socket_timeout = parse_socket_timeout_string (optarg);
+			timeout_interval = parse_timeout_string (optarg);
 			break;
 		case 'V':									/* version */
 			print_revision (progname, NP_VERSION);

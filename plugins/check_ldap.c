@@ -115,7 +115,7 @@ main (int argc, char *argv[])
 	signal (SIGALRM, socket_timeout_alarm_handler);
 
 	/* set socket timeout */
-	alarm (socket_timeout);
+	alarm (timeout_interval);
 
 	/* get the start time */
 	gettimeofday (&tv, NULL);
@@ -289,7 +289,7 @@ process_arguments (int argc, char **argv)
 			print_revision (progname, NP_VERSION);
 			exit (STATE_OK);
 		case 't':									/* timeout period */
-			socket_timeout = parse_socket_timeout_string(optarg);
+			timeout_interval = parse_timeout_string(optarg);
 			break;
 		case 'H':
 			ld_host = optarg;

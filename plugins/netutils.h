@@ -81,8 +81,6 @@ void host_or_die(const char *str);
 #  define is_hostname(addr) resolve_host_or_addr(addr, AF_INET)
 #endif
 
-extern unsigned int socket_timeout;
-extern unsigned int socket_timeout_state;
 extern int econn_refuse_state;
 extern int was_refused;
 extern int address_family;

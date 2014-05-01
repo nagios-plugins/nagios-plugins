@@ -176,7 +176,7 @@ main(int argc, char **argv) {
 	signal(SIGALRM,socket_timeout_alarm_handler);
 
 	/* set socket timeout */
-	alarm(socket_timeout);
+	alarm(timeout_interval);
 
 	/* open connection */
 	my_tcp_connect (server_address, server_port, &sd);
@@ -1576,7 +1576,7 @@ int process_arguments(int argc, char **argv) {
 				check_critical_value=TRUE;
 				break;
 			case 't': /* timeout */
-				socket_timeout = parse_socket_timeout_string(optarg);
+				timeout_interval = parse_timeout_string(optarg);
 			}
 
 	}

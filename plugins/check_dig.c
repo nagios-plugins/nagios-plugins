@@ -260,7 +260,7 @@ process_arguments (int argc, char **argv)
       }
       break;
     case 't':                 /* timeout */
-      timeout_interval = parse_runcmd_timeout_string (optarg);
+      timeout_interval = parse_timeout_string (optarg);
       break;
     case 'r':                 /* retires */
       if (is_intnonneg (optarg)) {

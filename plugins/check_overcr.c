@@ -105,7 +105,7 @@ main (int argc, char **argv)
 	signal (SIGALRM, socket_timeout_alarm_handler);
 
 	/* set socket timeout */
-	alarm (socket_timeout);
+	alarm (timeout_interval);
 
 	result = process_tcp_request2 (server_address,
 	                               server_port,
@@ -395,7 +395,7 @@ process_arguments (int argc, char **argv)
 			check_critical_value = TRUE;
 			break;
 		case 't':									/* timeout */
-			socket_timeout = parse_socket_timeout_string (optarg);
+			timeout_interval = parse_timeout_string (optarg);
 		}
 
 	}

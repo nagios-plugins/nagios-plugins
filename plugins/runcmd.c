@@ -67,9 +67,6 @@
  * occur in any number of threads simultaneously. */
 static pid_t *np_pids = NULL;
 
-unsigned int runcmd_timeout_state = STATE_CRITICAL;
-unsigned int runcmd_timeout = DEFAULT_SOCKET_TIMEOUT;
-
 /* Try sysconf(_SC_OPEN_MAX) first, as it can be higher than OPEN_MAX.
  * If that fails and the macro isn't defined, we fall back to an educated
  * guess. There's no guarantee that our guess is adequate and the program
@@ -264,54 +261,13 @@ runcmd_timeout_alarm_handler (int signo)
 	size_t i;
 
 	if (signo == SIGALRM)
-		printf("%s - Plugin timed out while executing system call\n", state_text(runcmd_timeout_state));
+		printf("%s - Plugin timed out while executing system call\n", state_text(timeout_state));
 
 	if(np_pids) for(i = 0; i < maxfd; i++) {
 		if(np_pids[i] != 0) kill(np_pids[i], SIGKILL);
 	}
 
-	exit (runcmd_timeout_state);
-}
-
-void
-set_runcmd_timeout_state (char *state)
-{
-        if ((runcmd_timeout_state = translate_state(state)) == ERROR)
-                usage4 (_("Timeout result must be a valid state name (OK, WARNING, CRITICAL, UNKNOWN) or integer (0-3)."));
-}
-
-int
-parse_runcmd_timeout_string (char *timeout_str)
-{
-	char *seperated_str;
-        char *timeout_val = "";
-	char *timeout_sta;
-        if ( strstr(timeout_str, ":" ) == NULL) {
-		timeout_val = timeout_str;
-        } else if ( strncmp(timeout_str, ":", 1 ) == 0) {
-		seperated_str = strtok(timeout_str, ":");
-                if ( seperated_str != NULL ) {
-                	timeout_sta = seperated_str;
-		}
-        } else {
-		seperated_str = strtok(timeout_str, ":");
-                timeout_val = seperated_str;
-                seperated_str = strtok(NULL, ":");
-                if (seperated_str != NULL) {
-                        timeout_sta = seperated_str;
-                }
-        }
-        if ( timeout_sta != NULL ) {
-		set_runcmd_timeout_state(timeout_sta);
-	}
-	if (( timeout_val == NULL ) || ( timeout_val[0] == '\0' )) {
-		return runcmd_timeout;
-	} else if (is_intpos(timeout_val)) {
-		return atoi(timeout_val);
-	} else {
-		usage4 (_("Socket timeout value must be a positive integer"));
-		exit (STATE_UNKNOWN);
-	}
+	exit (timeout_state);
 }
 
 static int
