@@ -362,7 +362,7 @@ double offset_request(const char *host, int *status){
 	/* now do AVG_NUM checks to each host. We stop before timeout/2 seconds
 	 * have passed in order to ensure post-processing and jitter time. */
 	now_time=start_ts=time(NULL);
-	while(servers_completed<num_hosts && now_time-start_ts <= timeout_interval/2){
+	while(servers_completed<num_hosts && now_time-start_ts <= timeout_interval - 1){
 		/* loop through each server and find each one which hasn't
 		 * been touched in the past second or so and is still lacking
 		 * some responses. For each of these servers, send a new request,
