@@ -188,7 +188,7 @@ parse_timeout_string (char *timeout_str)
 {
 	char *seperated_str;
         char *timeout_val = "";
-	char *timeout_sta;
+	char *timeout_sta = NULL;
         if ( strstr(timeout_str, ":" ) == NULL) {
 		timeout_val = timeout_str;
         } else if ( strncmp(timeout_str, ":", 1 ) == 0) {
