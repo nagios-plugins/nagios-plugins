@@ -92,22 +92,36 @@ np_arg_list* np_get_defaults(const char *locator, const char *default_section){
 	FILE *inifile=NULL;
 	np_arg_list *defaults=NULL;
 	np_ini_info i;
+	struct stat fstat;
 
 	parse_locator(locator, default_section, &i);
-	/* if a file was specified or if we're using the default file */
-	if(i.file != NULL && strlen(i.file) > 0){
-		if(strcmp(i.file, "-")==0){
-			inifile=stdin;
-		} else {
-			inifile=fopen(i.file, "r");
-		}
-		if(inifile==NULL) die(STATE_UNKNOWN, "%s\n", _("Can't read config file"));
-		if(read_defaults(inifile, i.stanza, &defaults)==FALSE)
-			die(STATE_UNKNOWN, _("Invalid section '%s' in config file '%s'\n"), i.stanza, i.file);
+	/* If a file was specified or if we're using the default file. */
+        if (i.file != NULL && strlen(i.file) > 0) {
+                if (strcmp(i.file, "-") == 0) {
+                        inifile = stdin;
+                } else {
+                        /* We must be able to stat() the thing. */
+                        if (lstat(i.file, &fstat) != 0)
+                                die(STATE_UNKNOWN, "%s %s\n", _("Can't read config file."), strerror(errno));
+                        /* The requested file must be a regular file. */
+                        if (!S_ISREG(fstat.st_mode))
+                                die(STATE_UNKNOWN, "%s\n", _("Can't read config file. Requested path is not a regular file."));
+                        /* We must be able to read the requested file. */
+                        if (access(i.file, R_OK|F_OK) != 0)
+                                die(STATE_UNKNOWN, "%s %s\n", _("Can't read config file."), strerror(errno));
+                        /* We need to successfully open the file for reading... */
+                        if ((inifile=fopen(i.file, "r")) == NULL)
+                                die(STATE_UNKNOWN, "%s %s\n", _("Can't read config file."), strerror(errno));
+                }
 
-		free(i.file);
-		if(inifile!=stdin) fclose(inifile);
-	}
+                /* inifile points to an open FILE our ruid/rgid can access, parse its contents. */
+                if (read_defaults(inifile, i.stanza, &defaults) == FALSE)
+                        die(STATE_UNKNOWN, _("Invalid section '%s' in config file '%s'\n"), i.stanza, i.file);
+
+                if (inifile != stdin) fclose(inifile);
+        }
+
+	if (i.file != NULL) free(i.file);
 	free(i.stanza);
 	return defaults;
 }
