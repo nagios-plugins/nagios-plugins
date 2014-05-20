@@ -1,5 +1,18 @@
 This file documents the major additions and syntax changes between releases.
 
+2.0.2 20th May 2014
+	SECURITY FIXES
+	Fixed file access vulnerability with SUID binaries (check_icmp, check_dhcp) and extra-opts.  Fixes were applied globally, so the new resrictions on fopen should apply to all plugins. Special thanks to Dawid Golunski for the submission. More information: http://www.exploit-db.com/exploits/33387/  (sreinhardt) (emislivec)
+
+	ENHANCEMENTS
+	check_disk - Now compiles in cygwin on windows (Gunnar Beutner)
+	check_ping - Now compiles in cygwin on windows (Gunnar Beutner)
+	check_users - Now compiles in cygwin on windows (Gunnar Beutner)
+	netutils.c - Connection error verbosity increased. C plugins will now differentiate file socket errors from connection errors (Davide Madrisan)
+
+	FIXES
+	check_nt.c - Changed 'Mb' to 'MB' in MEMUSE output for clarity (abrist)
+
 2.0.1 15th April 2014
 	ENHANCMENTS
 	check_snmp.c - Added thresholds to performance data (jccomputing)
