@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.59)
-AC_INIT(nagios-plugins,2.0)
+AC_INIT(nagios-plugins,2.0.1)
 AC_CONFIG_SRCDIR(NPTest.pm)
 AC_CONFIG_FILES([gl/Makefile 
 	nagios-plugins.spec])
@@ -91,6 +91,7 @@ ac_cv_uname_m=`uname -m`
 ac_cv_uname_s=`uname -s`
 ac_cv_uname_r=`uname -r`
 ac_cv_uname_v=`uname -v`
+ac_cv_uname_o=`uname -o`
 
 PKG_ARCH=`uname -p`
 REV_DATESTAMP=`date '+%Y.%m.%d.%H.%M'`
@@ -242,7 +243,7 @@ if test "$ac_cv_lib_crypt_main" = "yes" -a "x$PGSQL" != "xno"; then
     else
       AC_SUBST(PGLIBS)
       AC_SUBST(PGINCLUDE)
-      EXTRAS="$EXTRAS check_pgsql"
+      EXTRAS="$EXTRAS check_pgsql\$(EXEEXT)"
     fi
   else
     AC_MSG_WARN([Skipping PostgreSQL plugin (check_pgsql)])
@@ -262,7 +263,7 @@ AS_IF([test "x$with_dbi" != "xno"], [
   _SAVEDLIBS="$LIBS"
   AC_CHECK_LIB(dbi,dbi_initialize)
   if test "$ac_cv_lib_dbi_dbi_initialize" = "yes"; then
-    EXTRAS="$EXTRAS check_dbi"
+    EXTRAS="$EXTRAS check_dbi\$(EXEEXT)"
   	DBILIBS="-ldbi"
     AC_SUBST(DBILIBS)
   else
@@ -279,13 +280,13 @@ AS_IF([test "x$with_radius" != "xno"], [
   _SAVEDLIBS="$LIBS"
   AC_CHECK_LIB(radiusclient,rc_read_config)
   if test "$ac_cv_lib_radiusclient_rc_read_config" = "yes"; then
-    EXTRAS="$EXTRAS check_radius"
+    EXTRAS="$EXTRAS check_radius\$(EXEEXT)"
   	RADIUSLIBS="-lradiusclient"
     AC_SUBST(RADIUSLIBS)
   else
     AC_CHECK_LIB(radiusclient-ng,rc_read_config)
     if test "$ac_cv_lib_radiusclient_ng_rc_read_config" = "yes"; then
-      EXTRAS="$EXTRAS check_radius"
+      EXTRAS="$EXTRAS check_radius\$(EXEEXT)"
     	  RADIUSLIBS="-lradiusclient-ng"
       AC_SUBST(RADIUSLIBS)
     else
@@ -308,7 +309,7 @@ AS_IF([test "x$with_ldap" != "xno"], [
     AC_SUBST(LDAPLIBS)
     AC_SUBST(LDAPINCLUDE)
     AC_CHECK_FUNCS(ldap_set_option)
-    EXTRAS="$EXTRAS check_ldap"
+    EXTRAS="$EXTRAS check_ldap\$(EXEEXT)"
   	AC_CHECK_FUNCS(ldap_init ldap_set_option ldap_get_option ldap_start_tls_s)
   else
     AC_MSG_WARN([Skipping LDAP plugin])
@@ -345,8 +346,24 @@ case $host in
 esac
 
 if test "$FOUNDINCLUDE" = "yes" ; then
-	EXTRAS="$EXTRAS check_ide_smart"
+	EXTRAS="$EXTRAS check_ide_smart\$(EXEEXT)"
 fi
+
+dnl Check for headers used by check_uptime
+case $host in
+  *linux*)
+    AC_CHECK_HEADER(sys/time.h, FOUNDINCLUDE=yes, FOUNDINCLUDE=no)
+    if test "$FOUNDINCLUDE" = "no" ; then
+	AC_MSG_WARN([Skipping check_uptime plugin.])
+	AC_MSG_WARN([check_uptime requires sys/time.h])
+    else
+        EXTRAS="$EXTRAS check_uptime"
+    fi
+  ;;
+  *)
+    AC_MSG_WARN([Skipping check_uptime plugin.])
+    AC_MSG_WARN([check_uptime works only on Linux])
+esac
 
 dnl Check for mysql libraries
 np_mysqlclient
@@ -354,7 +371,7 @@ if test $with_mysql = "no" ; then
   AC_MSG_WARN([Skipping mysql plugin])
   AC_MSG_WARN([install mysql client libs to compile this plugin (see REQUIREMENTS).])
 else
-  EXTRAS="$EXTRAS check_mysql check_mysql_query"
+  EXTRAS="$EXTRAS check_mysql\$(EXEEXT) check_mysql_query\$(EXEEXT)"
   MYSQLINCLUDE="$np_mysql_include"
   MYSQLLIBS="$np_mysql_libs"
   MYSQLCFLAGS="$np_mysql_cflags"
@@ -367,8 +384,16 @@ dnl Check for headers used by check_users
 AC_CHECK_HEADERS(utmpx.h)
 AM_CONDITIONAL([HAVE_UTMPX], [test "$ac_cv_header_utmpx_h" = "yes"])
 
+AC_CHECK_HEADERS(wtsapi32.h, [], [], [#include <windows.h>])
+AM_CONDITIONAL([HAVE_WTS32API], [test "$ac_cv_header_wtsapi32_h" = "yes"])
+
+if test "$ac_cv_header_wtsapi32_h" = "yes"; then
+  WTSAPI32LIBS="-lwtsapi32"
+  AC_SUBST(WTSAPI32LIBS)
+fi
+
 dnl Fallback to who(1) if the system doesn't provide an utmpx(5) interface
-if test "$ac_cv_header_utmpx_h" = "no"
+if test "$ac_cv_header_utmpx_h" = "no" -a "$ac_cv_header_wtsapi32_h" = "no"
 then
 	AC_PATH_PROG(PATH_TO_WHO,who)
 
@@ -656,7 +681,7 @@ elif test "$ac_cv_uname_s" = "SunOS"; then
 	else
 		AC_MSG_NOTICE([using 32bit pst3])
 	fi
-        EXTRAS_ROOT="$EXTRAS_ROOT pst3"
+        EXTRAS_ROOT="$EXTRAS_ROOT pst3\$(EXEEXT)"
 
 	if test "$pst3_use_64bit" = 1; then
 		dnl Test if we can actually compile code in 64bit
@@ -981,7 +1006,7 @@ if test -n "$ac_cv_ps_varlist" ; then
 		[Format string for scanning ps output in check_procs])
 	AC_DEFINE_UNQUOTED(PS_COLS,$ac_cv_ps_cols,
 		[Number of columns in ps command])
-	EXTRAS="$EXTRAS check_procs check_nagios"
+	EXTRAS="$EXTRAS check_procs check_nagios\$(EXEEXT)"
 	if echo "$ac_cv_ps_varlist" | grep "procetime" >/dev/null; then
 		AC_DEFINE(PS_USES_PROCETIME,"yes",
 		          [Whether the ps utility uses the "procetime" field])
@@ -1015,6 +1040,13 @@ then
 		ac_cv_ping_packets_first=yes
 	fi
 
+elif [[ "z$ac_cv_uname_o" = "zCygwin" ]]
+then
+	with_ping_command="$PATH_TO_PING -n %d -w %d000 %s"
+	ac_cv_ping_packets_first=yes
+	ac_cv_ping_has_timeout=yes
+	AC_MSG_RESULT([$with_ping_command])
+
 elif [[ "z$ac_cv_uname_s" = "zUnixWare" ]] && \
 	$PATH_TO_PING -n -s 127.0.0.1 56 1 2>/dev/null | \
 	egrep -i "^round-trip|^rtt" >/dev/null
@@ -1028,7 +1060,7 @@ elif $PATH_TO_PING -n -U -w 10 -c 1 127.0.0.1 2>/dev/null | \
 then
 	with_ping_command="$PATH_TO_PING -n -U -w %d -c %d %s"
 	ac_cv_ping_packets_first=yes
-  ac_cv_ping_has_timeout=yes
+	ac_cv_ping_has_timeout=yes
 	AC_MSG_RESULT([$with_ping_command])
 
 elif $PATH_TO_PING -n -U -c 1 127.0.0.1 2>/dev/null | \
@@ -1125,7 +1157,11 @@ then
 	then
 		ac_cv_ping6_packets_first=yes
 	fi
-
+elif [[ "z$ac_cv_uname_o" = "zCygwin" -a "x$PATH_TO_PING" != "x" ]]; then
+	with_ping6_command="$PATH_TO_PING -6 -n %d -w %d000 %s"
+	ac_cv_ping6_packets_first=yes
+	ac_cv_ping_has_timeout=yes
+	AC_MSG_RESULT([$with_ping6_command])
 elif test "x$PATH_TO_PING6" != "x"; then
 	if [[ "z$ac_cv_uname_s" = "zUnixWare" ]] && \
 		$PATH_TO_PING6 -n -s ::1 56 1 2>/dev/null | \
@@ -1303,7 +1339,7 @@ else
 fi
 
 if test -n "$ac_cv_nslookup_command"; then
-	EXTRAS="$EXTRAS check_dns"
+	EXTRAS="$EXTRAS check_dns\$(EXEEXT)"
 	AC_DEFINE_UNQUOTED(NSLOOKUP_COMMAND,"$ac_cv_nslookup_command", [path and args for nslookup])
 fi
 
@@ -1363,7 +1399,7 @@ AC_ARG_WITH(snmpget_command,
 if test -n "$PATH_TO_SNMPGET"
 then
 	AC_DEFINE_UNQUOTED(PATH_TO_SNMPGET,"$PATH_TO_SNMPGET",[path to snmpget binary])
-	EXTRAS="$EXTRAS check_hpjd check_snmp"
+	EXTRAS="$EXTRAS check_hpjd check_snmp\$(EXEEXT)"
 else
 	AC_MSG_WARN([Get snmpget from http://net-snmp.sourceforge.net to make check_hpjd and check_snmp plugins])
 fi
@@ -1395,12 +1431,12 @@ AC_ARG_WITH(qstat_command,
 if test -x "$PATH_TO_QUAKESTAT"
 then
 	ac_cv_path_to_qstat="$PATH_TO_QUAKESTAT"
-	EXTRAS="$EXTRAS check_game"
+	EXTRAS="$EXTRAS check_game\$(EXEEXT)"
 
 elif test -n "$PATH_TO_QSTAT"
 then
 	ac_cv_path_to_qstat="$PATH_TO_QSTAT"
-	EXTRAS="$EXTRAS check_game"
+	EXTRAS="$EXTRAS check_game\$(EXEEXT)"
 else
 	AC_MSG_WARN([Get qstat from http://www.activesw.com/people/steve/qstat.html in order to make check_game plugin])
 fi
@@ -1424,7 +1460,7 @@ AC_ARG_WITH(fping6_command,
 if test -n "$PATH_TO_FPING"
 then
 	AC_DEFINE_UNQUOTED(PATH_TO_FPING,"$PATH_TO_FPING",[path to fping])
-	EXTRAS="$EXTRAS check_fping"
+	EXTRAS="$EXTRAS check_fping\$(EXEEXT)"
 	if test x"$with_ipv6" != xno && test -n "$PATH_TO_FPING6"; then
 		AC_DEFINE_UNQUOTED(PATH_TO_FPING6,"$PATH_TO_FPING6",[path to fping6])
 	fi
@@ -1439,7 +1475,7 @@ AC_ARG_WITH(ssh_command,
 if test -n "$PATH_TO_SSH"
 then
 	AC_DEFINE_UNQUOTED(SSH_COMMAND,"$PATH_TO_SSH",[path to ssh binary])
-	EXTRAS="$EXTRAS check_by_ssh"
+	EXTRAS="$EXTRAS check_by_ssh\$(EXEEXT)"
 else
 	AC_MSG_WARN([Get ssh in order to make check_by_ssh plugin])
 fi
@@ -1578,7 +1614,7 @@ AC_CHECK_MEMBERS([struct swapent.se_nblks],,,[
 
 if test "$ac_cv_have_decl_swapctl" = "yes";
 then
-	EXTRAS="$EXTRAS check_swap"
+	EXTRAS="$EXTRAS check_swap\$(EXEEXT)"
 	AC_MSG_CHECKING([for 2-arg (SVR4) swapctl])
 	if test "$ac_cv_type_swaptbl_t" = "yes" -a \
 	        "$ac_cv_type_swapent_t" = "yes";
@@ -1634,7 +1670,7 @@ dnl
 if test "x$ac_cv_have_swap" != "x"
 then
 	AC_DEFINE(HAVE_SWAP,1,[Define if swap/swapinfo command is found])
-	EXTRAS="$EXTRAS check_swap"
+	EXTRAS="$EXTRAS check_swap\$(EXEEXT)"
 fi
 if test "x$ac_cv_swap_command" != "x"
 then
@@ -1666,7 +1702,7 @@ fi
 if test -n "$ac_cv_proc_meminfo"; then
 	AC_DEFINE(HAVE_PROC_MEMINFO,1,[Define if we have /proc/meminfo])
 	AC_DEFINE_UNQUOTED(PROC_MEMINFO,"$ac_cv_proc_meminfo",[path to /proc/meminfo if name changes])
-	EXTRAS="$EXTRAS check_swap"
+	EXTRAS="$EXTRAS check_swap\$(EXEEXT)"
 fi
 
 AC_PATH_PROG(PATH_TO_DIG,dig)
@@ -1674,7 +1710,7 @@ AC_ARG_WITH(dig_command,
             ACX_HELP_STRING([--with-dig-command=PATH],
                             [Path to dig command]), PATH_TO_DIG=$withval)
 if test -n "$PATH_TO_DIG"; then
-	EXTRAS="$EXTRAS check_dig"
+	EXTRAS="$EXTRAS check_dig\$(EXEEXT)"
 	AC_DEFINE_UNQUOTED(PATH_TO_DIG,"$PATH_TO_DIG",[Path to dig command, if present])
 fi
 
@@ -1686,12 +1722,12 @@ AC_ARG_WITH(apt-get_command,
                             with_apt_get_command=$PATH_TO_APTGET)
 AC_DEFINE_UNQUOTED(PATH_TO_APTGET,"$PATH_TO_APTGET",[Path to apt-get command, if present])
 if test -n "$PATH_TO_APTGET" ; then
-	EXTRAS="$EXTRAS check_apt"
+	EXTRAS="$EXTRAS check_apt\$(EXEEXT)"
 fi
 
 
 if test -f $srcdir/plugins/check_nt.c ; then
-  EXTRAS="$EXTRAS check_nt"
+  EXTRAS="$EXTRAS check_nt\$(EXEEXT)"
 fi
 
 

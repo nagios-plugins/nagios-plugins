@@ -82,6 +82,10 @@ check_ups:
 check_ide_smart:
 	- Uses the Linux specific SMART interface [http://smartlinux.sourceforge.net/smart/index.php]. 
 
+check_uptime:
+	- Currently only supports linux due to a dependency on clock.gettime. 
+	  We will be expanding supported platforms in the future.
+
 OS Specific Issues
 ------------------
 

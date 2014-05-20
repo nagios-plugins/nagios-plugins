@@ -573,6 +573,25 @@ main (int argc, char **argv)
 
 			if (type)
 				strncat(perfstr, type, sizeof(perfstr)-strlen(perfstr)-1);
+			if (nunits > (size_t)0 && (size_t)i < nunits && unitv[i] != NULL) {
+				xasprintf (&temp_string, "%s", unitv[i]);
+				strncat(perfstr, temp_string, sizeof(perfstr)-strlen(perfstr)-1);
+				}
+
+
+			if (thlds[i]->warning || thlds[i]->critical) {
+				strncat(perfstr, ";", sizeof(perfstr)-strlen(perfstr)-1);
+				if (thlds[i]->warning) {
+					xasprintf (&temp_string, "%.0f", thlds[i]->warning->end);
+					strncat(perfstr, temp_string, sizeof(perfstr)-strlen(perfstr)-1);
+				}
+				strncat(perfstr, ";", sizeof(perfstr)-strlen(perfstr)-1);
+				if (thlds[i]->critical) {
+					xasprintf (&temp_string, "%.0f", thlds[i]->critical->end);
+					strncat(perfstr, temp_string, sizeof(perfstr)-strlen(perfstr)-1);
+				}
+				strncat(perfstr, ";", sizeof(perfstr)-strlen(perfstr)-1);
+			}
 			strncat(perfstr, " ", sizeof(perfstr)-strlen(perfstr)-1);
 		}
 	}
@@ -967,11 +986,16 @@ validate_arguments ()
 		if (seclevel == NULL)
 			xasprintf(&seclevel, "noAuthNoPriv");
 
+		if (secname == NULL)
+			die(STATE_UNKNOWN, _("Required parameter: %s\n"), "secname");
+
 		if (strcmp(seclevel, "noAuthNoPriv") == 0) {
-			numauthpriv = 2;
+			numauthpriv = 4;
 			authpriv = calloc (numauthpriv, sizeof (char *));
 			authpriv[0] = strdup ("-l");
 			authpriv[1] = strdup ("noAuthNoPriv");
+			authpriv[2] = strdup ("-u");
+			authpriv[3] = strdup (secname);
 		} else {
 			if (! ( (strcmp(seclevel, "authNoPriv")==0) || (strcmp(seclevel, "authPriv")==0) ) ) {
 				usage2 (_("Invalid seclevel"), seclevel);
@@ -979,9 +1003,6 @@ validate_arguments ()
 
 			if (authproto == NULL )
 				xasprintf(&authproto, DEFAULT_AUTH_PROTOCOL);
-
-			if (secname == NULL)
-				die(STATE_UNKNOWN, _("Required parameter: %s\n"), "secname");
 
 			if (authpasswd == NULL)
 				die(STATE_UNKNOWN, _("Required parameter: %s\n"), "authpasswd");

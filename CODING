@@ -39,6 +39,7 @@ and type prior to further use. One such example would be using strncpy()
 instead of strcpy() to validate that the copied object does not overflow the
 bounds of the object being copied to.
 
+
 2. Perl Language Programming
 
 Taken from the O'Reilly book "Programming Perl" (3rd edition, pages 604-606)
@@ -118,3 +119,31 @@ s) Use underscore to split words in long identifiers. That is, use
 $service_port instead of $ServicePort as the former is much more readable.
 
 *) Always check the return code of system calls.
+
+
+3. Reserved and Semi-Reserved Plugin Options:
+
+-h, --help (REQUIRED!!!!!)
+-V, --version (REQUIRED!!!!!)
+-v, --verbose
+-q, --quiet
+-t, --timeout = INTEGER (senonds)
+-c, --critical = (INT|FLOAT|RANGE|LIST) 
+-w, --warning = (INT|FLOAT|RANGE|LIST)
+-H, --hostname = STRING
+-F, --file = STRING (usually input) 
+-O, --output = STRING (output file) 
+
+Recommended, but not reserverd: 
+
+-I, --ipaddress = STRING
+-C, --community = STRING
+-a, --auth(info) = STRING (authentication or password) 
+-l, --logname = STRING
+-p, --password = STRING
+-P, --port = INT
+-u, --url = STRING (also --username if --url is not needed)
+
+Port really should alway be '-P' (uppercase) -- but the plugins
+are currently inconsistent in that regard and may be hard to change
+as we do not want to break compatibility with earlier syntax.
