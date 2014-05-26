@@ -142,7 +142,7 @@ main (int argc, char **argv)
 		if (pl == UNKNOWN_PACKET_LOSS || rta < 0.0) {
 			printf ("%s\n", cmd);
 			die (STATE_UNKNOWN,
-								 _("CRITICAL - Could not interpret output from ping command\n"));
+				_("CRITICAL - Could not interpret output from ping command\n"));
 		}
 
 		if (pl >= cpl || rta >= crta || rta < 0)
@@ -562,7 +562,7 @@ error_scan (char buf[MAX_INPUT_BUFFER], const char *addr)
 		if (warn_text == NULL)
 			warn_text = strdup (_(WARN_DUPLICATES));
 		else if (! strstr (warn_text, _(WARN_DUPLICATES)) &&
-						 xasprintf (&warn_text, "%s %s", warn_text, _(WARN_DUPLICATES)) == -1)
+				xasprintf (&warn_text, "%s %s", warn_text, _(WARN_DUPLICATES)) == -1)
 			die (STATE_UNKNOWN, _("Unable to realloc warn_text\n"));
 		return (STATE_WARNING);
 	}
