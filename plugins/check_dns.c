@@ -50,6 +50,7 @@ char query_address[ADDRESS_LENGTH] = "";
 char dns_server[ADDRESS_LENGTH] = "";
 char ptr_server[ADDRESS_LENGTH] = "";
 char query_type[16] = "";
+int query_set = FALSE;
 int verbose = FALSE;
 char **expected_address = NULL;
 int expected_address_cnt = 0;
@@ -224,6 +225,15 @@ main (int argc, char **argv)
       temp_buffer = index(chld_out.line[i], '=');
       addresses[n_addresses++] = check_new_address(temp_buffer);
       strncpy(query_found, "-querytype=SOA", sizeof(query_found));
+    }
+    /* needed for non-query ptr\reverse lookup checks */
+    else if (strstr(chld_out.line[i], ".in-addr.arpa") && !query_set) {
+      if ((temp_buffer = strstr(chld_out.line[i], "name = ")))
+        addresses[n_addresses++] = strdup(temp_buffer + 7);
+      else {
+        msg = (char *)_("Warning plugin error");
+        result = STATE_WARNING;
+      }
     }
 
     if (strstr (chld_out.line[i], _("Non-authoritative answer:"))) {
@@ -499,6 +509,7 @@ process_arguments (int argc, char **argv)
       strntoupper(optarg, sizeof(optarg));
       strcpy(query_type, "-querytype=");
       strcat(query_type, optarg);
+      query_set = TRUE;
       break;
     case 'A': /* expect authority */
       expect_authority = TRUE;
