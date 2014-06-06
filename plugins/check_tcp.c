@@ -32,13 +32,12 @@ char *progname;
 const char *copyright = "1999-2014";
 const char *email = "devel@nagios-plugins.org";
 
-#include <ctype.h>
-
 #include "common.h"
 #include "netutils.h"
 #include "utils.h"
 #include "utils_tcp.h"
 
+#include <ctype.h>
 #include <sys/select.h>
 
 #ifdef HAVE_SSL
