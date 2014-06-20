@@ -93,19 +93,10 @@ np_arg_list* np_get_defaults(const char *locator, const char *default_section){
 	np_arg_list *defaults=NULL;
 	np_ini_info i;
 	struct stat fstat;
-	uid_t euid = -1;
-	uid_t egid = -1;
-	bool is_uid_set = false;
+	bool is_suid_set = np_suid();
 
-	if (getuid() != getuid()) {
-		is_uid_set = true;
-		euid = geteuid();
-		egid = getegid();
-		if (seteuid(getuid()) != 0)
-			die(STATE_UNKNOWN, "%s %s\n", _("Can't drop user permissions."), strerror(errno));
-		if (setegid(getgid()) != 0)
-			die(STATE_UNKNOWN, "%s %s\n", _("Can't drop group permissions."), strerror(errno));
-	}
+	if (is_suid_set && idpriv_temp_drop() == -1) 
+		die(STATE_UNKNOWN, "%s %s\n", _("Can't drop user permissions."), strerror(errno));
 
 	parse_locator(locator, default_section, &i);
 	/* If a file was specified or if we're using the default file. */
@@ -137,12 +128,8 @@ np_arg_list* np_get_defaults(const char *locator, const char *default_section){
 	if (i.file != NULL) free(i.file);
 	free(i.stanza);
 
-	if (is_uid_set == true) {
-		if (seteuid(euid) != 0)
-			die(STATE_UNKNOWN, "%s %s\n", _("Can't restore user id."), strerror(errno));
-		if (setegid(egid) != 0)
-			die(STATE_UNKNOWN, "%s %s\n", _("Can't restore group id."), strerror(errno));
-	}
+	if (is_suid_set && idpriv_temp_restore() == -1) 
+		die(STATE_UNKNOWN, "%s %s\n", _("Can't restore user permissions."), strerror(errno));
 
 	return defaults;
 }
