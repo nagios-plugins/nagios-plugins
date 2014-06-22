@@ -93,6 +93,10 @@ np_arg_list* np_get_defaults(const char *locator, const char *default_section){
 	np_arg_list *defaults=NULL;
 	np_ini_info i;
 	struct stat fstat;
+	bool is_suid_set = np_suid();
+
+	if (is_suid_set && idpriv_temp_drop() == -1) 
+		die(STATE_UNKNOWN, "%s %s\n", _("Can't drop user permissions."), strerror(errno));
 
 	parse_locator(locator, default_section, &i);
 	/* If a file was specified or if we're using the default file. */
@@ -123,6 +127,10 @@ np_arg_list* np_get_defaults(const char *locator, const char *default_section){
 
 	if (i.file != NULL) free(i.file);
 	free(i.stanza);
+
+	if (is_suid_set && idpriv_temp_restore() == -1) 
+		die(STATE_UNKNOWN, "%s %s\n", _("Can't restore user permissions."), strerror(errno));
+
 	return defaults;
 }
 
