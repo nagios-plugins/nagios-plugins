@@ -8,6 +8,7 @@ This file documents the major additions and syntax changes between releases.
 	Timeout States Implemented - Plugins that support a timeout state will now also support specifying the exit state in case of timeout with the syntax -t <timeout>:<state> (abrist)
 	Perl plugins now use FindBin for path discovery, obsoleting the nasty AWK script (evgeni, abrist)
 	check_http.c - Added support for chunked transfer-encoding (koenwtje, dermoth, sreinhardt)
+	check_radius.c - Added support for the FreeRADIUS Client library (weiss)
 	check_snmp.c - Added thresholds to performance data (seemuellera)
 	check_snmp.c - Added new option (-N) for SNMPv3 context (Johannes Engel)
 	check_snmp.c - Added IPv6 support (abrist)
