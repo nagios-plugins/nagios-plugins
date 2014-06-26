@@ -1,5 +1,24 @@
 This file documents the major additions and syntax changes between releases.
 
+2.0.3 26th June 2014
+	SECURITY FIXES
+	parse_ini.c - Additional fixes for the SUID plugins vulnerabilities (sreinhardt) 
+	Added Gnulib module idpriv-droptemp (weiss) 
+
+	FIXES
+	check_dns.c - Resolved issues with reverse lookup (sreinhardt)
+	check_dns.c - Changed query types from ALL to ANY (sreinhardt)
+	common.h - Include fixes for esoteric AIX compile issues (emislivec)
+	negate.c - Small fixes from coverity (66479) (66480) (sreinhardt)
+	check_dhcp.c - Small fix from coverity (66488) (sreinhardt)
+	check_http.c - Potential memory leak and overflow fixed from coverity (66514) (sreinhardt)
+	check_ntp.c - Small fix from coverity (66524) (sreinhardt)
+	utils_cmd.c - Small file descriptor fix from coverity (66502) (sreinhardt)  	
+	check_apt.c - Small fix for from coverity (66531) (sreinhardt)	
+
+	REVERTS
+	check_mailq - Reverted autodetection commits to avoid awk parsing issues. Autodetection will return in version 2.1.0 as part of the changes in the FindBin branch (abrist) 
+
 2.0.2 20th May 2014
 	SECURITY FIXES
 	Fixed file access vulnerability with SUID binaries (check_icmp, check_dhcp) and extra-opts.  Fixes were applied globally, so the new resrictions on fopen should apply to all plugins. Special thanks to Dawid Golunski for the submission. More information: http://www.exploit-db.com/exploits/33387/  (sreinhardt) (emislivec)
