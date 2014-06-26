@@ -387,7 +387,7 @@ cmd_file_read ( char *filename, output *out, int flags)
 	if ((fd = open(filename, O_RDONLY)) == -1) {
 		die( STATE_UNKNOWN, _("Error opening %s: %s"), filename, strerror(errno) );
 	}
-	
+
 	if(out)
 		out->lines = _cmd_fetch_output (fd, out, flags);
 	

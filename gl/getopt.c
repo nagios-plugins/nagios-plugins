@@ -588,6 +588,14 @@ _getopt_internal_r (int argc, char **argv, const char *optstring,
           d->__nextchar += strlen (d->__nextchar);
           d->optind++;
           d->optopt = 0;
+
+          while (ambig_list != NULL)
+            {
+              struct option_list *pn = ambig_list->next;
+              free (ambig_list);
+              ambig_list = pn;
+            }
+
           return '?';
         }
 
