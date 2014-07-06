@@ -35,6 +35,7 @@ use POSIX;
 use strict;
 use FindBin;
 use lib "$FindBin::Bin";
+use lib '@libexecdir@';
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
 use Net::SNMP;
