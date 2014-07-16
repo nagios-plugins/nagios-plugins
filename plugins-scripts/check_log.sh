@@ -138,6 +138,14 @@ while test -n "$1"; do
             oldlog=$2
             shift
             ;;
+        --max_critical)
+            MAX_CRITICAL=$2
+            shift
+            ;;
+        -c)
+            MAX_CRITICAL=$2
+            shift
+            ;;
         --query)
             query=$2
             shift
@@ -208,11 +216,15 @@ $RM -f $tempdiff
 $CAT $logfile > $oldlog
 
 if [ "$count" = "0" ]; then # no matches, exit with no error
-    echo "Log check ok - 0 pattern matches found"
+    echo "Log check ok - 0 pattern matches found|match=$count;;;0"
     exitstatus=$STATE_OK
 else # Print total matche count and the last entry we found
-    echo "($count) $lastentry"
-    exitstatus=$STATE_CRITICAL
+    echo "($count) $lastentry|match=$count;;;0"
+    if [ $MAX_CRITICAL ] && [ $count -lt $MAX_CRITICAL ] ; then
+        exitstatus=$STATE_WARNING
+    else
+        exitstatus=$STATE_CRITICAL
+    fi
 fi
 
 exit $exitstatus
