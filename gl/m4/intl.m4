@@ -17,7 +17,7 @@ dnl Authors:
 dnl   Ulrich Drepper <drepper@cygnus.com>, 1995-2000.
 dnl   Bruno Haible <haible@clisp.cons.org>, 2000-2009.
 
-AC_PREREQ([2.60])
+AC_PREREQ([2.59])
 
 dnl Checks for all prerequisites of the intl subdirectory,
 dnl except for INTL_LIBTOOL_SUFFIX_PREFIX (and possibly LIBTOOL), INTLOBJS,

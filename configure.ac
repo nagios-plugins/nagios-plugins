@@ -310,7 +310,7 @@ AS_IF([test "x$with_ldap" != "xno"], [
     AC_SUBST(LDAPINCLUDE)
     AC_CHECK_FUNCS(ldap_set_option)
     EXTRAS="$EXTRAS check_ldap\$(EXEEXT)"
-  	AC_CHECK_FUNCS(ldap_init ldap_set_option ldap_get_option ldap_start_tls_s)
+  	AC_CHECK_FUNCS(ldap_initialize ldap_init ldap_set_option ldap_get_option ldap_start_tls_s)
   else
     AC_MSG_WARN([Skipping LDAP plugin])
     AC_MSG_WARN([install LDAP libs to compile this plugin (see REQUIREMENTS).])
