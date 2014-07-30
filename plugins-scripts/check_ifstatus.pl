@@ -176,12 +176,13 @@ foreach $key (keys %ifStatus) {
 				if ($ifStatus{$key}{$snmpIfOperStatus} == 2 ) {
 								$ifdown++ ;
 								if (defined $ifXTable) {
-									$ifmessage .= sprintf("%s: down -> %s<BR>",
-                                $ifStatus{$key}{$snmpIfName},
-																$ifStatus{$key}{$snmpIfAlias});
+									$ifmessage .= sprintf("%s: down -> %s\n",
+											      $ifStatus{$key}{$snmpIfName},
+											      $ifStatus{$key}{$snmpIfAlias});
 								}else{
-									$ifmessage .= sprintf("%s: down <BR>",
-																$ifStatus{$key}{$snmpIfDescr});
+									$ifmessage .= sprintf("%s (%s): down\n",
+											      $ifStatus{$key}{$snmpIfDescr},
+											      $key);
 								}
 				}
 				if ($ifStatus{$key}{$snmpIfOperStatus} == 5 ) { $ifdormant++ ;}
@@ -197,7 +198,7 @@ foreach $key (keys %ifStatus) {
 
    if ($ifdown > 0) {
       $state = 'CRITICAL';
-      $answer = sprintf("host '%s', interfaces up: %d, down: %d, dormant: %d, excluded: %d, unused: %d<BR>",
+      $answer = sprintf("host '%s', interfaces up: %d, down: %d, dormant: %d, excluded: %d, unused: %d\n",
                         $hostname,
 			$ifup,
 			$ifdown,
