@@ -68,7 +68,7 @@ RM="/bin/rm"
 CHMOD="/bin/chmod"
 TOUCH="/bin/touch"
 
-PROGNAME=`/bin/basename $0`
+PROGNAME=`basename $0`
 PROGPATH=`echo $0 | sed -e 's,[\\/][^\\/][^\\/]*$,,'`
 REVISION="@NP_VERSION@"
 
