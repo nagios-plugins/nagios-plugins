@@ -62,8 +62,9 @@ static char *default_ini_path_names[] = {
 static int read_defaults(FILE *f, const char *stanza, np_arg_list **opts);
 /* internal function that converts a single line into options format */
 static int add_option(FILE *f, np_arg_list **optlst);
-/* internal function to find default file */
+/* internal functions to find default file */
 static char* default_file(void);
+static char* default_file_in_path(void);
 
 /* parse_locator decomposes a string of the form
  * 	[stanza][@filename]
