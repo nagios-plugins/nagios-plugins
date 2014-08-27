@@ -79,7 +79,7 @@ static void parse_locator(const char *locator, const char *def_stanza, np_ini_in
 	}
 	/* if a non-default stanza is provided */
 	if(stanza_len>0){
-		i->stanza=(char*)malloc(sizeof(char)*(stanza_len+1));
+		i->stanza=malloc(sizeof(char)*(stanza_len+1));
 		strncpy(i->stanza, locator, stanza_len);
 		i->stanza[stanza_len]='\0';
 	} else { /* otherwise we use the default stanza */
@@ -301,11 +301,11 @@ static int add_option(FILE *f, np_arg_list **optlst){
 	/* okay, now we have all the info we need, so we create a new np_arg_list
 	 * element and set the argument...
 	 */
-	optnew=(np_arg_list *)malloc(sizeof(np_arg_list));
+	optnew=malloc(sizeof(np_arg_list));
 	optnew->next=NULL;
 
 	read_pos=0;
-	optnew->arg=(char *)malloc(cfg_len+1);
+	optnew->arg=malloc(cfg_len+1);
 	/* 1-character params needs only one dash */
 	if(opt_len==1) {
 		strncpy(&optnew->arg[read_pos], "-", 1);
