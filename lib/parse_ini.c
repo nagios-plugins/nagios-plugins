@@ -45,13 +45,23 @@ static char *default_ini_file_names[] = {
 };
 
 static char *default_ini_path_names[] = {
-	"/etc/nagios/plugins.ini",
 	"/usr/local/nagios/etc/plugins.ini",
+	"/usr/local/nagios/etc/nagios-plugins.ini",
 	"/usr/local/etc/nagios/plugins.ini",
-	"/etc/opt/nagios/plugins.ini",
-	"/etc/nagios-plugins.ini",
+	"/usr/local/etc/nagios/nagios-plugins.ini",
 	"/usr/local/etc/nagios-plugins.ini",
+	"/usr/local/etc/nagios-plugins/nagios-plugins.ini",
+	"/usr/local/etc/nagios-plugins/plugins.ini",
+	"/usr/local/etc/nagios/plugins.ini",
+	"/usr/local/etc/nagios/nagios-plugins.ini",
+	"/etc/nagios-plugins.ini",
+	"/etc/nagios/plugins.ini",
+	"/etc/nagios/nagios-plugins.ini",
+	"/etc/nagios-plugins/nagios-plugins.ini",
+	"/etc/nagios-plugins/plugins.ini",
 	"/etc/opt/nagios-plugins.ini",
+	"/etc/opt/nagios/plugins.ini",
+	"/etc/opt/nagios/nagios-plugins.ini",
 	NULL
 };
 
