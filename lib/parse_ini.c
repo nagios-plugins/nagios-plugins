@@ -97,7 +97,7 @@ static void parse_locator(const char *locator, const char *def_stanza, np_ini_in
 		i->stanza=strdup(def_stanza);
 	}
 	if(i->stanza==NULL){
-		die(STATE_UNKNOWN, _("malloc() failed!\n"));
+		die(STATE_UNKNOWN, "%s\n", _("malloc() failed!"));
 	}
 	/* if there is no @file part */
 	if(stanza_len==locator_len){
@@ -106,7 +106,7 @@ static void parse_locator(const char *locator, const char *def_stanza, np_ini_in
 		i->file=strdup(&(locator[stanza_len+1]));
 	}
 	if(i->file==NULL || i->file[0]=='\0'){
-		die(STATE_UNKNOWN, _("Cannot find config file in any standard location.\n"));
+		die(STATE_UNKNOWN, "%s\n", _("Cannot find config file in any standard location."));
 	}
 }
 
@@ -143,7 +143,7 @@ np_arg_list* np_get_defaults(const char *locator, const char *default_section){
 
                 /* inifile points to an open FILE our ruid/rgid can access, parse its contents. */
                 if (read_defaults(inifile, i.stanza, &defaults) == FALSE)
-                        die(STATE_UNKNOWN, _("Invalid section '%s' in config file '%s'\n"), i.stanza, i.file);
+                        die(STATE_UNKNOWN,"%s%s%s%s'\n", _("Invalid section '"), i.stanza, _("' in config file '"), i.file);
 
                 if (inifile != stdin) fclose(inifile);
         }
@@ -255,7 +255,7 @@ static int add_option(FILE *f, np_arg_list **optlst){
 		if(linebuf==NULL || read_pos+read_sz >= linebuf_sz){
 			linebuf_sz=(linebuf_sz>0)?linebuf_sz<<1:read_sz;
 			linebuf=realloc(linebuf, linebuf_sz);
-			if(linebuf==NULL) die(STATE_UNKNOWN, _("malloc() failed!\n"));
+			if(linebuf==NULL) die(STATE_UNKNOWN, "%s\n", _("malloc() failed!"));
 		}
 		if(fgets(&linebuf[read_pos], (int)read_sz, f)==NULL) done_reading=1;
 		else {
@@ -353,11 +353,11 @@ static char *default_file_in_path(void){
 		return NULL;
 
 	if((tokens=strdup(config_path))==NULL)
-		die(STATE_UNKNOWN, _("Insufficient Memory"));
+		die(STATE_UNKNOWN, "%s\n", _("Insufficient Memory"));
 	for(dir=strtok(tokens, ":"); dir!=NULL; dir=strtok(NULL, ":")){
 		for(file=default_ini_file_names; *file!=NULL; file++){
 			if((asprintf(&ini_file, "%s/%s", dir, *file))<0)
-				die(STATE_UNKNOWN, _("Insufficient Memory"));
+				die(STATE_UNKNOWN, "%s\n", _("Insufficient Memory"));
 			if(access(ini_file, F_OK)==0){
 				free(tokens);
 				return ini_file;
