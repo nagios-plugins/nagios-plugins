@@ -141,12 +141,15 @@ np_arg_list* np_get_defaults(const char *locator, const char *default_section){
                                 die(STATE_UNKNOWN, "%s %s\n", _("Can't read config file."), strerror(errno));
                 }
 
+		/* before attempting access, let's make sure inifile is not null, this should never be the case though */
+		if (inifile == NULL)
+			die(STATE_UNKNOWN, "%s %s\n", _("Can't read config file:"), strerror(errno));
                 /* inifile points to an open FILE our ruid/rgid can access, parse its contents. */
                 if (read_defaults(inifile, i.stanza, &defaults) == FALSE)
                         die(STATE_UNKNOWN,"%s%s%s%s'\n", _("Invalid section '"), i.stanza, _("' in config file '"), i.file);
 
                 if (inifile != stdin) fclose(inifile);
-        }
+        } 
 
 	if (i.file != NULL) {
 		free(i.file);
