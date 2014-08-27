@@ -30,8 +30,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-/* TODO: die like N::P if config file is not found */
-
 /* np_ini_info contains the result of parsing a "locator" in the format
  * [stanza_name][@config_filename] (check_foo@/etc/foo.ini, for example)
  */
@@ -139,8 +137,14 @@ np_arg_list* np_get_defaults(const char *locator, const char *default_section){
                 if (inifile != stdin) fclose(inifile);
         }
 
-	if (i.file != NULL) free(i.file);
-	free(i.stanza);
+	if (i.file != NULL) {
+		free(i.file);
+		i.file = NULL;
+	}
+	if (i.stanza != NULL) {
+		free(i.stanza);
+		i.stanza = NULL;
+	}
 
 	if (is_suid_set && idpriv_temp_restore() == -1) 
 		die(STATE_UNKNOWN, "%s %s\n", _("Can't restore user permissions."), strerror(errno));
