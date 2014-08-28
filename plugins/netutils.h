@@ -41,7 +41,7 @@
 # include <sys/un.h>
 # ifndef UNIX_PATH_MAX
    /* linux uses this, on sun it's hard-coded at 108 without a define */
-#  define UNIX_PATH_MAX 108
+#  define UNIX_PATH_MAX 104
 # endif /* UNIX_PATH_MAX */
 #endif /* HAVE_SYS_UN_H */
 
