@@ -148,6 +148,24 @@ main (int argc, char **argv)
     if (verbose)
       puts(chld_out.line[i]);
 
+    /* bug ID: 2946553 - Older versions of bind will use all available dns
+    + servers, we have to match the one specified */
+    if (strlen(dns_server) > 0 && strstr(chld_out.line[i], "Server:")) {
+        temp_buffer = index(chld_out.line[i], ':');
+        temp_buffer++;
+
+	/* Strip leading tabs */
+	for (; *temp_buffer != '\0' && *temp_buffer == '\t'; temp_buffer++)
+	    /* NOOP */;
+
+	strip(temp_buffer);
+	if (temp_buffer==NULL || strlen(temp_buffer)==0)
+	    die (STATE_CRITICAL, "%s%s%s\n", _("DNS CRITICAL - '"), NSLOOKUP_COMMAND, _("' returned empty server string"));
+
+	if (strcmp(temp_buffer, dns_server) != 0)
+            die (STATE_CRITICAL, "%s %s\n", _("No response from DNS"), dns_server);
+    }
+
     if (strstr (chld_out.line[i], "Authoritative answers can be found from:")) {
       non_authoritative = FALSE;
       break;
