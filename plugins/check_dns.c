@@ -77,11 +77,9 @@ check_new_address(char *temp_buffer)
         /* NOOP */;
 
       strip(temp_buffer);
-      if (temp_buffer==NULL || strlen(temp_buffer)==0) {
-        die (STATE_CRITICAL,
-             _("DNS CRITICAL - '%s' returned empty host name string\n"),
-             NSLOOKUP_COMMAND);
-      }
+      if (temp_buffer==NULL || strlen(temp_buffer)==0)
+        die (STATE_CRITICAL, "%s%s%s\n", _("DNS CRITICAL - '"), NSLOOKUP_COMMAND, _("' returned empty host name string"));
+
       return temp_buffer;
 }
 
@@ -112,16 +110,14 @@ main (int argc, char **argv)
   textdomain (PACKAGE);
 
   /* Set signal handling and alarm */
-  if (signal (SIGALRM, runcmd_timeout_alarm_handler) == SIG_ERR) {
+  if (signal (SIGALRM, runcmd_timeout_alarm_handler) == SIG_ERR)
     usage_va(_("Cannot catch SIGALRM"));
-  }
 
   /* Parse extra opts if any */
   argv=np_extra_opts (&argc, argv, progname);
 
-  if (process_arguments (argc, argv) == ERROR) {
+  if (process_arguments (argc, argv) == ERROR)
     usage_va(_("Could not parse arguments"));
-  }
 
   /* get the command to run */
   xasprintf (&command_line, "%s %s %s %s", NSLOOKUP_COMMAND, query_type, query_address, dns_server);
@@ -163,7 +159,7 @@ main (int argc, char **argv)
 	    die (STATE_CRITICAL, "%s%s%s\n", _("DNS CRITICAL - '"), NSLOOKUP_COMMAND, _("' returned empty server string"));
 
 	if (strcmp(temp_buffer, dns_server) != 0)
-            die (STATE_CRITICAL, "%s %s\n", _("No response from DNS"), dns_server);
+            die (STATE_CRITICAL, "%s %s\n", _("DNS CRITICAL - No response from DNS server:"), dns_server);
     }
 
     if (strstr (chld_out.line[i], "Authoritative answers can be found from:")) {
@@ -254,9 +250,8 @@ main (int argc, char **argv)
       }
     }
 
-    if (strstr (chld_out.line[i], _("Non-authoritative answer:"))) {
+    if (strstr (chld_out.line[i], _("Non-authoritative answer:")))
       non_authoritative = TRUE;
-    }
 
     result = error_scan (chld_out.line[i]);
     if (result != STATE_OK) {
@@ -282,9 +277,9 @@ main (int argc, char **argv)
     int i,slen;
     char *adrp;
     qsort(addresses, n_addresses, sizeof(*addresses), qstrcmp);
-    for(i=0, slen=1; i < n_addresses; i++) {
+    for(i=0, slen=1; i < n_addresses; i++)
       slen += strlen(addresses[i])+1;
-    }
+
     adrp = address = malloc(slen);
     for(i=0; i < n_addresses; i++) {
       if (i) *adrp++ = ',';
@@ -293,9 +288,7 @@ main (int argc, char **argv)
     }
     *adrp = 0;
   } else
-    die (STATE_CRITICAL,
-         _("DNS CRITICAL - '%s' msg parsing exited with no address\n"),
-         NSLOOKUP_COMMAND);
+    die (STATE_CRITICAL, "%s%s%s\n", _("DNS CRITICAL - '"), NSLOOKUP_COMMAND, _("' msg parsing exited with no address"), NSLOOKUP_COMMAND);
 
   /* compare to expected address */
   if (result == STATE_OK && expected_address_cnt > 0) {
@@ -309,7 +302,7 @@ main (int argc, char **argv)
     if (result == STATE_CRITICAL) {
       /* Strip off last semicolon... */
       temp_buffer[strlen(temp_buffer)-2] = '\0';
-      xasprintf(&msg, _("expected '%s' but got '%s'"), temp_buffer, address);
+      xasprintf(&msg, "%s%s%s%s%s", _("expected '"), temp_buffer, _("' but got '"), address, "'");
     }
   }
 
@@ -318,18 +311,18 @@ main (int argc, char **argv)
     result = STATE_CRITICAL;
 
     if (strncmp(dns_server, "", 1))
-      xasprintf(&msg, _("server %s is not authoritative for %s"), dns_server, query_address);
+      xasprintf(&msg, "%s %s %s %s", _("server"), dns_server, _("is not authoritative for"), query_address);
     else
-      xasprintf(&msg, _("there is no authoritative server for %s"), query_address);
+      xasprintf(&msg, "%s %s", _("there is no authoritative server for"), query_address);
   }
 
   /* compare query type to query found, if query type is ANY we can skip as any record is accepted*/
   if (result == STATE_OK && strncmp(query_type, "", 1) && (strncmp(query_type, "-querytype=ANY", 15) != 0)) {
     if (strncmp(query_type, query_found, 16) != 0) {
       if (verbose)
-        printf( "Failed query for %s only found %s, or nothing\n", query_type, query_found);
+        printf( "%s %s %s %s %s\n", _("Failed query for"), query_type, _("only found"), query_found, _(", or nothing"));
       result = STATE_CRITICAL;
-      xasprintf(&msg, _("query type of %s was not found for %s"), query_type, query_address);
+      xasprintf(&msg, "%s %s %s %s", _("query type of"), query_type, _("was not found for"), query_address);
     }
   }
 
@@ -344,14 +337,14 @@ main (int argc, char **argv)
 
     result = get_status(elapsed_time, time_thresholds);
     if (result == STATE_OK) {
-      printf ("DNS %s: ", _("OK"));
+      printf ("%s %s: ", _("DNS"), _("OK"));
     } else if (result == STATE_WARNING) {
-      printf ("DNS %s: ", _("WARNING"));
+      printf ("%s %s: ", _("DNS"), _("WARNING"));
     } else if (result == STATE_CRITICAL) {
-      printf ("DNS %s: ", _("CRITICAL"));
+      printf ("%s %s: ", _("DNS"), _("CRITICAL"));
     }
     printf (ngettext("%.3f second response time", "%.3f seconds response time", elapsed_time), elapsed_time);
-    printf (_(". %s returns %s"), query_address, address);
+    printf (". %s %s %s", query_address, _("returns"), address);
     if ((time_thresholds->warning != NULL) && (time_thresholds->critical != NULL)) {
       printf ("|%s\n", fperfdata ("time", elapsed_time, "s",
                                   TRUE, time_thresholds->warning->end,
@@ -371,14 +364,11 @@ main (int argc, char **argv)
       printf ("|%s\n", fperfdata ("time", elapsed_time, "s", FALSE, 0, FALSE, 0, TRUE, 0, FALSE, 0));
   }
   else if (result == STATE_WARNING)
-    printf (_("DNS WARNING - %s\n"),
-            !strcmp (msg, "") ? _(" Probably a non-existent host/domain") : msg);
+    printf ("%s %s\n", _("DNS WARNING -"), !strcmp (msg, "") ? _("Probably a non-existent host/domain") : msg);
   else if (result == STATE_CRITICAL)
-    printf (_("DNS CRITICAL - %s\n"),
-            !strcmp (msg, "") ? _(" Probably a non-existent host/domain") : msg);
+    printf ("%s %s\n", _("DNS CRITICAL -"), !strcmp (msg, "") ? _("Probably a non-existent host/domain") : msg);
   else
-    printf (_("DNS UNKNOWN - %s\n"),
-            !strcmp (msg, "") ? _(" Probably a non-existent host/domain") : msg);
+    printf ("%s %s\n", _("DNS UNKNOWN -"), !strcmp (msg, "") ? _("Probably a non-existent host/domain") : msg);
 
   return result;
 }
@@ -397,11 +387,11 @@ error_scan (char *input_buffer)
 
   /* DNS server is not running... */
   else if (strstr (input_buffer, "No response from server"))
-    die (STATE_CRITICAL, _("No response from DNS %s\n"), dns_server);
+    die (STATE_CRITICAL, "%s %s\n", _("No response from DNS"), dns_server);
 
   /* Host name is valid, but server doesn't have records... */
   else if (strstr (input_buffer, "No records") || strstr (input_buffer, "No answer"))
-    die (STATE_CRITICAL, _("DNS %s has no records\n"), dns_server);
+    die (STATE_CRITICAL, "%s %s %s\n", _("DNS"), dns_server, _("has no records"));
 
   /* Connection was refused */
   else if (strstr (input_buffer, "Connection refused") ||
@@ -409,29 +399,29 @@ error_scan (char *input_buffer)
            strstr (input_buffer, "Refused") ||
            (strstr (input_buffer, "** server can't find") &&
             strstr (input_buffer, ": REFUSED")))
-    die (STATE_CRITICAL, _("Connection to DNS %s was refused\n"), dns_server);
+    die (STATE_CRITICAL, "%s %s %s\n", _("Connection to DNS"), dns_server, _("was refused"));
 
   /* Query refused (usually by an ACL in the namserver) */
   else if (strstr (input_buffer, "Query refused"))
-    die (STATE_CRITICAL, _("Query was refused by DNS server at %s\n"), dns_server);
+    die (STATE_CRITICAL, "%s %s\n", _("Query was refused by DNS server at"), dns_server);
 
   /* No information (e.g. nameserver IP has two PTR records) */
   else if (strstr (input_buffer, "No information"))
-    die (STATE_CRITICAL, _("No information returned by DNS server at %s\n"), dns_server);
+    die (STATE_CRITICAL, "%s %s\n", _("No information returned by DNS server at"), dns_server);
 
   /* Host or domain name does not exist */
   else if (strstr (input_buffer, "Non-existent") ||
            strstr (input_buffer, "** server can't find") ||
      strstr (input_buffer,"NXDOMAIN"))
-    die (STATE_CRITICAL, _("Domain %s was not found by the server\n"), query_address);
+    die (STATE_CRITICAL, "%s %s %s\n", _("Domain"), query_address, _("was not found by the server"));
 
   /* Network is unreachable */
   else if (strstr (input_buffer, "Network is unreachable"))
-    die (STATE_CRITICAL, _("Network is unreachable\n"));
+    die (STATE_CRITICAL, "%s\n", _("Network is unreachable"));
 
   /* Internal server failure */
   else if (strstr (input_buffer, "Server failure"))
-    die (STATE_CRITICAL, _("DNS failure for %s\n"), dns_server);
+    die (STATE_CRITICAL, "%s %s\n", _("DNS failure for"), dns_server);
 
   /* Request error or the DNS lookup timed out */
   else if (strstr (input_buffer, "Format error") ||
@@ -496,7 +486,7 @@ process_arguments (int argc, char **argv)
       break;
     case 'H': /* hostname */
       if (strlen (optarg) >= ADDRESS_LENGTH)
-        die (STATE_UNKNOWN, _("Input buffer overflow\n"));
+        die (STATE_UNKNOWN, "%s\n", _("Input buffer overflow"));
       strcpy (query_address, optarg);
       break;
     case 's': /* server name */
@@ -504,26 +494,26 @@ process_arguments (int argc, char **argv)
        * Better to confirm nslookup response matches */
       host_or_die(optarg);
       if (strlen (optarg) >= ADDRESS_LENGTH)
-        die (STATE_UNKNOWN, _("Input buffer overflow\n"));
+        die (STATE_UNKNOWN, "%s\n", _("Input buffer overflow"));
       strcpy (dns_server, optarg);
       break;
     case 'r': /* reverse server name */
       /* TODO: Is this host_or_die necessary? */
       host_or_die(optarg);
       if (strlen (optarg) >= ADDRESS_LENGTH)
-        die (STATE_UNKNOWN, _("Input buffer overflow\n"));
+        die (STATE_UNKNOWN, "%s\n", _("Input buffer overflow"));
       strcpy (ptr_server, optarg);
       break;
     case 'a': /* expected address */
       if (strlen (optarg) >= ADDRESS_LENGTH)
-        die (STATE_UNKNOWN, _("Input buffer overflow\n"));
+        die (STATE_UNKNOWN, "%s\n", _("Input buffer overflow"));
       expected_address = (char **)realloc(expected_address, (expected_address_cnt+1) * sizeof(char**));
       expected_address[expected_address_cnt] = strdup(optarg);
       expected_address_cnt++;
       break;
     case 'q': /* querytype -- A or AAAA or ANY or SRV or TXT, etc. */
       if (strlen (optarg) < 1 || strlen (optarg) > 5)
-	die (STATE_UNKNOWN, _("Missing valid querytype parameter.  Try using 'A' or 'AAAA' or 'SRV'\n"));
+	die (STATE_UNKNOWN, "%s\n", _("Missing valid querytype parameter.  Try using 'A' or 'AAAA' or 'SRV'"));
       strntoupper(optarg, sizeof(optarg));
       strcpy(query_type, "-querytype=");
       strcat(query_type, optarg);
@@ -549,7 +539,7 @@ process_arguments (int argc, char **argv)
   c = optind;
   if (strlen(query_address)==0 && c<argc) {
     if (strlen(argv[c])>=ADDRESS_LENGTH)
-      die (STATE_UNKNOWN, _("Input buffer overflow\n"));
+      die (STATE_UNKNOWN, "%s\n", _("Input buffer overflow"));
     strcpy (query_address, argv[c++]);
   }
 
@@ -557,7 +547,7 @@ process_arguments (int argc, char **argv)
     /* TODO: See -s option */
     host_or_die(argv[c]);
     if (strlen(argv[c]) >= ADDRESS_LENGTH)
-      die (STATE_UNKNOWN, _("Input buffer overflow\n"));
+      die (STATE_UNKNOWN, "%s\n", _("Input buffer overflow"));
     strcpy (dns_server, argv[c++]);
   }
 
@@ -582,7 +572,7 @@ print_help (void)
 {
   print_revision (progname, NP_VERSION);
 
-  printf ("Copyright (c) 1999 Ethan Galstad <nagios@nagios.org>\n");
+  printf ("%s\n", "Copyright (c) 1999 Ethan Galstad <nagios@nagios.org>");
   printf (COPYRIGHT, copyright, email);
 
   printf ("%s\n", _("This plugin uses the nslookup program to obtain the IP address for the given host/domain query."));
@@ -596,27 +586,27 @@ print_help (void)
   printf (UT_HELP_VRSN);
   printf (UT_EXTRA_OPTS);
 
-  printf (" -H, --hostname=HOST\n");
+  printf ("%s\n", " -H, --hostname=HOST");
   printf ("    %s\n", _("The name or address you want to query"));
-  printf (" -s, --server=HOST\n");
+  printf ("%s\n", " -s, --server=HOST");
   printf ("    %s\n", _("Optional DNS server you want to use for the lookup"));
-  printf (" -q, --querytype=TYPE\n");
+  printf ("%s\n", " -q, --querytype=TYPE");
   printf ("    %s\n", _("Optional DNS record query type where TYPE =(A, AAAA, SRV, TXT, MX, ANY)"));
   printf ("    %s\n", _("The default query type is 'A' (IPv4 host entry)"));
-  printf (" -a, --expected-address=IP-ADDRESS|HOST\n");
+  printf ("%s\n", " -a, --expected-address=IP-ADDRESS|HOST");
   printf ("    %s\n", _("Optional IP-ADDRESS you expect the DNS server to return. HOST must end with"));
   printf ("    %s\n", _("a dot (.). This option can be repeated multiple times (Returns OK if any"));
   printf ("    %s\n", _("value match). If multiple addresses are returned at once, you have to match"));
   printf ("    %s\n", _("the whole string of addresses separated with commas (sorted alphabetically)."));
   printf ("    %s\n", _("If you would like to test for the presence of a cname, combine with -n param."));
-  printf (" -A, --expect-authority\n");
+  printf ("%s\n", " -A, --expect-authority");
   printf ("    %s\n", _("Optionally expect the DNS server to be authoritative for the lookup"));
-  printf (" -n, --accept-cname\n");
+  printf ("%s\n", " -n, --accept-cname");
   printf ("    %s\n", _("Optionally accept cname responses as a valid result to a query"));
   printf ("    %s\n", _("The default is to ignore cname responses as part of the result"));
-  printf (" -w, --warning=seconds\n");
+  printf ("%s\n", " -w, --warning=seconds");
   printf ("    %s\n", _("Return warning if elapsed time exceeds value. Default off"));
-  printf (" -c, --critical=seconds\n");
+  printf ("%s\n", " -c, --critical=seconds");
   printf ("    %s\n", _("Return critical if elapsed time exceeds value. Default off"));
 
   printf (UT_CONN_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
@@ -629,5 +619,5 @@ void
 print_usage (void)
 {
   printf ("%s\n", _("Usage:"));
-  printf ("%s -H host [-s server] [-q type ] [-a expected-address] [-A] [-n] [-t timeout] [-w warn] [-c crit]\n", progname);
+  printf ("%s %s\n", progname, "-H host [-s server] [-q type ] [-a expected-address] [-A] [-n] [-t timeout] [-w warn] [-c crit]");
 }
