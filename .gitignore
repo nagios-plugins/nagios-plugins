@@ -1,6 +1,11 @@
+#Tooling:
+tags
+cscope.out
+
 # In all paths
 NP-VERSION-FILE
 *.o
+*.swp
 
 # /
 /aclocal.m4
