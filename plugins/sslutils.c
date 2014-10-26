@@ -49,10 +49,12 @@ int np_net_ssl_init_with_hostname_and_version(int sd, char *host_name, int versi
 
 int np_net_ssl_init_with_hostname_version_and_cert(int sd, char *host_name, int version, char *cert, char *privkey) {
 	SSL_METHOD *method = NULL;
+	long ssl_options = NULL;
 
 	switch (version) {
 	case 0: /* Deafult to auto negotiation */
 		method = SSLv23_client_method();
+		ssl_options = SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3;
 		break;
 	case 1: /* TLSv1 protocol */
 		method = TLSv1_client_method();
@@ -92,8 +94,10 @@ int np_net_ssl_init_with_hostname_version_and_cert(int sd, char *host_name, int 
 		}
 	}
 #ifdef SSL_OP_NO_TICKET
-	SSL_CTX_set_options(c, SSL_OP_NO_TICKET);
+	ssl_options = ssl_options | SSL_OP_NO_TICKET;
 #endif
+	if (ssl_options)
+		SSL_CTX_set_options(c, ssl_options);
 	SSL_CTX_set_mode(c, SSL_MODE_AUTO_RETRY);
 	if ((s = SSL_new(c)) != NULL) {
 #ifdef SSL_set_tlsext_host_name
