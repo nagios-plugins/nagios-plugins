@@ -171,9 +171,9 @@ int np_net_ssl_check_cert(int days_till_exp_warn, int days_till_exp_crit){
 		printf("%s\n",_("CRITICAL - Cannot retrieve certificate subject."));
 		return STATE_CRITICAL;
 	}
-	cnlen = X509_NAME_get_text_by_NID(subj, NID_commonName, cn, sizeof(cn));
+	cnlen = X509_NAME_get_text_by_NID(subj, NID_commonName, cn, sizeof(cn)-1);
 	if (cnlen == -1)
-		strcpy(cn, _("Unknown CN"));
+		strncpy(cn, _("Unknown CN\0"), 12);
 
 	/* Retrieve timestamp of certificate */
 	tm = X509_get_notAfter(certificate);
