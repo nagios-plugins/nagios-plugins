@@ -163,9 +163,9 @@ AC_SUBST(SOCKETLIBS)
 
 dnl Check for POSIX thread libraries
 AC_CHECK_HEADERS(pthread.h)
-AC_CHECK_LIB(pthread,pthread_create,THRLIBS="-lpthread",
-             AC_CHECK_LIB(pthread,pthread_create,THRLIBS="-lpthread -lrt",-lrt))
-AC_SUBST(THRLIBS)
+AC_CHECK_LIB(pthread,pthread_create,THREADLIBS="-lpthread",
+             AC_CHECK_LIB(pthread,pthread_create,THREADLIBS="-lpthread -lrt",-lrt))
+AC_SUBST(THREADLIBS)
 
 dnl
 dnl check for math-related functions needing -lm
@@ -1500,6 +1500,16 @@ else
 	AC_MSG_WARN([Get ssh in order to make check_by_ssh plugin])
 fi
 
+AC_PATH_PROG(PATH_TO_SUDO,sudo)
+AC_ARG_WITH(sudo_command,
+            ACX_HELP_STRING([--with-sudo-command=PATH],
+                            [sets path to sudo]), PATH_TO_SUDO=$withval)
+if test -n "$PATH_TO_SUDO"
+then
+	AC_DEFINE_UNQUOTED(PATH_TO_SUDO,"$PATH_TO_SUDO",[path to sudo])
+else
+	AC_MSG_WARN([Could not find sudo or eqivalent])
+fi
 
 AC_PATH_PROG(PATH_TO_MAILQ,mailq)
 AC_ARG_WITH(mailq_command,
