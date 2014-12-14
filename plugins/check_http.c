@@ -680,54 +680,50 @@ char *
 decode_chunked_page (const char *raw, char *dst)
 {
   unsigned long int chunksize;
-  char *raw_pos;
-  char *dst_pos;
+  char *raw_pos = (char *)raw;
+  char *dst_pos = (char *)dst;
   const char *raw_end = raw + strlen(raw);
 
-  raw_pos = (char *)raw;
-  dst_pos = (char *)dst;
-
   while (chunksize = strtoul(raw_pos, NULL, 16)) {
-    if (chunksize <= 0)
-      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body\n"));
+    if (chunksize <= 0) {
+      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, invalid chunk size\n"));
+    }
 
     // soak up the optional chunk params (which we will ignore)
-    while (*raw_pos && *raw_pos != '\r' && *raw_pos != '\n')
-      raw_pos++;
+    while (*raw_pos && *raw_pos != '\r' && *raw_pos != '\n') raw_pos++;
 
     // soak up the leading CRLF
-    if (*raw_pos && *raw_pos == '\r')
+    if (*raw_pos && *raw_pos == '\r' && *(++raw_pos) && *raw_pos == '\n') {
       raw_pos++;
-    else
-      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body\n"));
-    if (*raw_pos && *raw_pos == '\n')
-      raw_pos++;
-    else
-      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body\n"));
+    }
+    else {
+      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, invalid format\n"));
+    }
 
-    if (*raw_pos && *dst_pos && (raw_pos + chunksize) < raw_end )
+    // move chunk from raw into dst, only if we can fit within the buffer
+    if (*raw_pos && *dst_pos && (raw_pos + chunksize) < raw_end ) {
       strncpy(dst_pos, raw_pos, chunksize);
-    else
-      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body\n"));
+    }
+    else {
+      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, too large for destination\n"));
+    }
 
     raw_pos += chunksize;
     dst_pos += chunksize;
 
     // soak up the ending CRLF
-    if (*raw_pos && *raw_pos == '\r')
+    if (*raw_pos && *raw_pos == '\r' && *(++raw_pos) && *raw_pos == '\n') {
       raw_pos++;
-    else
-      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body\n"));
-    if (*raw_pos && *raw_pos == '\n')
-      raw_pos++;
-    else
-      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body\n"));
+    }
+    else {
+      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, invalid format\n"));
+    }
   }
 
-  if (*dst_pos)
-    *dst_pos = '\0';
-  else
+  if (*dst_pos) *dst_pos = '\0';
+  else {
     die (STATE_UNKNOWN, _("HTTP UNKNOWN - Memory allocation error\n"));
+  }
 
   return dst;
 }
@@ -740,28 +736,30 @@ header_value (const char *headers, const char *header)
   const char *value_end;
   int value_size;
 
-  s = strcasestr(headers, header);
-  if (s == NULL)
+  if (!(s = strcasestr(headers, header))) {
     return NULL;
+  }
 
-  s += sizeof(header);
+  s += strlen(header);
 
-  while (*s && (isspace(*s) || *s == ':'))
-    s++;
-  while (*s && isspace(*s))
-    s++;
+  while (*s && (isspace(*s) || *s == ':')) s++;
+  while (*s && isspace(*s)) s++;
 
   value_end = strchr(s, '\r');
-  if (value_end == NULL)
-    die (STATE_UNKNOWN, _("HTTP_UNKNOWN - Failed to parse response headers\n"));
+  if (!value_end) {
+      die (STATE_UNKNOWN, _("HTTP_UNKNOWN - Failed to parse response headers\n"));
+  }
 
-  value_size = (value_end - s);
+  value_size = value_end - s;
 
-  value = (char *) malloc(value_size + 1);
-  if (value == NULL)
+  value = malloc(value_size + 1);
+  if (!value) {
     die (STATE_UNKNOWN, _("HTTP_UNKNOWN - Memory allocation error\n"));
+  }
 
-  strncpy(value, s, value_size);
+  if (!strncpy(value, s, value_size)) {
+    die(STATE_UNKNOWN, _("HTTP_UNKNOWN - Memory copy failure\n"));
+  }
   value[value_size] = '\0';
 
   return value;
@@ -772,13 +770,16 @@ chunked_transfer_encoding (const char *headers)
 {
   int result;
   char *encoding = header_value(headers, "Transfer-Encoding");
-  if (!encoding)
+  if (!encoding) {
     return 0;
+  }
 
-  if (strncmp(encoding, "chunked", sizeof("chunked")) == 0)
+  if (! strncmp(encoding, "chunked", sizeof("chunked"))) {
     result = 1;
-  else
+  }
+  else {
     result = 0;
+  }
 
   free(encoding);
   return result;
@@ -1152,10 +1153,14 @@ check_http (void)
     page += (size_t) strcspn (page, "\r\n");
     pos = page;
     if ((strspn (page, "\r") == 1 && strspn (page, "\r\n") >= 2) ||
-        (strspn (page, "\n") == 1 && strspn (page, "\r\n") >= 2))
+        (strspn (page, "\n") == 1 && strspn (page, "\r\n") >= 2)) {
       page += (size_t) 2;
-    else
+      pos += (size_t) 2;
+    }
+    else {
       page += (size_t) 1;
+      pos += (size_t) 1;
+    }
   }
   page += (size_t) strspn (page, "\r\n");
   header[pos - header] = 0;
