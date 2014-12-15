@@ -58,6 +58,7 @@ int np_net_ssl_init_with_hostname_version_and_cert(int sd, char *host_name, int 
 		break;
 	case 1: /* TLSv1 protocol */
 		method = TLSv1_client_method();
+		ssl_options = SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3;
 		break;
 	case 2: /* SSLv2 protocol */
 #if defined(USE_GNUTLS) || defined(OPENSSL_NO_SSL2)
@@ -65,10 +66,12 @@ int np_net_ssl_init_with_hostname_version_and_cert(int sd, char *host_name, int 
 		return STATE_CRITICAL;
 #else
 		method = SSLv2_client_method();
+		ssl_options = SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1;
 #endif
 		break;
 	case 3: /* SSLv3 protocol */
 		method = SSLv3_client_method();
+		ssl_options = SSL_OP_NO_SSLv2 | SSL_OP_NO_TLSv1;
 		break;
 	default: /* Unsupported */
 		printf("%s\n", _("CRITICAL - Unsupported SSL protocol version."));
@@ -94,10 +97,9 @@ int np_net_ssl_init_with_hostname_version_and_cert(int sd, char *host_name, int 
 		}
 	}
 #ifdef SSL_OP_NO_TICKET
-	ssl_options = ssl_options | SSL_OP_NO_TICKET;
+	ssl_options |= SSL_OP_NO_TICKET;
 #endif
-	if (ssl_options)
-		SSL_CTX_set_options(c, ssl_options);
+	if (ssl_options) SSL_CTX_set_options(c, ssl_options);
 	SSL_CTX_set_mode(c, SSL_MODE_AUTO_RETRY);
 	if ((s = SSL_new(c)) != NULL) {
 #ifdef SSL_set_tlsext_host_name
