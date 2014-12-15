@@ -32,7 +32,7 @@ for name in $(git log | grep "Author:" | sed 's/Author: //g' | sed 's/ <.*>//g' 
 	fi
 done
 
-echo "Authors not found in thanks.in:"
+echo "Authors not found:"
 for name in ${authors[@]}; do
 	echo "${name}" | sed 's/_/ /g'
 done
