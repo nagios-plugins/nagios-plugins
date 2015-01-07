@@ -65,6 +65,7 @@ const char *email = "devel@nagios-plugins.org";
 #define L_RATE_MULTIPLIER CHAR_MAX+2
 #define L_INVERT_SEARCH CHAR_MAX+3
 #define L_OFFSET CHAR_MAX+4
+#define L_DIVISOR CHAR_MAX+5
 
 /* Gobble to string - stop incrementing c when c[0] match one of the
  * characters in s */
@@ -145,6 +146,7 @@ char *miblist = NULL;
 int needmibs = FALSE;
 int calculate_rate = 0;
 double offset = 0.0;
+int divisor = 1;
 int rate_multiplier = 1;
 state_data *previous_state;
 double *previous_value;
@@ -462,7 +464,7 @@ main (int argc, char **argv)
 
 		/* Process this block for numeric comparisons */
 		/* Make some special values,like Timeticks numeric only if a threshold is defined */
-		if (thlds[i]->warning || thlds[i]->critical || calculate_rate) {
+		if (thlds[i]->warning || thlds[i]->critical || calculate_rate || divisor > 1) {
 			ptr = strpbrk (show, "-0123456789");
 			if (ptr == NULL)
 				die (STATE_UNKNOWN,_("No valid data returned (%s)\n"), show);
@@ -470,7 +472,7 @@ main (int argc, char **argv)
 				response_size += OID_COUNT_STEP;
 				response_value = realloc(response_value, response_size * sizeof(*response_value));
 			}
-			response_value[i] = strtod (ptr, NULL) + offset;
+			response_value[i] = strtod (ptr, NULL) / divisor + offset;
 
 			if(calculate_rate) {
 				if (previous_state!=NULL) {
@@ -679,6 +681,7 @@ process_arguments (int argc, char **argv)
 		{"rate", no_argument, 0, L_CALCULATE_RATE},
 		{"rate-multiplier", required_argument, 0, L_RATE_MULTIPLIER},
 		{"offset", required_argument, 0, L_OFFSET},
+		{"divisor", required_argument, 0, L_DIVISOR},
 		{"invert-search", no_argument, 0, L_INVERT_SEARCH},
 		{"perf-oids", no_argument, 0, 'O'},
 		{0, 0, 0, 0}
@@ -913,6 +916,10 @@ process_arguments (int argc, char **argv)
 			break;
 		case L_OFFSET:
                         offset=strtod(optarg,NULL);
+			break;
+		case L_DIVISOR:
+			if(!is_integer(optarg)||((divisor=atoi(optarg))<=0))
+				usage2(_("Divisor must be a positive integer"),optarg);
 			break;
 		case L_INVERT_SEARCH:
 			invert_search=1;
@@ -1166,6 +1173,8 @@ print_help (void)
 	printf ("    %s\n", _("Converts rate per second. For example, set to 60 to convert to per minute"));
 	printf (" %s\n", "--offset=OFFSET");
 	printf ("    %s\n", _("Add/substract the specified OFFSET to numeric sensor data"));
+	printf (" %s\n", "--divisor=DIVISOR");
+	printf ("    %s\n", _("Divide the numeric sensor data by the specified DIVISOR"));
 
 	/* Tests Against Strings */
 	printf (" %s\n", "-s, --string=STRING");
