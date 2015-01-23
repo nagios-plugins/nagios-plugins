@@ -215,7 +215,7 @@ main (int argc, char **argv)
     if (strstr (chld_out.line[i], _("Non-authoritative answer:")))
       non_authoritative = TRUE;
 
-    result = error_scan (chld_out.line[i]);
+    result = (result < error_scan(chld_out.line[i])) ? error_scan(chld_out.line[i]) : result;
     if (result != STATE_OK) {
       msg = strchr (chld_out.line[i], ':');
       if(msg) msg++;
