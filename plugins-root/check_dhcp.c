@@ -466,11 +466,20 @@ int send_dhcp_discover(int sock){
 	discover_packet.hlen=ETHERNET_HARDWARE_ADDRESS_LENGTH;
 
 	/*
-	 * transaction ID is supposed to be random.  We won't use the address so
-	 * we don't care about high entropy here.  time(2) is good enough.
+	 * transaction ID is supposed to be random.
+	 * This allows for proper randomness if the system supports it, and fallback to
+	 * srand & random if not.
 	 */
-	srand(time(NULL));
-	packet_xid=random();
+	int randfd = open("/dev/urandom", O_RDONLY);
+	if (randfd > 2 && read(randfd, (char *)&packet_xid, sizeof(uint32_t)) >= 0) {
+		/* no-op as we have successfully filled packet_xid */
+	}
+	else {
+		 /* fallback bad rand */
+		srand(time(NULL));
+		packet_xid=random();
+	}
+	if (randfd > 2) close(randfd);
 	discover_packet.xid=htonl(packet_xid);
 
 	/**** WHAT THE HECK IS UP WITH THIS?!?  IF I DON'T MAKE THIS CALL, ONLY ONE SERVER RESPONSE IS PROCESSED!!!! ****/
