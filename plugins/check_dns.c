@@ -250,7 +250,7 @@ main (int argc, char **argv)
     }
     *adrp = 0;
   } else
-    die (STATE_CRITICAL, "%s%s%s\n", _("DNS CRITICAL - '"), NSLOOKUP_COMMAND, _("' msg parsing exited with no address"), NSLOOKUP_COMMAND);
+    die (STATE_CRITICAL, "%s%s%s\n", _("DNS CRITICAL - '"), NSLOOKUP_COMMAND, _("' msg parsing exited with no address"));
 
   /* compare to expected address */
   if (result == STATE_OK && expected_address_cnt > 0) {
