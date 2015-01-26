@@ -54,6 +54,7 @@ void print_usage (void);
 #define ADDRESS_LENGTH 384 
 char query_address[ADDRESS_LENGTH] = "";
 char dns_server[ADDRESS_LENGTH] = "";
+char tmp_dns_server[ADDRESS_LENGTH] = "";
 char ptr_server[ADDRESS_LENGTH] = "";
 char query_type[16] = "";
 int query_set = FALSE;
@@ -98,8 +99,8 @@ main (int argc, char **argv)
   char **addresses = NULL;
   int n_addresses = 0;
   char *msg = NULL;
-  char query_found[16] = "";
-  int query_size = 16;
+  char query_found[24] = "";
+  int query_size = 24;
   char *temp_buffer = NULL;
   int non_authoritative = TRUE;
   int result = STATE_UNKNOWN;
@@ -156,16 +157,31 @@ main (int argc, char **argv)
         temp_buffer = strchr(chld_out.line[i], ':');
         temp_buffer++;
 
-	/* Strip leading tabs */
-	for (; *temp_buffer != '\0' && *temp_buffer == '\t'; temp_buffer++)
-	    /* NOOP */;
+	if (temp_buffer > (char *)1) {
+          /* Strip leading tabs */
+          for (; *temp_buffer != '\0' && *temp_buffer == '\t'; temp_buffer++)
+            /* NOOP */;
 
-	strip(temp_buffer);
-	if (temp_buffer==NULL || strlen(temp_buffer)==0)
-	    die (STATE_CRITICAL, "%s%s%s\n", _("DNS CRITICAL - '"), NSLOOKUP_COMMAND, _("' returned empty server string"));
+        strip(temp_buffer);
+        if (temp_buffer==NULL || strlen(temp_buffer)==0)
+          die (STATE_CRITICAL, "%s%s%s\n", _("DNS CRITICAL - '"), NSLOOKUP_COMMAND, _("' returned empty server string"));
 
-	if (strcmp(temp_buffer, dns_server) != 0)
-            die (STATE_CRITICAL, "%s %s\n", _("DNS CRITICAL - No response from DNS server:"), dns_server);
+        if (strcmp(temp_buffer, dns_server) != 0)
+          die (STATE_CRITICAL, "%s %s\n", _("DNS CRITICAL - No response from DNS server:"), dns_server);
+      }
+    }
+    /* Provide the server name\ip to error_scan when not using -s */
+    else if (strlen(tmp_dns_server) == 0) {
+	temp_buffer = strchr(chld_out.line[i], ':');
+	temp_buffer++;
+	if (temp_buffer > (char *)1) {
+	  /* Strip leading tabs */
+	  for (; *temp_buffer != '\0' && *temp_buffer == '\t'; temp_buffer++)
+	      /* NOOP */;
+
+	  strip(temp_buffer);
+	  strncpy(tmp_dns_server, temp_buffer, ADDRESS_LENGTH);
+	}
     }
 
     if (strstr (chld_out.line[i], "Authoritative answers can be found from:")) {
@@ -205,7 +221,7 @@ main (int argc, char **argv)
     /* needed for non-query ptr\reverse lookup checks */
     else if (strstr(chld_out.line[i], ".in-addr.arpa") && !query_set) {
       if ((temp_buffer = strstr(chld_out.line[i], "name = ")))
-        addresses[n_addresses++] = strdup(temp_buffer + 7);
+        addresses[n_addresses++] = strdup(temp_buffer);
       else {
         msg = (char *)_("Warning plugin error");
         result = STATE_WARNING;
@@ -215,7 +231,11 @@ main (int argc, char **argv)
     if (strstr (chld_out.line[i], _("Non-authoritative answer:")))
       non_authoritative = TRUE;
 
-    result = (result < error_scan(chld_out.line[i])) ? error_scan(chld_out.line[i]) : result;
+    int tmp = error_scan(chld_out.line[i]);
+    result = (result == STATE_UNKNOWN)
+      ? tmp
+      : (result < tmp)
+        ? tmp : result;
     if (result != STATE_OK) {
       msg = strchr (chld_out.line[i], ':');
       if(msg) msg++;
@@ -349,11 +369,11 @@ error_scan (char *input_buffer)
 
   /* DNS server is not running... */
   else if (strstr (input_buffer, "No response from server"))
-    die (STATE_CRITICAL, "%s %s\n", _("No response from DNS"), dns_server);
+    die (STATE_CRITICAL, "%s %s\n", _("No response from DNS"), (strlen(dns_server)==0)?tmp_dns_server:dns_server);
 
   /* Host name is valid, but server doesn't have records... */
   else if (strstr (input_buffer, "No records") || strstr (input_buffer, "No answer"))
-    die (STATE_CRITICAL, "%s %s %s\n", _("DNS"), dns_server, _("has no records"));
+    die (STATE_CRITICAL, "%s %s %s\n", _("DNS"), (strlen(dns_server)==0)?tmp_dns_server:dns_server, _("has no records"));
 
   /* Connection was refused */
   else if (strstr (input_buffer, "Connection refused") ||
@@ -361,15 +381,15 @@ error_scan (char *input_buffer)
            strstr (input_buffer, "Refused") ||
            (strstr (input_buffer, "** server can't find") &&
             strstr (input_buffer, ": REFUSED")))
-    die (STATE_CRITICAL, "%s %s %s\n", _("Connection to DNS"), dns_server, _("was refused"));
+    die (STATE_CRITICAL, "%s %s %s\n", _("Connection to DNS"), (strlen(dns_server)==0)?tmp_dns_server:dns_server, _("was refused"));
 
   /* Query refused (usually by an ACL in the namserver) */
   else if (strstr (input_buffer, "Query refused"))
-    die (STATE_CRITICAL, "%s %s\n", _("Query was refused by DNS server at"), dns_server);
+    die (STATE_CRITICAL, "%s %s\n", _("Query was refused by DNS server at"), (strlen(dns_server)==0)?tmp_dns_server:dns_server);
 
   /* No information (e.g. nameserver IP has two PTR records) */
   else if (strstr (input_buffer, "No information"))
-    die (STATE_CRITICAL, "%s %s\n", _("No information returned by DNS server at"), dns_server);
+    die (STATE_CRITICAL, "%s %s\n", _("No information returned by DNS server at"), (strlen(dns_server)==0)?tmp_dns_server:dns_server);
 
   /* Host or domain name does not exist */
   else if (strstr (input_buffer, "Non-existent") ||
@@ -383,7 +403,7 @@ error_scan (char *input_buffer)
 
   /* Internal server failure */
   else if (strstr (input_buffer, "Server failure"))
-    die (STATE_CRITICAL, "%s %s\n", _("DNS failure for"), dns_server);
+    die (STATE_CRITICAL, "%s %s\n", _("DNS failure for"), (strlen(dns_server)==0)?tmp_dns_server:dns_server);
 
   /* Request error or the DNS lookup timed out */
   else if (strstr (input_buffer, "Format error") ||
@@ -498,21 +518,6 @@ process_arguments (int argc, char **argv)
     default: /* args not parsable */
       usage5();
     }
-  }
-
-  c = optind;
-  if (strlen(query_address)==0 && c<argc) {
-    if (strlen(argv[c])>=ADDRESS_LENGTH)
-      die (STATE_UNKNOWN, "%s\n", _("Input buffer overflow"));
-    strcpy (query_address, argv[c++]);
-  }
-
-  if (strlen(dns_server)==0 && c<argc) {
-    /* TODO: See -s option */
-    host_or_die(argv[c]);
-    if (strlen(argv[c]) >= ADDRESS_LENGTH)
-      die (STATE_UNKNOWN, "%s\n", _("Input buffer overflow"));
-    strcpy (dns_server, argv[c++]);
   }
 
   set_thresholds(&time_thresholds, warning, critical);
