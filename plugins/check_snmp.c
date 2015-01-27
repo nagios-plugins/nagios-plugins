@@ -330,10 +330,10 @@ main (int argc, char **argv)
 	xasprintf (&command_line[10 + numcontext + numauthpriv], "%s:%s", server_address, port);
 
 	/* This is just for display purposes, so it can remain a string */
-	xasprintf(&cl_hidden_auth, "%s -Le -t %d -r %d -m %s -v %s %s %s %s:%s",
-		snmpcmd, timeout_interval, retries,
+	xasprintf(&cl_hidden_auth, "%s -Le -t %d -r %d -m %s -v %s %s %s:%s",
+		snmpcmd, command_interval, retries,
 		strlen(miblist) ? miblist : "''", 
-		proto, "[context]", "[authpriv]", server_address, port);
+		proto, "[authpriv]", server_address, port);
 
 	for (i = 0; i < numoids; i++) {
 		command_line[10 + numcontext + numauthpriv + 1 + i] = oids[i];
