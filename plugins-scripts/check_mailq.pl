@@ -199,20 +199,20 @@ if ($mailq eq "sendmail") {
 	## now check the queue length(s)
 
 	if ($msg_q == 0) {
-		$msg = "OK: $mailq mailq is empty";
+		$msg = "OK: mailq is empty";
 		$state = $ERRORS{'OK'};
 	} else {
 		print "msg_q = $msg_q warn=$opt_w crit=$opt_c\n" if $verbose;
 	
 		# overall queue length
 		if ($msg_q < $opt_w) {
-			$msg = "OK: $mailq mailq ($msg_q) is below threshold ($opt_w/$opt_c)";
+			$msg = "OK: mailq ($msg_q) is below threshold ($opt_w/$opt_c)";
 			$state = $ERRORS{'OK'};
 		}elsif ($msg_q >= $opt_w  && $msg_q < $opt_c) {
-			$msg = "WARNING: $mailq mailq is $msg_q (threshold w = $opt_w)";
+			$msg = "WARNING: mailq is $msg_q (threshold w = $opt_w)";
 			$state = $ERRORS{'WARNING'};
 		}else {
-			$msg = "CRITICAL: $mailq mailq is $msg_q (threshold c = $opt_c)";
+			$msg = "CRITICAL: mailq is $msg_q (threshold c = $opt_c)";
 			$state = $ERRORS{'CRITICAL'};
 		}
 
@@ -344,20 +344,20 @@ elsif ( $mailq eq "postfix" ) {
 
         # check queue length(s)
         if ($msg_q == 0){
-                $msg = "OK: $mailq mailq reports queue is empty";
+                $msg = "OK: mailq reports queue is empty";
                 $state = $ERRORS{'OK'};
         } else {
                 print "msg_q = $msg_q warn=$opt_w crit=$opt_c\n" if $verbose;
 
                 # overall queue length
                 if ($msg_q < $opt_w) {
-                        $msg = "OK: $mailq mailq ($msg_q) is below threshold ($opt_w/$opt_c)";
+                        $msg = "OK: mailq ($msg_q) is below threshold ($opt_w/$opt_c)";
                         $state = $ERRORS{'OK'};
                 }elsif  ($msg_q >= $opt_w  && $msg_q < $opt_c) {
-                        $msg = "WARNING: $mailq mailq is $msg_q (threshold w = $opt_w)";
+                        $msg = "WARNING: mailq is $msg_q (threshold w = $opt_w)";
                         $state = $ERRORS{'WARNING'};
                 }else {
-                        $msg = "CRITICAL: $mailq mailq is $msg_q (threshold c = $opt_c)";
+                        $msg = "CRITICAL: mailq is $msg_q (threshold c = $opt_c)";
                         $state = $ERRORS{'CRITICAL'};
                 }
 
@@ -431,13 +431,13 @@ elsif ( $mailq eq "qmail" ) {
 		
 		# overall queue length
 		if ($msg_q < $opt_w) {
-			$msg = "OK: $mailq mailq ($msg_q) is below threshold ($opt_w/$opt_c)";
+			$msg = "OK: mailq ($msg_q) is below threshold ($opt_w/$opt_c)";
 			$state = $ERRORS{'OK'};
 		}elsif ($msg_q >= $opt_w  && $msg_q < $opt_c) {
-			$msg = "WARNING: $mailq mailq is $msg_q (threshold w = $opt_w)";
+			$msg = "WARNING: mailq is $msg_q (threshold w = $opt_w)";
 			$state = $ERRORS{'WARNING'};
 		}else {
-			$msg = "CRITICAL: $mailq mailq is $msg_q (threshold c = $opt_c)";
+			$msg = "CRITICAL: mailq is $msg_q (threshold c = $opt_c)";
 			$state = $ERRORS{'CRITICAL'};
 		}
 
@@ -489,13 +489,13 @@ elsif ( $mailq eq "exim" ) {
 		exit $ERRORS{CRITICAL};
 	}
 	if ($msg_q < $opt_w) {
-		$msg = "OK: $mailq mailq ($msg_q) is below threshold ($opt_w/$opt_c)";
+		$msg = "OK: mailq ($msg_q) is below threshold ($opt_w/$opt_c)";
 		$state = $ERRORS{'OK'};
 	}elsif ($msg_q >= $opt_w  && $msg_q < $opt_c) {
-		$msg = "WARNING: $mailq mailq is $msg_q (threshold w = $opt_w)";
+		$msg = "WARNING: mailq is $msg_q (threshold w = $opt_w)";
 		$state = $ERRORS{'WARNING'};
 	}else {
-		$msg = "CRITICAL: $mailq mailq is $msg_q (threshold c = $opt_c)";
+		$msg = "CRITICAL: mailq is $msg_q (threshold c = $opt_c)";
 		$state = $ERRORS{'CRITICAL'};
 	}
 } # end of ($mailq eq "exim")
@@ -526,13 +526,13 @@ elsif ( $mailq eq "nullmailer" ) {
 	}
 	close(MAILQ) ;
 	if ($msg_q < $opt_w) {
-		$msg = "OK: $mailq mailq ($msg_q) is below threshold ($opt_w/$opt_c)";
+		$msg = "OK: mailq ($msg_q) is below threshold ($opt_w/$opt_c)";
 		$state = $ERRORS{'OK'};
 	}elsif ($msg_q >= $opt_w  && $msg_q < $opt_c) {
-		$msg = "WARNING: $mailq mailq is $msg_q (threshold w = $opt_w)";
+		$msg = "WARNING: mailq is $msg_q (threshold w = $opt_w)";
 		$state = $ERRORS{'WARNING'};
 	}else {
-		$msg = "CRITICAL: $mailq mailq is $msg_q (threshold c = $opt_c)";
+		$msg = "CRITICAL: mailq is $msg_q (threshold c = $opt_c)";
 		$state = $ERRORS{'CRITICAL'};
 	}
 } # end of ($mailq eq "nullmailer")
@@ -605,30 +605,7 @@ sub process_arguments(){
 			exit $ERRORS{'UNKNOWN'};
 		}
 	}else{
-		if (defined $utils::PATH_TO_QMAIL_QSTAT
-		    && -x $utils::PATH_TO_QMAIL_QSTAT)
-		{
-			$mailq = 'qmail';
-		}
-		elsif (-d '/var/lib/postfix' || -d '/var/local/lib/postfix'
-		       || -e '/usr/sbin/postfix' || -e '/usr/local/sbin/postfix')
-		{
-			$mailq = 'postfix';
-		}
-		elsif (-d '/usr/lib/exim4' || -d '/usr/local/lib/exim4'
-		       || -e '/usr/sbin/exim' || -e '/usr/local/sbin/exim')
-		{
-			$mailq = 'exim';
-		}
-		elsif (-d '/usr/lib/nullmailer' || -d '/usr/local/lib/nullmailer'
-		       || -e '/usr/sbin/nullmailer-send'
-		       || -e '/usr/local/sbin/nullmailer-send')
-		{
-			$mailq = 'nullmailer';
-		}
-		else {
-			$mailq = 'sendmail';
-		}
+		$mailq = 'sendmail' ;
 	}
 		
 	return $ERRORS{'OK'};
@@ -651,7 +628,7 @@ sub print_help () {
 	print "-W (--Warning)   = Min. number of messages for same domain in queue to generate warning\n";
 	print "-C (--Critical)  = Min. number of messages for same domain in queue to generate critical alert ( W < C )\n";
 	print "-t (--timeout)   = Plugin timeout in seconds (default = $utils::TIMEOUT)\n";
-	print "-M (--mailserver) = [ sendmail | qmail | postfix | exim | nullmailer ] (default = autodetect)\n";
+	print "-M (--mailserver) = [ sendmail | qmail | postfix | exim | nullmailer ] (default = sendmail)\n";
 	print "-h (--help)\n";
 	print "-V (--version)\n";
 	print "-v (--verbose)   = debugging output\n";
@@ -659,8 +636,6 @@ sub print_help () {
 	print "Note: -w and -c are required arguments.  -W and -C are optional.\n";
 	print " -W and -C are applied to domains listed on the queues - both FROM and TO. (sendmail)\n";
 	print " -W and -C are applied message not yet preproccessed. (qmail)\n";
-	print " This plugin tries to autodetect which mailserver you are running,\n";
-	print " you can override the autodetection with -M.\n";
 	print " This plugin uses the system mailq command (sendmail) or qmail-stat (qmail)\n";
 	print " to look at the queues. Mailq can usually only be accessed by root or \n";
 	print " a TrustedUser. You will have to set appropriate permissions for the plugin to work.\n";

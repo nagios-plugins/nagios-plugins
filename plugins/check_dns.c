@@ -50,6 +50,7 @@ char query_address[ADDRESS_LENGTH] = "";
 char dns_server[ADDRESS_LENGTH] = "";
 char ptr_server[ADDRESS_LENGTH] = "";
 char query_type[16] = "";
+int query_set = FALSE;
 int verbose = FALSE;
 char **expected_address = NULL;
 int expected_address_cnt = 0;
@@ -155,25 +156,25 @@ main (int argc, char **argv)
     if (strstr (chld_out.line[i], "Name:"))
       parse_address = TRUE;
     /* begin handling types of records */
-    if (strstr (chld_out.line[i], "AAAA address") && (strncmp(query_type, "-querytype=AAAA", query_size) == 0 || strncmp(query_type, "-querytype=ALL", query_size) == 0)) {
+    if (strstr (chld_out.line[i], "AAAA address") && (strncmp(query_type, "-querytype=AAAA", query_size) == 0 || strncmp(query_type, "-querytype=ANY", query_size) == 0)) {
       if (verbose) printf("Found AAAA record\n");
       temp_buffer = rindex (chld_out.line[i], ' ');
       addresses[n_addresses++] = check_new_address(temp_buffer);
       strncpy(query_found, "-querytype=AAAA", sizeof(query_found));
     }
-    else if (strstr (chld_out.line[i], "exchanger =") && (strncmp(query_type, "-querytype=MX", query_size) == 0 || strncmp(query_type, "-querytype=ALL", query_size) == 0)) {
+    else if (strstr (chld_out.line[i], "exchanger =") && (strncmp(query_type, "-querytype=MX", query_size) == 0 || strncmp(query_type, "-querytype=ANY", query_size) == 0)) {
       if (verbose) printf("Found MX record\n");
       temp_buffer = index (chld_out.line[i], '=');
       addresses[n_addresses++] = check_new_address(temp_buffer);
       strncpy(query_found, "-querytype=MX", sizeof(query_found));
     }
-    else if (strstr (chld_out.line[i], "service =") && (strncmp(query_type, "-querytype=SRV", query_size) == 0 || strncmp(query_type, "-querytype=ALL", query_size) == 0)) {
+    else if (strstr (chld_out.line[i], "service =") && (strncmp(query_type, "-querytype=SRV", query_size) == 0 || strncmp(query_type, "-querytype=ANY", query_size) == 0)) {
       if (verbose) printf("Found SRV record\n");
       temp_buffer = index (chld_out.line[i], '=');
       addresses[n_addresses++] = check_new_address(temp_buffer);
       strncpy(query_found, "-querytype=SRV", sizeof(query_found));
     }
-    else if (accept_cname && strstr (chld_out.line[i], "canonical name =") && (strncmp(query_type, "-querytype=CNAME", query_size) == 0 || strncmp(query_type, "-querytype=ALL", query_size) == 0)) {
+    else if (accept_cname && strstr (chld_out.line[i], "canonical name =") && (strncmp(query_type, "-querytype=CNAME", query_size) == 0 || strncmp(query_type, "-querytype=ANY", query_size) == 0)) {
       if (verbose) printf("Found CNAME record\n");
       temp_buffer = index (chld_out.line[i], '=');
       addresses[n_addresses++] = check_new_address(temp_buffer);
@@ -186,44 +187,53 @@ main (int argc, char **argv)
       addresses[n_addresses++] = check_new_address(temp_buffer);
       strncpy(query_found, "-querytype=A", sizeof(query_found));
     }
-    else if (strstr (chld_out.line[i], "nameserver =") && (strncmp(query_type, "-querytype=NS", query_size) == 0 || strncmp(query_type, "-querytype=ALL", query_size) == 0)) {
+    else if (strstr (chld_out.line[i], "nameserver =") && (strncmp(query_type, "-querytype=NS", query_size) == 0 || strncmp(query_type, "-querytype=ANY", query_size) == 0)) {
       if (verbose) printf("Found NS record\n");
       temp_buffer = index (chld_out.line[i], '=');
       addresses[n_addresses++] = check_new_address(temp_buffer);
       strncpy(query_found, "-querytype=NS", sizeof(query_found));
     }
-    else if (strstr (chld_out.line[i], "dname =") && (strncmp(query_type, "-querytype=DNAME", query_size) == 0 || strncmp(query_type, "-querytype=ALL", query_size) == 0)) {
+    else if (strstr (chld_out.line[i], "dname =") && (strncmp(query_type, "-querytype=DNAME", query_size) == 0 || strncmp(query_type, "-querytype=ANY", query_size) == 0)) {
       if (verbose) printf("Found DNAME record\n");
       temp_buffer = index (chld_out.line[i], '=');
       addresses[n_addresses++] = check_new_address(temp_buffer);
       strncpy(query_found, "-querytype=DNAME", sizeof(query_found));
     }
     /* must be after other records with "name" as an identifier, as ptr does not spefify */
-    else if (strstr (chld_out.line[i], "name =") && (strncmp(query_type, "-querytype=PTR", query_size) == 0 || strncmp(query_type, "-querytype=ALL", query_size) == 0)) {
+    else if (strstr (chld_out.line[i], "name =") && (strncmp(query_type, "-querytype=PTR", query_size) == 0 || strncmp(query_type, "-querytype=ANY", query_size) == 0)) {
       if (verbose) printf("Found PTR record\n");
       temp_buffer = index (chld_out.line[i], '=');
       addresses[n_addresses++] = check_new_address(temp_buffer);
       strncpy(query_found, "-querytype=PTR", sizeof(query_found));
     }
-    else if (strstr (chld_out.line[i], "protocol =") && (strncmp(query_type, "-querytype=WKS", query_size) == 0 || strncmp(query_type, "-querytype=ALL", query_size) == 0)) {
+    else if (strstr (chld_out.line[i], "protocol =") && (strncmp(query_type, "-querytype=WKS", query_size) == 0 || strncmp(query_type, "-querytype=ANY", query_size) == 0)) {
       if (verbose) printf("Found WKS record\n");
       temp_buffer = index (chld_out.line[i], '=');
       addresses[n_addresses++] = check_new_address(temp_buffer);
       strncpy(query_found, "-querytype=WKS", sizeof(query_found));
     }
     /* TODO: needs to be changed to handle txt output and max size of txt recrods */
-    else if (strstr (chld_out.line[i], "text =") && (strncmp(query_type, "-querytype=TXT", query_size) == 0 || strncmp(query_type, "-querytype=ALL", query_size) == 0)) {
+    else if (strstr (chld_out.line[i], "text =") && (strncmp(query_type, "-querytype=TXT", query_size) == 0 || strncmp(query_type, "-querytype=ANY", query_size) == 0)) {
       if (verbose) printf("Found TXT record\n");
       temp_buffer = index (chld_out.line[i], '=');
       addresses[n_addresses++] = check_new_address(temp_buffer);
       strncpy(query_found, "-querytype=TXT", sizeof(query_found));
     }
     /* only matching for origin records, if requested other fields could be included at a later date */
-    else if (strstr (chld_out.line[i], "origin =") && (strncmp(query_type, "-querytype=SOA", query_size) == 0 || strncmp(query_type, "-querytype=ALL", query_size) == 0)) {
+    else if (strstr (chld_out.line[i], "origin =") && (strncmp(query_type, "-querytype=SOA", query_size) == 0 || strncmp(query_type, "-querytype=ANY", query_size) == 0)) {
       if (verbose) printf("Found SOA record\n");
       temp_buffer = index(chld_out.line[i], '=');
       addresses[n_addresses++] = check_new_address(temp_buffer);
       strncpy(query_found, "-querytype=SOA", sizeof(query_found));
+    }
+    /* needed for non-query ptr\reverse lookup checks */
+    else if (strstr(chld_out.line[i], ".in-addr.arpa") && !query_set) {
+      if ((temp_buffer = strstr(chld_out.line[i], "name = ")))
+        addresses[n_addresses++] = strdup(temp_buffer + 7);
+      else {
+        msg = (char *)_("Warning plugin error");
+        result = STATE_WARNING;
+      }
     }
 
     if (strstr (chld_out.line[i], _("Non-authoritative answer:"))) {
@@ -499,6 +509,7 @@ process_arguments (int argc, char **argv)
       strntoupper(optarg, sizeof(optarg));
       strcpy(query_type, "-querytype=");
       strcat(query_type, optarg);
+      query_set = TRUE;
       break;
     case 'A': /* expect authority */
       expect_authority = TRUE;
