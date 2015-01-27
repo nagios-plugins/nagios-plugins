@@ -30,8 +30,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-/* TODO: die like N::P if config file is not found */
-
 /* np_ini_info contains the result of parsing a "locator" in the format
  * [stanza_name][@config_filename] (check_foo@/etc/foo.ini, for example)
  */
@@ -40,6 +38,33 @@ typedef struct {
 	char *stanza;
 } np_ini_info;
 
+static char *default_ini_file_names[] = {
+	"plugins.ini",
+	"nagios-plugins.ini",
+	NULL
+};
+
+static char *default_ini_path_names[] = {
+	"/usr/local/nagios/etc/plugins.ini",
+	"/usr/local/nagios/etc/nagios-plugins.ini",
+	"/usr/local/etc/nagios/plugins.ini",
+	"/usr/local/etc/nagios/nagios-plugins.ini",
+	"/usr/local/etc/nagios-plugins.ini",
+	"/usr/local/etc/nagios-plugins/nagios-plugins.ini",
+	"/usr/local/etc/nagios-plugins/plugins.ini",
+	"/usr/local/etc/nagios/plugins.ini",
+	"/usr/local/etc/nagios/nagios-plugins.ini",
+	"/etc/nagios-plugins.ini",
+	"/etc/nagios/plugins.ini",
+	"/etc/nagios/nagios-plugins.ini",
+	"/etc/nagios-plugins/nagios-plugins.ini",
+	"/etc/nagios-plugins/plugins.ini",
+	"/etc/opt/nagios-plugins.ini",
+	"/etc/opt/nagios/plugins.ini",
+	"/etc/opt/nagios/nagios-plugins.ini",
+	NULL
+};
+
 /* eat all characters from a FILE pointer until n is encountered */
 #define GOBBLE_TO(f, c, n) do { (c)=fgetc((f)); } while((c)!=EOF && (c)!=(n))
 
@@ -47,10 +72,9 @@ typedef struct {
 static int read_defaults(FILE *f, const char *stanza, np_arg_list **opts);
 /* internal function that converts a single line into options format */
 static int add_option(FILE *f, np_arg_list **optlst);
-/* internal function to find default file */
+/* internal functions to find default file */
 static char* default_file(void);
-/* internal function to test files access */
-static int test_file(const char* env, int len, const char* file, char* temp_file);
+static char* default_file_in_path(void);
 
 /* parse_locator decomposes a string of the form
  * 	[stanza][@filename]
@@ -66,24 +90,23 @@ static void parse_locator(const char *locator, const char *def_stanza, np_ini_in
 	}
 	/* if a non-default stanza is provided */
 	if(stanza_len>0){
-		i->stanza=(char*)malloc(sizeof(char)*(stanza_len+1));
+		i->stanza=malloc(sizeof(char)*(stanza_len+1));
 		strncpy(i->stanza, locator, stanza_len);
 		i->stanza[stanza_len]='\0';
 	} else { /* otherwise we use the default stanza */
 		i->stanza=strdup(def_stanza);
 	}
+	if(i->stanza==NULL){
+		die(STATE_UNKNOWN, "%s\n", _("malloc() failed!"));
+	}
 	/* if there is no @file part */
 	if(stanza_len==locator_len){
 		i->file=default_file();
-		if(strcmp(i->file, "") == 0){
-			die(STATE_UNKNOWN, _("Cannot find '%s' or '%s' in any standard location.\n"), NP_DEFAULT_INI_FILENAME1, NP_DEFAULT_INI_FILENAME2);
-		}
 	} else {
 		i->file=strdup(&(locator[stanza_len+1]));
 	}
-
-	if(i->file==NULL || i->stanza==NULL){
-		die(STATE_UNKNOWN, _("malloc() failed!\n"));
+	if(i->file==NULL || i->file[0]=='\0'){
+		die(STATE_UNKNOWN, "%s\n", _("Cannot find config file in any standard location."));
 	}
 }
 
@@ -118,15 +141,24 @@ np_arg_list* np_get_defaults(const char *locator, const char *default_section){
                                 die(STATE_UNKNOWN, "%s %s\n", _("Can't read config file."), strerror(errno));
                 }
 
+		/* before attempting access, let's make sure inifile is not null, this should never be the case though */
+		if (inifile == NULL)
+			die(STATE_UNKNOWN, "%s %s\n", _("Can't read config file:"), strerror(errno));
                 /* inifile points to an open FILE our ruid/rgid can access, parse its contents. */
                 if (read_defaults(inifile, i.stanza, &defaults) == FALSE)
-                        die(STATE_UNKNOWN, _("Invalid section '%s' in config file '%s'\n"), i.stanza, i.file);
+                        die(STATE_UNKNOWN,"%s%s%s%s'\n", _("Invalid section '"), i.stanza, _("' in config file '"), i.file);
 
                 if (inifile != stdin) fclose(inifile);
-        }
+        } 
 
-	if (i.file != NULL) free(i.file);
-	free(i.stanza);
+	if (i.file != NULL) {
+		free(i.file);
+		i.file = NULL;
+	}
+	if (i.stanza != NULL) {
+		free(i.stanza);
+		i.stanza = NULL;
+	}
 
 	if (is_suid_set && idpriv_temp_restore() == -1) 
 		die(STATE_UNKNOWN, "%s %s\n", _("Can't restore user permissions."), strerror(errno));
@@ -163,7 +195,7 @@ static int read_defaults(FILE *f, const char *stanza, np_arg_list **opts){
 				for(i=0; i<stanza_len; i++){
 					c=fgetc(f);
 					/* Strip leading whitespace */
-					if(i==0) for(c; isspace(c); c=fgetc(f));
+					if(i==0) for(; isspace(c); c=fgetc(f));
 					/* nope, read to the end of the line */
 					if(c!=stanza[i]) {
 						GOBBLE_TO(f, c, '\n');
@@ -174,7 +206,7 @@ static int read_defaults(FILE *f, const char *stanza, np_arg_list **opts){
 				if(i==stanza_len){
 					c=fgetc(f);
 					/* Strip trailing whitespace */
-					for(c; isspace(c); c=fgetc(f));
+					for(; isspace(c); c=fgetc(f));
 					if(c==']') stanzastate=RIGHTSTANZA;
 				}
 				break;
@@ -186,7 +218,6 @@ static int read_defaults(FILE *f, const char *stanza, np_arg_list **opts){
 					 */
 					case NOSTANZA:
 						die(STATE_UNKNOWN, "%s\n", _("Config file error"));
-						break;
 					/* we're in a stanza, but for a different plugin */
 					case WRONGSTANZA:
 						GOBBLE_TO(f, c, '\n');
@@ -216,7 +247,7 @@ static int read_defaults(FILE *f, const char *stanza, np_arg_list **opts){
 static int add_option(FILE *f, np_arg_list **optlst){
 	np_arg_list *opttmp=*optlst, *optnew;
 	char *linebuf=NULL, *lineend=NULL, *optptr=NULL, *optend=NULL;
-	char *eqptr=NULL, *valptr=NULL, *spaceptr=NULL, *valend=NULL;
+	char *eqptr=NULL, *valptr=NULL, *valend=NULL;
 	short done_reading=0, equals=0, value=0;
 	size_t cfg_len=0, read_sz=8, linebuf_sz=0, read_pos=0;
 	size_t opt_len=0, val_len=0;
@@ -227,9 +258,9 @@ static int add_option(FILE *f, np_arg_list **optlst){
 		if(linebuf==NULL || read_pos+read_sz >= linebuf_sz){
 			linebuf_sz=(linebuf_sz>0)?linebuf_sz<<1:read_sz;
 			linebuf=realloc(linebuf, linebuf_sz);
-			if(linebuf==NULL) die(STATE_UNKNOWN, _("malloc() failed!\n"));
+			if(linebuf==NULL) die(STATE_UNKNOWN, "%s\n", _("malloc() failed!"));
 		}
-		if(fgets(&linebuf[read_pos], read_sz, f)==NULL) done_reading=1;
+		if(fgets(&linebuf[read_pos], (int)read_sz, f)==NULL) done_reading=1;
 		else {
 			read_pos=strlen(linebuf);
 			if(linebuf[read_pos-1]=='\n') {
@@ -258,9 +289,9 @@ static int add_option(FILE *f, np_arg_list **optlst){
 	for(valend=valptr; valend<lineend; valend++);
 	--valend;
 	/* Finally trim off trailing spaces */
-	for(valend; isspace(*valend); valend--);
+	for(; isspace(*valend); valend--);
 	/* calculate the length of "--foo" */
-	opt_len=1+optend-optptr;
+	opt_len=(size_t)(1+optend-optptr);
 	/* 1-character params needs only one dash */
 	if(opt_len==1)
 		cfg_len=1+(opt_len);
@@ -269,7 +300,7 @@ static int add_option(FILE *f, np_arg_list **optlst){
 	/* if valptr<lineend then we have to also allocate space for "=bar" */
 	if(valptr<lineend) {
 		equals=value=1;
-		val_len=1+valend-valptr;
+		val_len=(size_t)(1+valend-valptr);
 		cfg_len+=1+val_len;
 	}
 	/* if valptr==valend then we have "=" but no "bar" */
@@ -283,11 +314,11 @@ static int add_option(FILE *f, np_arg_list **optlst){
 	/* okay, now we have all the info we need, so we create a new np_arg_list
 	 * element and set the argument...
 	 */
-	optnew=(np_arg_list *)malloc(sizeof(np_arg_list));
+	optnew=malloc(sizeof(np_arg_list));
 	optnew->next=NULL;
 
 	read_pos=0;
-	optnew->arg=(char *)malloc(cfg_len+1);
+	optnew->arg=malloc(cfg_len+1);
 	/* 1-character params needs only one dash */
 	if(opt_len==1) {
 		strncpy(&optnew->arg[read_pos], "-", 1);
@@ -317,71 +348,36 @@ static int add_option(FILE *f, np_arg_list **optlst){
 	return 0;
 }
 
-static char* default_file(void){
-	struct stat sb;
-	char *np_env=NULL, *default_file=NULL;
-	char temp_file[MAX_INPUT_BUFFER];
-	size_t len;
+static char *default_file_in_path(void){
+	char *config_path, **file;
+	char *dir, *ini_file, *tokens;
 
-	if((np_env=getenv("NAGIOS_CONFIG_PATH"))!=NULL) {
-		/* skip any starting colon... */
-		while(*np_env==':') np_env++;
-		/* Look for NP_DEFAULT_INI_FILENAME1 and NP_DEFAULT_INI_FILENAME2 in
-		 * every PATHs defined (colon-separated).
-		 */
-		while((len=strcspn(np_env,":"))>0){
-			/* Test NP_DEFAULT_INI_FILENAME[1-2] in current np_env token */
-			if(test_file(np_env,len,NP_DEFAULT_INI_FILENAME1,temp_file)==1 ||
-			   test_file(np_env,len,NP_DEFAULT_INI_FILENAME2,temp_file)==1){
-				default_file=strdup(temp_file);
-				break;
+	if((config_path=getenv("NAGIOS_CONFIG_PATH"))==NULL)
+		return NULL;
+
+	if((tokens=strdup(config_path))==NULL)
+		die(STATE_UNKNOWN, "%s\n", _("Insufficient Memory"));
+	for(dir=strtok(tokens, ":"); dir!=NULL; dir=strtok(NULL, ":")){
+		for(file=default_ini_file_names; *file!=NULL; file++){
+			if((asprintf(&ini_file, "%s/%s", dir, *file))<0)
+				die(STATE_UNKNOWN, "%s\n", _("Insufficient Memory"));
+			if(access(ini_file, F_OK)==0){
+				free(tokens);
+				return ini_file;
 			}
-
-			/* Move on to the next token */
-			np_env+=len;
-			while(*np_env==':') np_env++;
-		} /* while(...) */
-	} /* if(getenv("NAGIOS_CONFIG_PATH")) */
-
-	/* Look for NP_DEFAULT_INI_FILENAME1 in NP_DEFAULT_INI_NAGIOS_PATH[1-4] */
-	if(!default_file){
-		if(test_file(NP_DEFAULT_INI_NAGIOS_PATH1,strlen(NP_DEFAULT_INI_NAGIOS_PATH1),NP_DEFAULT_INI_FILENAME1,temp_file)==1 ||
-		   test_file(NP_DEFAULT_INI_NAGIOS_PATH2,strlen(NP_DEFAULT_INI_NAGIOS_PATH2),NP_DEFAULT_INI_FILENAME1,temp_file)==1 ||
-		   test_file(NP_DEFAULT_INI_NAGIOS_PATH3,strlen(NP_DEFAULT_INI_NAGIOS_PATH3),NP_DEFAULT_INI_FILENAME1,temp_file)==1 ||
-		   test_file(NP_DEFAULT_INI_NAGIOS_PATH4,strlen(NP_DEFAULT_INI_NAGIOS_PATH4),NP_DEFAULT_INI_FILENAME1,temp_file)==1)
-			default_file=strdup(temp_file);
+		}
 	}
-
-	/* Look for NP_DEFAULT_INI_FILENAME2 in NP_DEFAULT_INI_PATH[1-3] */
-	if(!default_file){
-		if(test_file(NP_DEFAULT_INI_PATH1,strlen(NP_DEFAULT_INI_PATH1),NP_DEFAULT_INI_FILENAME2,temp_file)==1 ||
-		   test_file(NP_DEFAULT_INI_PATH2,strlen(NP_DEFAULT_INI_PATH2),NP_DEFAULT_INI_FILENAME2,temp_file)==1 ||
-		   test_file(NP_DEFAULT_INI_PATH3,strlen(NP_DEFAULT_INI_PATH3),NP_DEFAULT_INI_FILENAME2,temp_file)==1)
-			default_file=strdup(temp_file);
-	}
-
-	/* Return default_file or empty string (should return NULL if we want plugins
-	 * to die there)...
-	 */
-	if(default_file)
-		return default_file;
-	return "";
+	free(tokens);
+	return NULL;
 }
 
-/* put together len bytes from env and the filename and test for its
- * existence. Returns 1 if found, 0 if not and -1 if test wasn't performed.
- */
-static int test_file(const char* env, int len, const char* file, char* temp_file){
+static char *default_file(void){
+	char **p, *ini_file;
 
-	/* test if len + filelen + '/' + '\0' fits in temp_file */
-	if((len+strlen(file)+2)>MAX_INPUT_BUFFER)	return -1;
-
-	strncpy(temp_file,env,len);
-	temp_file[len]='\0';
-	strncat(temp_file,"/",len+1);
-	strncat(temp_file,file,len+strlen(file)+1);
-
-	if(access(temp_file, F_OK) == 0) return 1;
-	return 0;
+	if((ini_file=default_file_in_path())!=NULL)
+		return ini_file;
+	for(p=default_ini_path_names; *p!=NULL; p++)
+		if (access(*p, F_OK)==0)
+			return *p;
+	return NULL;
 }
-

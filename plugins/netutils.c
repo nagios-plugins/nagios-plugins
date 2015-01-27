@@ -158,7 +158,7 @@ int
 np_net_connect (const char *host_name, int port, int *sd, int proto)
 {
 	struct addrinfo hints;
-	struct addrinfo *r, *res;
+	struct addrinfo *res;
 	struct sockaddr_un su;
 	char port_str[6], host[MAX_HOST_ADDRESS_LENGTH];
 	size_t len;
@@ -192,19 +192,18 @@ np_net_connect (const char *host_name, int port, int *sd, int proto)
 			return STATE_UNKNOWN;
 		}
 
-		r = res;
-		while (r) {
+		while (res) {
 			/* attempt to create a socket */
-			*sd = socket (r->ai_family, socktype, r->ai_protocol);
+			*sd = socket (res->ai_family, socktype, res->ai_protocol);
 
 			if (*sd < 0) {
 				printf ("%s\n", _("Socket creation failed"));
-				freeaddrinfo (r);
+				freeaddrinfo (res);
 				return STATE_UNKNOWN;
 			}
 
 			/* attempt to open a connection */
-			result = connect (*sd, r->ai_addr, r->ai_addrlen);
+			result = connect (*sd, res->ai_addr, res->ai_addrlen);
 
 			if (result == 0) {
 				was_refused = FALSE;
@@ -220,7 +219,7 @@ np_net_connect (const char *host_name, int port, int *sd, int proto)
 			}
 
 			close (*sd);
-			r = r->ai_next;
+			res = res->ai_next;
 		}
 		freeaddrinfo (res);
 	}

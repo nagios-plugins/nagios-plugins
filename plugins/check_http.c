@@ -673,6 +673,115 @@ expected_statuscode (const char *reply, const char *statuscodes)
   return result;
 }
 
+char *
+decode_chunked_page (const char *raw, char *dst)
+{
+  unsigned long int chunksize;
+  char *raw_pos = (char *)raw;
+  char *dst_pos = (char *)dst;
+  const char *raw_end = raw + strlen(raw);
+
+  while (chunksize = strtoul(raw_pos, NULL, 16)) {
+    if (chunksize <= 0) {
+      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, invalid chunk size\n"));
+    }
+
+    // soak up the optional chunk params (which we will ignore)
+    while (*raw_pos && *raw_pos != '\r' && *raw_pos != '\n') raw_pos++;
+
+    // soak up the leading CRLF
+    if (*raw_pos && *raw_pos == '\r' && *(++raw_pos) && *raw_pos == '\n') {
+      raw_pos++;
+    }
+    else {
+      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, invalid format\n"));
+    }
+
+    // move chunk from raw into dst, only if we can fit within the buffer
+    if (*raw_pos && *dst_pos && (raw_pos + chunksize) < raw_end ) {
+      strncpy(dst_pos, raw_pos, chunksize);
+    }
+    else {
+      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, too large for destination\n"));
+    }
+
+    raw_pos += chunksize;
+    dst_pos += chunksize;
+
+    // soak up the ending CRLF
+    if (*raw_pos && *raw_pos == '\r' && *(++raw_pos) && *raw_pos == '\n') {
+      raw_pos++;
+    }
+    else {
+      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, invalid format\n"));
+    }
+  }
+
+  if (*dst_pos) *dst_pos = '\0';
+  else {
+    die (STATE_UNKNOWN, _("HTTP UNKNOWN - Memory allocation error\n"));
+  }
+
+  return dst;
+}
+
+static char *
+header_value (const char *headers, const char *header)
+{
+  char *s;
+  char *value;
+  const char *value_end;
+  int value_size;
+
+  if (!(s = strcasestr(headers, header))) {
+    return NULL;
+  }
+
+  s += strlen(header);
+
+  while (*s && (isspace(*s) || *s == ':')) s++;
+  while (*s && isspace(*s)) s++;
+
+  value_end = strchr(s, '\r');
+  if (!value_end) {
+      die (STATE_UNKNOWN, _("HTTP_UNKNOWN - Failed to parse response headers\n"));
+  }
+
+  value_size = value_end - s;
+
+  value = malloc(value_size + 1);
+  if (!value) {
+    die (STATE_UNKNOWN, _("HTTP_UNKNOWN - Memory allocation error\n"));
+  }
+
+  if (!strncpy(value, s, value_size)) {
+    die(STATE_UNKNOWN, _("HTTP_UNKNOWN - Memory copy failure\n"));
+  }
+  value[value_size] = '\0';
+
+  return value;
+}
+
+static int
+chunked_transfer_encoding (const char *headers)
+{
+  int result;
+  char *encoding = header_value(headers, "Transfer-Encoding");
+  if (!encoding) {
+    return 0;
+  }
+
+  if (! strncmp(encoding, "chunked", sizeof("chunked"))) {
+    result = 1;
+  }
+  else {
+    result = 0;
+  }
+
+  free(encoding);
+  return result;
+}
+
 static int
 check_document_dates (const char *headers, char **msg)
 {
@@ -866,6 +975,7 @@ check_http (void)
   double elapsed_time_transfer = 0.0;
   int page_len = 0;
   int result = STATE_OK;
+  char *force_host_header = NULL;
 
   /* try to connect to the host at the given port number */
   gettimeofday (&tv_temp, NULL);
@@ -895,18 +1005,32 @@ check_http (void)
   /* tell HTTP/1.1 servers not to keep the connection alive */
   xasprintf (&buf, "%sConnection: close\r\n", buf);
 
+  /* check if Host header is explicitly set in options */
+  if (http_opt_headers_count) {
+    for (i = 0; i < http_opt_headers_count ; i++) {
+      if (strcmp(http_opt_headers[i], "Host: ")) {
+        force_host_header = http_opt_headers[i];
+      }
+    }
+  }
+
   /* optionally send the host header info */
   if (host_name) {
-    /*
-     * Specify the port only if we're using a non-default port (see RFC 2616,
-     * 14.23).  Some server applications/configurations cause trouble if the
-     * (default) port is explicitly specified in the "Host:" header line.
-     */
-    if ((use_ssl == FALSE && server_port == HTTP_PORT) ||
-        (use_ssl == TRUE && server_port == HTTPS_PORT))
-      xasprintf (&buf, "%sHost: %s\r\n", buf, host_name);
-    else
-      xasprintf (&buf, "%sHost: %s:%d\r\n", buf, host_name, server_port);
+    if (force_host_header) {
+      xasprintf (&buf, "%s%s\r\n", buf, force_host_header);
+    }
+    else {
+      /*
+       * Specify the port only if we're using a non-default port (see RFC 2616,
+       * 14.23).  Some server applications/configurations cause trouble if the
+       * (default) port is explicitly specified in the "Host:" header line.
+       */
+      if ((use_ssl == FALSE && server_port == HTTP_PORT) ||
+          (use_ssl == TRUE && server_port == HTTPS_PORT))
+        xasprintf (&buf, "%sHost: %s\r\n", buf, host_name);
+      else
+        xasprintf (&buf, "%sHost: %s:%d\r\n", buf, host_name, server_port);
+    }
   }
 
   /* Inform server we accept any MIME type response
@@ -918,7 +1042,9 @@ check_http (void)
   /* optionally send any other header tag */
   if (http_opt_headers_count) {
     for (i = 0; i < http_opt_headers_count ; i++) {
-      xasprintf (&buf, "%s%s\r\n", buf, http_opt_headers[i]);
+      if (force_host_header != http_opt_headers[i]) {
+        xasprintf (&buf, "%s%s\r\n", buf, http_opt_headers[i]);
+      }
     }
     /* This cannot be free'd here because a redirection will then try to access this and segfault */
     /* Covered in a testcase in tests/check_http.t */
@@ -1041,13 +1167,21 @@ check_http (void)
     page += (size_t) strcspn (page, "\r\n");
     pos = page;
     if ((strspn (page, "\r") == 1 && strspn (page, "\r\n") >= 2) ||
-        (strspn (page, "\n") == 1 && strspn (page, "\r\n") >= 2))
+        (strspn (page, "\n") == 1 && strspn (page, "\r\n") >= 2)) {
       page += (size_t) 2;
-    else
+      pos += (size_t) 2;
+    }
+    else {
       page += (size_t) 1;
+      pos += (size_t) 1;
+    }
   }
   page += (size_t) strspn (page, "\r\n");
   header[pos - header] = 0;
+
+  if (chunked_transfer_encoding(header))
+    page = decode_chunked_page(page, page);
+
   if (verbose)
     printf ("**** HEADER ****\n%s\n**** CONTENT ****\n%s\n", header,
                 (no_body ? "  [[ skipped ]]" : page));
@@ -1122,6 +1256,7 @@ check_http (void)
     result = max_state_alt(check_document_dates(header, &msg), result);
   }
 
+
   /* Page and Header content checks go here */
   if (strlen (header_expect)) {
     if (!strstr (header, header_expect)) {
@@ -1133,7 +1268,6 @@ check_http (void)
       result = STATE_CRITICAL;
     }
   }
-
 
   if (strlen (string_expect)) {
     if (!strstr (page, string_expect)) {

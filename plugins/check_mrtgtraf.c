@@ -41,6 +41,7 @@ int validate_arguments (void);
 void print_help(void);
 void print_usage(void);
 
+int verbose = false;
 char *log_file = NULL;
 int expire_minutes = -1;
 int use_average = TRUE;
@@ -88,6 +89,7 @@ main (int argc, char **argv)
 		usage4 (_("Unable to open MRTG log file"));
 
 	line = 0;
+
 	while (fgets (input_buffer, MAX_INPUT_BUFFER - 1, fp)) {
 
 		line++;
@@ -104,22 +106,32 @@ main (int argc, char **argv)
 		/* grab the timestamp */
 		temp_buffer = strtok (input_buffer, " ");
 		timestamp = strtoul (temp_buffer, NULL, 10);
+		if (verbose)
+			printf("%s %lu\n", _("Found timestamp of:"), timestamp);
 
 		/* grab the average incoming transfer rate */
 		temp_buffer = strtok (NULL, " ");
 		average_incoming_rate = strtoul (temp_buffer, NULL, 10);
+		if (verbose)
+			printf("%s %lu\n", _("Found average incoming rate of:"), average_incoming_rate);
 
 		/* grab the average outgoing transfer rate */
 		temp_buffer = strtok (NULL, " ");
 		average_outgoing_rate = strtoul (temp_buffer, NULL, 10);
+		if (verbose)
+			printf("%s %lu\n", _("Found average outgoing rate of:"), average_outgoing_rate);
 
 		/* grab the maximum incoming transfer rate */
 		temp_buffer = strtok (NULL, " ");
 		maximum_incoming_rate = strtoul (temp_buffer, NULL, 10);
+		if (verbose)
+			printf("%s %lu\n", _("Found maximum incoming rate of:"), maximum_incoming_rate);
 
 		/* grab the maximum outgoing transfer rate */
 		temp_buffer = strtok (NULL, " ");
 		maximum_outgoing_rate = strtoul (temp_buffer, NULL, 10);
+		if (verbose)
+			printf("%s %lu\n", _("Found maximum outgoing rate of:"), maximum_outgoing_rate);
 	}
 
 	/* close the log file */
@@ -138,47 +150,49 @@ main (int argc, char **argv)
 
 	/* else check the incoming/outgoing rates */
 	if (use_average == TRUE) {
+		if (verbose) printf("%s\n", _("Using average rates not maximum."));
 		incoming_rate = average_incoming_rate;
 		outgoing_rate = average_outgoing_rate;
 	}
 	else {
+		if (verbose) printf("%s\n", _("Using default maximum rates."));
 		incoming_rate = maximum_incoming_rate;
 		outgoing_rate = maximum_outgoing_rate;
 	}
 
 	/* report incoming traffic in Bytes/sec */
 	if (incoming_rate < 1024) {
-		strcpy (incoming_speed_rating, "B/s");
+		strcpy (incoming_speed_rating, "B");
 		adjusted_incoming_rate = (double) incoming_rate;
 	}
 
 	/* report incoming traffic in KBytes/sec */
 	else if (incoming_rate < (1024 * 1024)) {
-		strcpy (incoming_speed_rating, "KB/s");
+		strcpy (incoming_speed_rating, "KB");
 		adjusted_incoming_rate = (double) (incoming_rate / 1024.0);
 	}
 
 	/* report incoming traffic in MBytes/sec */
 	else {
-		strcpy (incoming_speed_rating, "MB/s");
+		strcpy (incoming_speed_rating, "MB");
 		adjusted_incoming_rate = (double) (incoming_rate / 1024.0 / 1024.0);
 	}
 
 	/* report outgoing traffic in Bytes/sec */
 	if (outgoing_rate < 1024) {
-		strcpy (outgoing_speed_rating, "B/s");
+		strcpy (outgoing_speed_rating, "B");
 		adjusted_outgoing_rate = (double) outgoing_rate;
 	}
 
 	/* report outgoing traffic in KBytes/sec */
 	else if (outgoing_rate < (1024 * 1024)) {
-		strcpy (outgoing_speed_rating, "KB/s");
+		strcpy (outgoing_speed_rating, "KB");
 		adjusted_outgoing_rate = (double) (outgoing_rate / 1024.0);
 	}
 
 	/* report outgoing traffic in MBytes/sec */
 	else {
-		strcpy (outgoing_speed_rating, "MB/s");
+		strcpy (outgoing_speed_rating, "MB");
 		adjusted_outgoing_rate = (double) (outgoing_rate / 1024.0 / 1024.0);
 	}
 
@@ -191,7 +205,7 @@ main (int argc, char **argv)
 		result = STATE_WARNING;
 	}
 
-	xasprintf (&error_message, _("%s. In = %0.1f %s, %s. Out = %0.1f %s|%s %s\n"),
+	xasprintf (&error_message, _("%s. In = %0.1f %s/s, %s. Out = %0.1f %s/s|%s %s\n"),
 	          (use_average == TRUE) ? _("Avg") : _("Max"), adjusted_incoming_rate,
 	          incoming_speed_rating, (use_average == TRUE) ? _("Avg") : _("Max"),
 	          adjusted_outgoing_rate, outgoing_speed_rating,
@@ -224,6 +238,7 @@ process_arguments (int argc, char **argv)
 		{"aggregation", required_argument, 0, 'a'},
 		{"critical", required_argument, 0, 'c'},
 		{"warning", required_argument, 0, 'w'},
+		{"verbose", no_argument, 0, 'v'},
 		{"version", no_argument, 0, 'V'},
 		{"help", no_argument, 0, 'h'},
 		{0, 0, 0, 0}
@@ -242,7 +257,7 @@ process_arguments (int argc, char **argv)
 	}
 
 	while (1) {
-		c = getopt_long (argc, argv, "hVF:e:a:c:w:", longopts, &option);
+		c = getopt_long (argc, argv, "hVvF:e:a:c:w:", longopts, &option);
 
 		if (c == -1 || c == EOF)
 			break;
@@ -267,6 +282,9 @@ process_arguments (int argc, char **argv)
 		case 'w':									/* critical threshold */
 			sscanf (optarg, "%lu,%lu", &incoming_warning_threshold,
 							&outgoing_warning_threshold);
+			break;
+		case 'v':
+			verbose = true;
 			break;
 		case 'V':									/* version */
 			print_revision (progname, NP_VERSION);
@@ -356,9 +374,11 @@ print_help (void)
   printf ("    %s\n", _("Warning threshold pair <incoming>,<outgoing>"));
   printf (" %s\n", "-c, --critical");
   printf ("    %s\n", _("Critical threshold pair <incoming>,<outgoing>"));
+  printf (" %s\n", _("-v, --verbose"));
+  printf ("    %s\n", _("Verbose output durring plugin runtime."));
 
   printf ("\n");
-	printf ("%s\n", _("Notes:"));
+  printf ("%s\n", _("Notes:"));
   printf (" %s\n", _("- MRTG stands for Multi Router Traffic Grapher. It can be downloaded from"));
   printf (" %s\n", "  http://ee-staff.ethz.ch/~oetiker/webtools/mrtg/mrtg.html");
   printf (" %s\n", _("- While MRTG can monitor things other than traffic rates, this"));

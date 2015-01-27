@@ -17,7 +17,7 @@ use Test::More;
 use NPTest;
 use FindBin qw($Bin);
 
-my $common_tests = 70;
+my $common_tests = 72;
 my $ssl_only_tests = 8;
 # Check that all dependent modules are available
 eval {
@@ -54,6 +54,18 @@ my $port_https_expired = $port_http + 2;
 # This array keeps sockets around for implementing timeouts
 my @persist;
 
+# Helper for returning chunked responses
+our $ckn = 0;
+sub chunked_resp {
+	$ckn++;
+	return "foo" if ($ckn < 2);
+	return "bar" if ($ckn < 3);
+	return "baz" if ($ckn < 4);
+	return "\n"  if ($ckn < 5);
+	$ckn = 0     if ($ckn < 6);
+	return undef;
+}
+
 # Start up all servers
 my @pids;
 my $pid = fork();
@@ -74,6 +86,7 @@ if ($pid) {
 				my $d = HTTP::Daemon::SSL->new(
 					LocalPort => $port_https_expired,
 					LocalAddr => "127.0.0.1",
+					ReuseAddr => 1,
 					SSL_cert_file => "$Bin/certs/expired-cert.pem",
 					SSL_key_file => "$Bin/certs/expired-key.pem",
 				) || die;
@@ -85,6 +98,7 @@ if ($pid) {
 			my $d = HTTP::Daemon::SSL->new(
 				LocalPort => $port_https,
 				LocalAddr => "127.0.0.1",
+				ReuseAddr => 1,
 				SSL_cert_file => "$Bin/certs/server-cert.pem",
 				SSL_key_file => "$Bin/certs/server-key.pem",
 			) || die;
@@ -101,6 +115,7 @@ if ($pid) {
 	my $d = HTTP::Daemon->new(
 		LocalPort => $port_http,
 		LocalAddr => "127.0.0.1",
+		ReuseAddr => 1,
 	) || die;
 	print "Please contact http at: <URL:", $d->url, ">\n";
 	run_server( $d );
@@ -124,6 +139,8 @@ sub run_server {
 				$c->send_crlf;
 				sleep 1;
 				$c->send_response("slow");
+			} elsif ($r->method eq "GET" and $r->url->path eq "/chunked") {
+				$c->send_response(HTTP::Response->new(200, 'OK', undef, \&chunked_resp));
 			} elsif ($r->url->path eq "/method") {
 				if ($r->method eq "DELETE") {
 					$c->send_error(HTTP::Status->RC_METHOD_NOT_ALLOWED);
@@ -185,21 +202,21 @@ SKIP: {
 
 	$result = NPTest->testCmd( "$command -p $port_https -S -C 14" );
 	is( $result->return_code, 0, "$command -p $port_https -S -C 14" );
-	is( $result->output, 'OK - Certificate \'Ton Voon\' will expire on 03/03/2019 21:41.', "output ok" );
+	is( $result->output, 'OK - Certificate \'Ton Voon\' will expire on Sun Mar  3 21:41:00 2019.', "output ok" );
 
 	$result = NPTest->testCmd( "$command -p $port_https -S -C 14000" );
 	is( $result->return_code, 1, "$command -p $port_https -S -C 14000" );
-	like( $result->output, '/WARNING - Certificate \'Ton Voon\' expires in \d+ day\(s\) \(03/03/2019 21:41\)./', "output ok" );
+	like( $result->output, '/WARNING - Certificate \'Ton Voon\' expires in \d+ day\(s\) \(Sun Mar  3 21:41:00 2019\)./', "output ok" );
 
 	# Expired cert tests
 	$result = NPTest->testCmd( "$command -p $port_https -S -C 13960,14000" );
 	is( $result->return_code, 2, "$command -p $port_https -S -C 13960,14000" );
-	like( $result->output, '/CRITICAL - Certificate \'Ton Voon\' expires in \d+ day\(s\) \(03/03/2019 21:41\)./', "output ok" );
+	like( $result->output, '/CRITICAL - Certificate \'Ton Voon\' expires in \d+ day\(s\) \(Sun Mar  3 21:41:00 2019\)./', "output ok" );
 
 	$result = NPTest->testCmd( "$command -p $port_https_expired -S -C 7" );
 	is( $result->return_code, 2, "$command -p $port_https_expired -S -C 7" );
 	is( $result->output,
-		'CRITICAL - Certificate \'Ton Voon\' expired on 03/05/2009 00:13.',
+		'CRITICAL - Certificate \'Ton Voon\' expired on Thu Mar  5 00:13:00 2009.',
 		"output ok" );
 
 }
@@ -363,6 +380,11 @@ sub run_common_tests {
 	$result = NPTest->testCmd( $cmd );
 	is( $result->return_code, 0, $cmd);
 	like( $result->output, '/^HTTP OK: HTTP/1.1 200 OK - \d+ bytes in [\d\.]+ second/', "Output correct: ".$result->output );
+
+  $cmd = "$command -u /chunked -s foobarbaz";
+  $result = NPTest->testCmd( $cmd );
+  is( $result->return_code, 0, $cmd);
+  like( $result->output, '/^HTTP OK: HTTP/1.1 200 OK - \d+ bytes in [\d\.]+ second/', "Output correct: ".$result->output );
 
   # These tests may block
 	print "ALRM\n";

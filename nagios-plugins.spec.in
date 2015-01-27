@@ -155,7 +155,7 @@ fi
 %if %{islinux}
 getent passwd %{npusr} > /dev/null 2> /dev/null
 if [ $? -ne 0 ] ; then
-	useradd -r -d %{nshome} -c "%{npusr}" -g %{npgrp} %{npusr} || \
+	useradd -r -d %{nphome} -c "%{npusr}" -g %{npgrp} %{npusr} || \
 		%nnmmsg Unexpected error adding user "%{npusr}". Aborting install process.
 fi
 %endif

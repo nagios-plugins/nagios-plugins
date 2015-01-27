@@ -6,6 +6,8 @@
 #  This Nagios plugin was created to check Oracle status
 #
 
+PATH="@TRUSTED_PATH@"
+export PATH
 PROGNAME=`basename $0`
 PROGPATH=`echo $0 | sed -e 's,[\\/][^\\/][^\\/]*$,,'`
 REVISION="@NP_VERSION@"

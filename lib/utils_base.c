@@ -40,23 +40,22 @@ nagios_plugin *this_nagios_plugin=NULL;
 int _np_state_read_file(FILE *);
 
 void np_init( char *plugin_name, int argc, char **argv ) {
-	if (this_nagios_plugin==NULL) {
+	if (!this_nagios_plugin) {
 		this_nagios_plugin = calloc(1, sizeof(nagios_plugin));
-		if (this_nagios_plugin==NULL) {
-			die(STATE_UNKNOWN, _("Cannot allocate memory: %s"),
-			    strerror(errno));
+		if (!this_nagios_plugin) {
+			die(STATE_UNKNOWN, "%s %s\n", _("Cannot allocate memory:"), strerror(errno));
 		}
 		this_nagios_plugin->plugin_name = strdup(plugin_name);
-		if (this_nagios_plugin->plugin_name==NULL)
-			die(STATE_UNKNOWN, _("Cannot execute strdup: %s"), strerror(errno));
+		if (!this_nagios_plugin->plugin_name)
+			die(STATE_UNKNOWN, "%s %s\n", _("Cannot execute strdup:"), strerror(errno));
 		this_nagios_plugin->argc = argc;
 		this_nagios_plugin->argv = argv;
 	}
 }
 
 void np_set_args( int argc, char **argv ) {
-	if (this_nagios_plugin==NULL)
-		die(STATE_UNKNOWN, _("This requires np_init to be called"));
+	if (!this_nagios_plugin)
+		die(STATE_UNKNOWN, "%s\n", _("This requires np_init to be called"));
 
 	this_nagios_plugin->argc = argc;
 	this_nagios_plugin->argv = argv;
@@ -64,8 +63,8 @@ void np_set_args( int argc, char **argv ) {
 
 
 void np_cleanup() {
-	if (this_nagios_plugin!=NULL) {
-		if(this_nagios_plugin->state!=NULL) {
+	if (this_nagios_plugin) {
+		if(this_nagios_plugin->state) {
 			if(this_nagios_plugin->state->state_data) { 
 				np_free(this_nagios_plugin->state->state_data->data);
 				np_free(this_nagios_plugin->state->state_data);
@@ -91,7 +90,7 @@ die (int result, const char *fmt, ...)
 	va_start (ap, fmt);
 	vprintf (fmt, ap);
 	va_end (ap);
-	if(this_nagios_plugin!=NULL) {
+	if(this_nagios_plugin) {
 		np_cleanup();
 	}
 	exit (result);
@@ -129,7 +128,7 @@ range
 	}
 
 	end_str = index(str, ':');
-	if (end_str != NULL) {
+	if (end_str) {
 		if (str[0] == '~') {
 			temp_range->start_infinity = TRUE;
 		} else {
@@ -141,12 +140,12 @@ range
 		end_str = str;
 	}
 	end = strtod(end_str, NULL);
-	if (strcmp(end_str, "") != 0) {
+	if (strcmp(end_str, "")) {
 		set_range_end(temp_range, end);
 	}
 
-	if (temp_range->start_infinity == TRUE ||
-		temp_range->end_infinity == TRUE ||
+	if (temp_range->start_infinity ||
+		temp_range->end_infinity ||
 		temp_range->start <= temp_range->end) {
 		return temp_range;
 	}
@@ -160,20 +159,21 @@ _set_thresholds(thresholds **my_thresholds, char *warn_string, char *critical_st
 {
 	thresholds *temp_thresholds = NULL;
 
-	if ((temp_thresholds = calloc(1, sizeof(thresholds))) == NULL)
-		die(STATE_UNKNOWN, _("Cannot allocate memory: %s"),
-		    strerror(errno));
+	if (!(temp_thresholds = calloc(1, sizeof(thresholds))))
+		die(STATE_UNKNOWN, "%s %s\n", _("Cannot allocate memory:"), strerror(errno));
 
 	temp_thresholds->warning = NULL;
 	temp_thresholds->critical = NULL;
 
-	if (warn_string != NULL) {
-		if ((temp_thresholds->warning = parse_range_string(warn_string)) == NULL) {
+	if (warn_string) {
+		if (!(temp_thresholds->warning = parse_range_string(warn_string))) {
+			free(temp_thresholds);
 			return NP_RANGE_UNPARSEABLE;
 		}
 	}
-	if (critical_string != NULL) {
-		if ((temp_thresholds->critical = parse_range_string(critical_string)) == NULL) {
+	if (critical_string) {
+		if (!(temp_thresholds->critical = parse_range_string(critical_string))) {
+			free(temp_thresholds);
 			return NP_RANGE_UNPARSEABLE;
 		}
 	}
@@ -190,9 +190,9 @@ set_thresholds(thresholds **my_thresholds, char *warn_string, char *critical_str
 	case 0:
 		return;
 	case NP_RANGE_UNPARSEABLE:
-		die(STATE_UNKNOWN, _("Range format incorrect"));
+		die(STATE_UNKNOWN, "%s\n", _("Range format incorrect"));
 	case NP_WARN_WITHIN_CRIT:
-		die(STATE_UNKNOWN, _("Warning level is a subset of critical and will not be alerted"));
+		die(STATE_UNKNOWN, "%s\n", _("Warning level is a subset of critical and will not be alerted"));
 		break;
 	}
 }
@@ -228,19 +228,19 @@ check_range(double value, range *my_range)
 		yes = FALSE;
 	}
 
-	if (my_range->end_infinity == FALSE && my_range->start_infinity == FALSE) {
+	if (!my_range->end_infinity && !my_range->start_infinity) {
 		if ((my_range->start <= value) && (value <= my_range->end)) {
 			return no;
 		} else {
 			return yes;
 		}
-	} else if (my_range->start_infinity == FALSE && my_range->end_infinity == TRUE) {
+	} else if (!my_range->start_infinity && my_range->end_infinity) {
 		if (my_range->start <= value) {
 			return no;
 		} else {
 			return yes;
 		}
-	} else if (my_range->start_infinity == TRUE && my_range->end_infinity == FALSE) {
+	} else if (my_range->start_infinity && !my_range->end_infinity) {
 		if (value <= my_range->end) {
 			return no;
 		} else {
@@ -255,13 +255,13 @@ check_range(double value, range *my_range)
 int
 get_status(double value, thresholds *my_thresholds)
 {
-	if (my_thresholds->critical != NULL) {
-		if (check_range(value, my_thresholds->critical) == TRUE) {
+	if (my_thresholds->critical) {
+		if (check_range(value, my_thresholds->critical)) {
 			return STATE_CRITICAL;
 		}
 	}
-	if (my_thresholds->warning != NULL) {
-		if (check_range(value, my_thresholds->warning) == TRUE) {
+	if (my_thresholds->warning) {
+		if (check_range(value, my_thresholds->warning)) {
 			return STATE_WARNING;
 		}
 	}
@@ -303,12 +303,12 @@ int np_check_if_root(void) { return (geteuid() == 0); }
 int np_warn_if_not_root(void) {
 	int status = np_check_if_root();
 	if(!status) {
-		printf(_("Warning: "));
-		printf(_("This plugin must be either run as root or setuid root.\n"));
-		printf(_("To run as root, you can use a tool like sudo.\n"));
-		printf(_("To set the setuid permissions, use the command:\n"));
+		printf("%s", _("Warning: "));
+		printf("%s\n", _("This plugin must be either run as root or setuid root."));
+		printf("%s\n", _("To run as root, you can use a tool like sudo."));
+		printf("%s\n", _("To set the setuid permissions, use the command:"));
 		/* XXX could we use something like progname? */
-		printf("\tchmod u+s yourpluginfile\n");
+		printf("\t%s\n", _("chmod u+s yourpluginfile"));
 	}
 	return status;
 }
@@ -327,7 +327,7 @@ char *np_extract_value(const char *varlist, const char *name, char sep) {
 		/* Strip any leading space */
 		for (varlist; isspace(varlist[0]); varlist++);
 
-		if (strncmp(name, varlist, strlen(name)) == 0) {
+		if (!strncmp(name, varlist, strlen(name))) {
 			varlist += strlen(name);
 			/* strip trailing spaces */
 			for (varlist; isspace(varlist[0]); varlist++);
@@ -346,7 +346,7 @@ char *np_extract_value(const char *varlist, const char *name, char sep) {
 					value[tmp-varlist] = '\0';
 				} else {
 					/* Value is delimited by a \0 */
-					if (strlen(varlist) == 0) continue;
+					if (!strlen(varlist)) continue;
 					value = (char *)calloc(1, strlen(varlist) + 1);
 					strncpy(value, varlist, strlen(varlist));
 					value[strlen(varlist)] = '\0';
@@ -412,14 +412,14 @@ char *_np_state_generate_key() {
 	keyname[40]='\0';
 	
 	p = strdup(keyname);
-	if(p==NULL) {
-		die(STATE_UNKNOWN, _("Cannot execute strdup: %s"), strerror(errno));
+	if(!p) {
+		die(STATE_UNKNOWN, "%s %s\n", _("Cannot execute strdup:"), strerror(errno));
 	}
 	return p;
 }
 
 void _cleanup_state_data() {
-	if (this_nagios_plugin->state->state_data!=NULL) {
+	if (this_nagios_plugin->state->state_data) {
 		np_free(this_nagios_plugin->state->state_data->data);
 		np_free(this_nagios_plugin->state->state_data);
 	}
@@ -436,7 +436,7 @@ char* _np_state_calculate_location_prefix(){
 	/* Do not allow passing NP_STATE_DIRECTORY in setuid plugins
 	 * for security reasons */
 
-	if (np_suid() == FALSE) {
+	if (!np_suid()) {
 		env_dir = getenv("NAGIOS_PLUGIN_STATE_DIRECTORY");
 		if(env_dir && env_dir[0] != '\0')
 			return env_dir;
@@ -454,28 +454,27 @@ void np_enable_state(char *keyname, int expected_data_version) {
 	char *temp_filename = NULL;
 	char *temp_keyname = NULL;
 	char *p=NULL;
+	int ret;
 
-	if(this_nagios_plugin==NULL)
-		die(STATE_UNKNOWN, _("This requires np_init to be called"));
+	if(!this_nagios_plugin)
+		die(STATE_UNKNOWN, "%s\n", _("This requires np_init to be called"));
 
 	this_state = (state_key *) calloc(1, sizeof(state_key));
-	if(this_state==NULL)
-		die(STATE_UNKNOWN, _("Cannot allocate memory: %s"),
-		    strerror(errno));
+	if(!this_state)
+		die(STATE_UNKNOWN, "%s %s\n", _("Cannot allocate memory:"), strerror(errno));
 
-	if(keyname==NULL) {
+	if(!keyname) {
 		temp_keyname = _np_state_generate_key();
 	} else {
 		temp_keyname = strdup(keyname);
-		if(temp_keyname==NULL)
-			die(STATE_UNKNOWN, _("Cannot execute strdup: %s"), strerror(errno));
+		if(!temp_keyname)
+			die(STATE_UNKNOWN, "%s %s\n", _("Cannot execute strdup:"), strerror(errno));
 	}
 	/* Die if invalid characters used for keyname */
 	p = temp_keyname;
 	while(*p!='\0') {
-		if(! (isalnum(*p) || *p == '_')) {
-			die(STATE_UNKNOWN, _("Invalid character for keyname - only alphanumerics or '_'"));
-		}
+		if(! (isalnum(*p) || *p == '_'))
+			die(STATE_UNKNOWN, "%s\n", _("Invalid character for keyname - only alphanumerics or '_'"));
 		p++;
 	}
 	this_state->name=temp_keyname;
@@ -484,7 +483,9 @@ void np_enable_state(char *keyname, int expected_data_version) {
 	this_state->state_data=NULL;
 
 	/* Calculate filename */
-	asprintf(&temp_filename, "%s/%s/%s", _np_state_calculate_location_prefix(), this_nagios_plugin->plugin_name, this_state->name);
+	ret = asprintf(&temp_filename, "%s/%lu/%s/%s", _np_state_calculate_location_prefix(), (unsigned long)geteuid(), this_nagios_plugin->plugin_name, this_state->name);
+	if (ret < 0)
+		die(STATE_UNKNOWN, "%s %s\n", _("Cannot allocate memory:"), strerror(errno));
 	this_state->_filename=temp_filename;
 
 	this_nagios_plugin->state = this_state;
@@ -502,17 +503,16 @@ state_data *np_state_read() {
 	FILE *statefile;
 	int rc = FALSE;
 
-	if(this_nagios_plugin==NULL)
-		die(STATE_UNKNOWN, _("This requires np_init to be called"));
+	if(!this_nagios_plugin)
+		die(STATE_UNKNOWN, "%s\n", _("This requires np_init to be called"));
 
 	/* Open file. If this fails, no previous state found */
 	statefile = fopen( this_nagios_plugin->state->_filename, "r" );
-	if(statefile!=NULL) {
+	if(statefile) {
 
 		this_state_data = (state_data *) calloc(1, sizeof(state_data));
-		if(this_state_data==NULL)
-			die(STATE_UNKNOWN, _("Cannot allocate memory: %s"),
-			    strerror(errno));
+		if(!this_state_data)
+			die(STATE_UNKNOWN, "%s %s\n", _("Cannot allocate memory:"), strerror(errno));
 
 		this_state_data->data=NULL;
 		this_nagios_plugin->state->state_data = this_state_data;
@@ -522,7 +522,7 @@ state_data *np_state_read() {
 		fclose(statefile);
 	}
 
-	if(rc==FALSE) {
+	if(!rc) {
 		_cleanup_state_data();
 	}
 
@@ -545,15 +545,13 @@ int _np_state_read_file(FILE *f) {
 
 	/* Note: This introduces a limit of 1024 bytes in the string data */
 	line = (char *) calloc(1, 1024);
-	if(line==NULL)
-		die(STATE_UNKNOWN, _("Cannot allocate memory: %s"),
-		    strerror(errno));
+	if(!line)
+		die(STATE_UNKNOWN, "%s %s\n", _("Cannot allocate memory:"), strerror(errno));
 
 	while(!failure && (fgets(line,1024,f))!=NULL){
 		pos=strlen(line);
-		if(line[pos-1]=='\n') {
+		if(line[pos-1]=='\n')
 			line[pos-1]='\0';
-		}
 
 		if(line[0] == '#') continue;
 
@@ -585,7 +583,7 @@ int _np_state_read_file(FILE *f) {
 			case STATE_DATA_TEXT:
 				this_nagios_plugin->state->state_data->data = strdup(line);
 				if(this_nagios_plugin->state->state_data->data==NULL)
-					die(STATE_UNKNOWN, _("Cannot execute strdup: %s"), strerror(errno));
+					die(STATE_UNKNOWN, "%s %s\n", _("Cannot execute strdup:"), strerror(errno));
 				expected=STATE_DATA_END;
 				status=TRUE;
 				break;
@@ -613,25 +611,26 @@ void np_state_write_string(time_t data_time, char *data_string) {
 	char *directories=NULL;
 	char *p=NULL;
 
-	if(data_time==0)
+	if(!data_time)
 		time(&current_time);
 	else
 		current_time=data_time;
 	
 	/* If file doesn't currently exist, create directories */
-	if(access(this_nagios_plugin->state->_filename,F_OK)!=0) {
-		asprintf(&directories, "%s", this_nagios_plugin->state->_filename);
-		if(directories==NULL)
-			die(STATE_UNKNOWN, _("Cannot allocate memory: %s"),
-			    strerror(errno));
+	if(access(this_nagios_plugin->state->_filename,F_OK)) {
+		result = asprintf(&directories, "%s", this_nagios_plugin->state->_filename);
+		if (result < 0)
+			die(STATE_UNKNOWN, "%s %s\n", _("Cannot allocate memory:"), strerror(errno));
+		if(!directories)
+			die(STATE_UNKNOWN, "%s %s\n", _("Cannot allocate memory:"), strerror(errno));
 
 		for(p=directories+1; *p; p++) {
 			if(*p=='/') {
 				*p='\0';
-				if((access(directories,F_OK)!=0) && (mkdir(directories, S_IRWXU)!=0)) {
+				if(access(directories,F_OK) && mkdir(directories, S_IRWXU)) {
 					/* Can't free this! Otherwise error message is wrong! */
 					/* np_free(directories); */ 
-					die(STATE_UNKNOWN, _("Cannot create directory: %s"), directories);
+					die(STATE_UNKNOWN, "%s %s\n", _("Cannot create directory:"), directories);
 				}
 				*p='/';
 			}
@@ -639,22 +638,23 @@ void np_state_write_string(time_t data_time, char *data_string) {
 		np_free(directories);
 	}
 
-	asprintf(&temp_file,"%s.XXXXXX",this_nagios_plugin->state->_filename);
-	if(temp_file==NULL)
-		die(STATE_UNKNOWN, _("Cannot allocate memory: %s"),
-		    strerror(errno));
+	result = asprintf(&temp_file,"%s.XXXXXX",this_nagios_plugin->state->_filename);
+	if (result < 0)
+		die(STATE_UNKNOWN, "%s %s\n", _("Cannot allocate memory:"), strerror(errno));
+	if(!temp_file)
+		die(STATE_UNKNOWN, "%s %s\n", _("Cannot allocate memory:"), strerror(errno));
 
 	if((fd=mkstemp(temp_file))==-1) {
 		np_free(temp_file);
-		die(STATE_UNKNOWN, _("Cannot create temporary filename"));
+		die(STATE_UNKNOWN, "%s\n", _("Cannot create temporary filename"));
 	}
 
 	fp=(FILE *)fdopen(fd,"w");
-	if(fp==NULL) {
+	if(!fp) {
 		close(fd);
 		unlink(temp_file);
 		np_free(temp_file);
-		die(STATE_UNKNOWN, _("Unable to open temporary state file"));
+		die(STATE_UNKNOWN, "%s\n", _("Unable to open temporary state file"));
 	}
 	
 	fprintf(fp,"# NP State file\n");
@@ -671,18 +671,17 @@ void np_state_write_string(time_t data_time, char *data_string) {
 
 	fsync(fd);
 
-	if(result!=0) {
+	if(result) {
 		unlink(temp_file);
 		np_free(temp_file);
-		die(STATE_UNKNOWN, _("Error writing temp file"));
+		die(STATE_UNKNOWN, "%s\n", _("Error writing temp file"));
 	}
 
-	if(rename(temp_file, this_nagios_plugin->state->_filename)!=0) {
+	if(rename(temp_file, this_nagios_plugin->state->_filename)) {
 		unlink(temp_file);
 		np_free(temp_file);
-		die(STATE_UNKNOWN, _("Cannot rename state temp file"));
+		die(STATE_UNKNOWN, "%s\n", _("Cannot rename state temp file"));
 	}
 
 	np_free(temp_file);
 }
-

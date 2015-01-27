@@ -172,7 +172,7 @@ main (int argc, char **argv)
 	}
 	else if (!strncmp(SERVICE, "JABBER", 6)) {
 		SEND = "<stream:stream to=\'host\' xmlns=\'jabber:client\' xmlns:stream=\'http://etherx.jabber.org/streams\'>\n";
-		EXPECT = "<?xml version=\'1.0\'?><stream:stream xmlns=\'jabber:client\' xmlns:stream=\'http://etherx.jabber.org/streams\'";
+		EXPECT = "<?xml version=\'1.0\'";
 		QUIT = "</stream:stream>\n";
 		flags |= FLAG_HIDE_OUTPUT;
 		PORT = 5222;
@@ -253,8 +253,8 @@ main (int argc, char **argv)
 	}
 #endif /* HAVE_SSL */
 
-	if (server_send != NULL) {		/* Something to send? */
-		my_send(server_send, strlen(server_send));
+	if (server_send != NULL &&  strlen(server_send) > my_send(server_send, strlen(server_send))) {		/* Something to send? and validate return*/
+		die(STATE_UNKNOWN, "%s - %s", _("No data sent to host"), strerror(errno));
 	}
 
 	if (delay > 0) {
@@ -640,7 +640,7 @@ print_help (void)
 	printf (UT_IPv46);
 
 	printf (" %s\n", "-E, --escape");
-  printf ("    %s\n", _("Can use \\n, \\r, \\t or \\ in send or quit string. Must come before send or quit option"));
+  printf ("    %s\n", _("Can use \\n, \\r, \\t or \\\\ in send or quit string. Must come before send or quit option"));
   printf ("    %s\n", _("Default: nothing added to send, \\r\\n added to end of quit"));
   printf (" %s\n", "-s, --send=STRING");
   printf ("    %s\n", _("String to send to the server"));
