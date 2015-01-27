@@ -294,7 +294,7 @@ int
 cmd_run (const char *cmdstring, output * out, output * err, int flags)
 {
 	int fd, pfd_out[2], pfd_err[2];
-	int i = 0, argc;
+	int i = 0, argc, rst;
 	size_t cmdlen;
 	char **argv = NULL;
 	char *cmd = NULL;
@@ -318,11 +318,16 @@ cmd_run (const char *cmdstring, output * out, output * err, int flags)
 	cmd[cmdlen] = '\0';
 
 	/* This is not a shell, so we don't handle "???" */
-	if (strstr (cmdstring, "\"")) return -1;
+	if (strstr (cmdstring, "\"")) {
+		free(cmd);
+		return -1;
+	}
 
 	/* allow single quotes, but only if non-whitesapce doesn't occur on both sides */
-	if (strstr (cmdstring, " ' ") || strstr (cmdstring, "'''"))
+	if (strstr (cmdstring, " ' ") || strstr (cmdstring, "'''")) {
+		free(cmd);
 		return -1;
+	}
 
 	/* each arg must be whitespace-separated, so args can be a maximum
 	 * of (len / 2) + 1. We add 1 extra to the mix for NULL termination */
@@ -331,6 +336,7 @@ cmd_run (const char *cmdstring, output * out, output * err, int flags)
 
 	if (argv == NULL) {
 		printf ("%s\n", _("Could not malloc argv array in popen()"));
+		free(cmd);
 		return -1;
 	}
 
@@ -341,8 +347,11 @@ cmd_run (const char *cmdstring, output * out, output * err, int flags)
 
 		if (strstr (str, "'") == str) {	/* handle SIMPLE quoted strings */
 			str++;
-			if (!strstr (str, "'"))
-				return -1;							/* balanced? */
+			if (!strstr (str, "'")) { /* balanced? */
+				free(cmd);
+				free(argv);
+				return -1;
+			}
 			cmd = 1 + strstr (str, "'");
 			str[strcspn (str, "'")] = 0;
 		}
@@ -352,17 +361,23 @@ cmd_run (const char *cmdstring, output * out, output * err, int flags)
 				str[strcspn (str, " \t\r\n")] = 0;
 			}
 			else {
+				free(cmd);
 				cmd = NULL;
 			}
 		}
 
-		if (cmd && strlen (cmd) == strspn (cmd, " \t\r\n"))
+		if (cmd && strlen (cmd) == strspn (cmd, " \t\r\n")) {
+			free(cmd);
 			cmd = NULL;
+		}
 
 		argv[i++] = str;
 	}
 
-	return cmd_run_array (argv, out, err, flags);
+	rst = cmd_run_array (argv, out, err, flags);
+	free(cmd);
+	free(argv);
+	return rst;
 }
 
 int
