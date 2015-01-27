@@ -1,6 +1,12 @@
+#Tooling:
+tags
+cscope.out
+
 # In all paths
 NP-VERSION-FILE
 *.o
+*.swp
+*.rej
 
 # /
 /aclocal.m4
@@ -35,6 +41,7 @@ NP-VERSION-FILE
 /build-aux/install-sh
 /build-aux/missing
 /build-aux/mkinstalldirs
+/build-aux/test-driver
 
 # /doc/
 /doc/developer-guidelines.html

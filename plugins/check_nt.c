@@ -130,7 +130,7 @@ int main(int argc, char **argv){
 	signal(SIGALRM,socket_timeout_alarm_handler);
 
 	/* set socket timeout */
-	alarm(socket_timeout);
+	alarm(timeout_interval);
 
 	switch (vars_to_check) {
 
@@ -611,12 +611,11 @@ int process_arguments(int argc, char **argv){
 					show_all = TRUE;
 				break;
 			case 'u':
-				socket_timeout_state=STATE_UNKNOWN;
+				timeout_state=STATE_UNKNOWN;
 				break;
 			case 't': /* timeout */
-				socket_timeout=atoi(optarg);
-				if(socket_timeout<=0)
-					return ERROR;
+				timeout_interval = parse_timeout_string(optarg);
+				break;
 			}
 
 	}
@@ -712,7 +711,7 @@ void print_help(void)
 	printf ("   %s", _("Parameters passed to specified check (see below)"));
 	printf (" %s\n", "-d, --display={SHOWALL}");
 	printf ("   %s", _("Display options (currently only SHOWALL works)"));
-	printf (" %s\n", "-u, --unknown-timeout");
+	printf (" %s\n", "-u, --unknown-timeout  (DEPRECATED)");
 	printf ("   %s", _("Return UNKNOWN on timeouts"));
 	printf ("%d)\n", DEFAULT_SOCKET_TIMEOUT);
 	printf (" %s\n", "-h, --help");
@@ -796,6 +795,6 @@ void print_usage(void)
 {
 	printf ("%s\n", _("Usage:"));
 	printf ("%s -H host -v variable [-p port] [-w warning] [-c critical]\n",progname);
-	printf ("[-l params] [-d SHOWALL] [-u] [-t timeout]\n");
+	printf ("[-l params] [-d SHOWALL] [-u](DEPRECATED) [-t timeout]\n");
 }
 

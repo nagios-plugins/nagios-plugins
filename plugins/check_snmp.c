@@ -41,7 +41,6 @@ const char *email = "devel@nagios-plugins.org";
 #define DEFAULT_PORT "161"
 #define DEFAULT_MIBLIST "ALL"
 #define DEFAULT_PROTOCOL "1"
-#define DEFAULT_TIMEOUT 1
 #define DEFAULT_RETRIES 5
 #define DEFAULT_AUTH_PROTOCOL "MD5"
 #define DEFAULT_PRIV_PROTOCOL "DES"
@@ -104,6 +103,8 @@ int errcode, excode;
 
 char *server_address = NULL;
 char *community = NULL;
+char **contextargs = NULL;
+char *context = NULL;
 char **authpriv = NULL;
 char *proto = NULL;
 char *seclevel = NULL;
@@ -128,6 +129,7 @@ size_t nunits = 0;
 size_t unitv_size = OID_COUNT_STEP;
 int numoids = 0;
 int numauthpriv = 0;
+int numcontext = 0;
 int verbose = 0;
 int usesnmpgetnext = FALSE;
 char *warning_thresholds = NULL;
@@ -205,6 +207,7 @@ main (int argc, char **argv)
 	time_t duration;
 	char *conv = "12345678";
 	int is_counter=0;
+	int command_interval;
 
 	setlocale (LC_ALL, "");
 	bindtextdomain (PACKAGE, LOCALEDIR);
@@ -224,7 +227,6 @@ main (int argc, char **argv)
 	outbuff = strdup ("");
 	delimiter = strdup (" = ");
 	output_delim = strdup (DEFAULT_OUTPUT_DELIMITER);
-	timeout_interval = DEFAULT_TIMEOUT;
 	retries = DEFAULT_RETRIES;
 
 	np_init( (char *) progname, argc, argv );
@@ -238,6 +240,12 @@ main (int argc, char **argv)
 
 	if (process_arguments (argc, argv) == ERROR)
 		usage4 (_("Could not parse arguments"));
+	
+	command_interval = timeout_interval / retries;
+	if (command_interval < 1) {
+		usage4 (_("Command timeout must be 1 second or greater. Please increase timeout (-t) value or decrease retries (-e) value."));
+		exit (STATE_UNKNOWN);
+	}
 
 	if(calculate_rate) {
 		if (!strcmp(label, "SNMP"))
@@ -258,6 +266,7 @@ main (int argc, char **argv)
 			}
 		}
 	}
+
 
 	/* Populate the thresholds */
 	th_warn=warning_thresholds;
@@ -297,12 +306,12 @@ main (int argc, char **argv)
 		snmpcmd = strdup (PATH_TO_SNMPGET);
 	}
 
-	/* 10 arguments to pass before authpriv options + 1 for host and numoids. Add one for terminating NULL */
-	command_line = calloc (10 + numauthpriv + 1 + numoids + 1, sizeof (char *));
+	/* 10 arguments to pass before context and authpriv options + 1 for host and numoids. Add one for terminating NULL */
+	command_line = calloc (10 + numcontext + numauthpriv + 1 + numoids + 1, sizeof (char *));
 	command_line[0] = snmpcmd;
 	command_line[1] = strdup ("-Le");
 	command_line[2] = strdup ("-t");
-	xasprintf (&command_line[3], "%d", timeout_interval);
+	xasprintf (&command_line[3], "%d", command_interval);
 	command_line[4] = strdup ("-r");
 	xasprintf (&command_line[5], "%d", retries);
 	command_line[6] = strdup ("-m");
@@ -310,23 +319,28 @@ main (int argc, char **argv)
 	command_line[8] = "-v";
 	command_line[9] = strdup (proto);
 
+	for (i = 0; i < numcontext; i++) {
+		command_line[10 + i] = contextargs[i];
+	}
+	
 	for (i = 0; i < numauthpriv; i++) {
-		command_line[10 + i] = authpriv[i];
+		command_line[10 + numcontext + i] = authpriv[i];
 	}
 
-	xasprintf (&command_line[10 + numauthpriv], "%s:%s", server_address, port);
+	xasprintf (&command_line[10 + numcontext + numauthpriv], "%s:%s", server_address, port);
 
 	/* This is just for display purposes, so it can remain a string */
-	xasprintf(&cl_hidden_auth, "%s -Le -t %d -r %d -m %s -v %s %s %s:%s",
-		snmpcmd, timeout_interval, retries, strlen(miblist) ? miblist : "''", proto, "[authpriv]",
-		server_address, port);
+	xasprintf(&cl_hidden_auth, "%s -Le -t %d -r %d -m %s -v %s %s %s %s:%s",
+		snmpcmd, timeout_interval, retries,
+		strlen(miblist) ? miblist : "''", 
+		proto, "[context]", "[authpriv]", server_address, port);
 
 	for (i = 0; i < numoids; i++) {
-		command_line[10 + numauthpriv + 1 + i] = oids[i];
+		command_line[10 + numcontext + numauthpriv + 1 + i] = oids[i];
 		xasprintf(&cl_hidden_auth, "%s %s", cl_hidden_auth, oids[i]);	
 	}
 
-	command_line[10 + numauthpriv + 1 + numoids] = NULL;
+	command_line[10 + numcontext + numauthpriv + 1 + numoids] = NULL;
 
 	if (verbose)
 		printf ("%s\n", cl_hidden_auth);
@@ -335,7 +349,7 @@ main (int argc, char **argv)
 	if (signal (SIGALRM, runcmd_timeout_alarm_handler) == SIG_ERR) {
 		usage4 (_("Cannot catch SIGALRM"));
 	}
-	alarm(timeout_interval * retries + 5);
+	alarm(timeout_interval + 1);
 
 	/* Run the command */
 	return_code = cmd_run_array (command_line, &chld_out, &chld_err, 0);
@@ -352,15 +366,22 @@ main (int argc, char **argv)
 	if (chld_out.lines == 0)
 		external_error=1;
 	if (external_error) {
-		if (chld_err.lines > 0) {
+		if ((chld_err.lines > 0) && strstr(chld_err.line[0], "Timeout")) {
+			printf (_("%s - External command error: %s\n"), state_text(timeout_state), chld_err.line[0]);
+			for (i = 1; i < chld_err.lines; i++) {
+				printf ("%s\n", chld_err.line[i]);
+			}
+			exit (timeout_state);
+		} else if (chld_err.lines > 0) {
 			printf (_("External command error: %s\n"), chld_err.line[0]);
 			for (i = 1; i < chld_err.lines; i++) {
 				printf ("%s\n", chld_err.line[i]);
 			}
+			exit (STATE_UNKNOWN);
 		} else {
 			printf(_("External command error with no output (return code: %d)\n"), return_code);
+			exit (STATE_UNKNOWN);
 		}
-		exit (STATE_UNKNOWN);
 	}
 
 	if (verbose) {
@@ -571,6 +592,17 @@ main (int argc, char **argv)
 			len = sizeof(perfstr)-strlen(perfstr)-1;
 			strncat(perfstr, show, len>ptr-show ? ptr-show : len);
 
+			if (warning_thresholds) {
+				strncat(perfstr, ";", sizeof(perfstr)-strlen(perfstr)-1);
+				strncat(perfstr, warning_thresholds, sizeof(perfstr)-strlen(perfstr)-1);
+			}
+
+			if (critical_thresholds) {
+				if (!warning_thresholds) strncat(perfstr, ";", sizeof(perfstr)-strlen(perfstr)-1);
+				strncat(perfstr, ";", sizeof(perfstr)-strlen(perfstr)-1);
+				strncat(perfstr, critical_thresholds, sizeof(perfstr)-strlen(perfstr)-1);
+			}
+
 			if (type)
 				strncat(perfstr, type, sizeof(perfstr)-strlen(perfstr)-1);
 			if (nunits > (size_t)0 && (size_t)i < nunits && unitv[i] != NULL) {
@@ -669,6 +701,7 @@ process_arguments (int argc, char **argv)
 		{"retries", required_argument, 0, 'e'},
 		{"miblist", required_argument, 0, 'm'},
 		{"protocol", required_argument, 0, 'P'},
+		{"context", required_argument, 0, 'N'},
 		{"seclevel", required_argument, 0, 'L'},
 		{"secname", required_argument, 0, 'U'},
 		{"authproto", required_argument, 0, 'a'},
@@ -698,7 +731,7 @@ process_arguments (int argc, char **argv)
 	}
 
 	while (1) {
-		c = getopt_long (argc, argv, "nhvVOt:c:w:H:C:o:e:E:d:D:s:t:R:r:l:u:p:m:P:L:U:a:x:A:X:",
+		c = getopt_long (argc, argv, "nhvVOt:c:w:H:C:o:e:E:d:D:s:t:R:r:l:u:p:m:P:N:L:U:a:x:A:X:",
 									 longopts, &option);
 
 		if (c == -1 || c == EOF)
@@ -736,6 +769,9 @@ process_arguments (int argc, char **argv)
 		case 'P':	/* SNMP protocol version */
 			proto = optarg;
 			break;
+		case 'N':	/* SNMPv3 context */
+			context = optarg;
+			break;
 		case 'L':	/* security level */
 			seclevel = optarg;
 			break;
@@ -755,12 +791,8 @@ process_arguments (int argc, char **argv)
 			privpasswd = optarg;
 			break;
 		case 't':	/* timeout period */
-			if (!is_integer (optarg))
-				usage2 (_("Timeout interval must be a positive integer"), optarg);
-			else
-				timeout_interval = atoi (optarg);
+			timeout_interval = parse_timeout_string (optarg);
 			break;
-
 	/* Test parameters */
 		case 'c':									/* critical threshold */
 			critical_thresholds = optarg;
@@ -983,6 +1015,13 @@ validate_arguments ()
 		authpriv[1] = strdup (community);
 	}
 	else if ( strcmp (proto, "3") == 0 ) {		/* snmpv3 args */
+		if (!(context == NULL)) {
+			numcontext = 2;
+			contextargs = calloc (numcontext, sizeof (char *));
+			contextargs[0] = strdup ("-n");
+			contextargs[1] = strdup (context);
+		}
+		
 		if (seclevel == NULL)
 			xasprintf(&seclevel, "noAuthNoPriv");
 
@@ -1126,6 +1165,8 @@ print_help (void)
 	printf ("    %s\n", _("Use SNMP GETNEXT instead of SNMP GET"));
 	printf (" %s\n", "-P, --protocol=[1|2c|3]");
 	printf ("    %s\n", _("SNMP protocol version"));
+	printf (" %s\n", "-N, --context=CONTEXT");
+	printf ("    %s\n", _("SNMPv3 context"));
 	printf (" %s\n", "-L, --seclevel=[noAuthNoPriv|authNoPriv|authPriv]");
 	printf ("    %s\n", _("SNMPv3 securityLevel"));
 	printf (" %s\n", "-a, --authproto=[MD5|SHA]");
@@ -1233,6 +1274,6 @@ print_usage (void)
 	printf ("%s -H <ip_address> -o <OID> [-w warn_range] [-c crit_range]\n",progname);
 	printf ("[-C community] [-s string] [-r regex] [-R regexi] [-t timeout] [-e retries]\n");
 	printf ("[-l label] [-u units] [-p port-number] [-d delimiter] [-D output-delimiter]\n");
-	printf ("[-m miblist] [-P snmp version] [-L seclevel] [-U secname] [-a authproto]\n");
-	printf ("[-A authpasswd] [-x privproto] [-X privpasswd]\n");
+	printf ("[-m miblist] [-P snmp version] [-N context] [-L seclevel] [-U secname]\n");
+	printf ("[-a authproto] [-A authpasswd] [-x privproto] [-X privpasswd]\n");
 }

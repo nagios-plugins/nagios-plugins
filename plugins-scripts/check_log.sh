@@ -58,7 +58,9 @@
 # Paths to commands used in this script.  These
 # may have to be modified to match your system setup.
 
-PROGNAME=`/bin/basename $0`
+PATH="@TRUSTED_PATH@"
+export PATH
+PROGNAME=`basename $0`
 PROGPATH=`echo $0 | sed -e 's,[\\/][^\\/][^\\/]*$,,'`
 REVISION="@NP_VERSION@"
 PATH="@TRUSTED_PATH@"
@@ -71,6 +73,9 @@ print_usage() {
     echo "Usage: $PROGNAME -F logfile -O oldlog -q query"
     echo "Usage: $PROGNAME --help"
     echo "Usage: $PROGNAME --version"
+    echo "     Aditional parameter:"
+    echo "        -w (--max_warning) If used, determines the maximum matching value to return as warning, when finding more matching lines than this parameter will return as critical. If not used, will consider as default 0 (any matching will consider as critical)"
+    echo "Usage: $PROGNAME -F logfile -O oldlog -q query -w <number>"
 }
 
 print_help() {
@@ -129,6 +134,14 @@ while test -n "$1"; do
             ;;
         -O)
             oldlog=$2
+            shift
+            ;;
+        --max_warning)
+            MAX_WARNING=$2
+            shift
+            ;;
+        -w)
+            MAX_WARNING=$2
             shift
             ;;
         --query)
@@ -201,11 +214,15 @@ rm -f $tempdiff
 cat $logfile > $oldlog
 
 if [ "$count" = "0" ]; then # no matches, exit with no error
-    echo "Log check ok - 0 pattern matches found"
+    echo "Log check ok - 0 pattern matches found|match=$count;;;0"
     exitstatus=$STATE_OK
 else # Print total matche count and the last entry we found
-    echo "($count) $lastentry"
-    exitstatus=$STATE_CRITICAL
+    echo "($count) $lastentry|match=$count;;;0"
+    if [ $MAX_WARNING ] && [ $count -le $MAX_WARNING ] ; then
+        exitstatus=$STATE_WARNING
+    else
+        exitstatus=$STATE_CRITICAL
+    fi
 fi
 
 exit $exitstatus

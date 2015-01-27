@@ -1,0 +1,38 @@
+#!/usr/bin/env sh
+
+#usernames that do not match attributed name
+declare -a usernames=("Jean-Claude_Computing" "Rafael" "linkslice" "juliopedreira" "nagios" "arvanus" "nafets" "abrist" "awiddersheim" "Holger_Weiß" "palli" "dermoth" "M._Remy" "tonvoon" "nagiosplugins" "Thomas_Guyot-Sionnest_thomas@aei.ca" "M._Sean_Finney" "(no_author)" "LAURENT_LICOUR")
+authors=()
+count=0
+THANKS="THANKS.in"
+AUTHORS="AUTHORS"
+
+# 1 - array to check against
+# 2 - name to search for
+# return 0 - no match, 1 - match
+check_names () {
+	declare -a int_arr=("${!1}")
+	for name in ${int_arr[@]}; do
+		if [[ "${2}" == "${name}" ]]; then
+			return 1
+		fi
+	done
+	return 0
+}
+
+# compare lists
+for name in $(git log | grep "Author:" | sed 's/Author: //g' | sed 's/ <.*>//g' | sed 's/ /_/g'); do
+	# skip to next name if found
+	if echo "${name}" | sed 's/_/ /g' | grep -q -f - "${THANKS}" || \
+	echo "${name}" | sed 's/_/ /g' | grep -q -f - "${AUTHORS}"; then
+		continue;
+	# name was not found, keep only one instance of it
+	elif $(check_names authors[@] "${name}") && $(check_names usernames[@] "${name}"); then
+			authors=("${authors[@]}" "${name}")
+	fi
+done
+
+echo "Authors not found:"
+for name in ${authors[@]}; do
+	echo "${name}" | sed 's/_/ /g'
+done

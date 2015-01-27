@@ -79,12 +79,14 @@ static pid_t *_cmd_pids = NULL;
  * If that fails and the macro isn't defined, we fall back to an educated
  * guess. There's no guarantee that our guess is adequate and the program
  * will die with SIGSEGV if it isn't and the upper boundary is breached. */
+#define DEFAULT_MAXFD  256   /* fallback value if no max open files value is set */
+#define MAXFD_LIMIT   8192   /* upper limit of open files */
 #ifdef _SC_OPEN_MAX
 static long maxfd = 0;
 #elif defined(OPEN_MAX)
 # define maxfd OPEN_MAX
 #else	/* sysconf macro unavailable, so guess (may be wildly inaccurate) */
-# define maxfd 256
+# define maxfd DEFAULT_MAXFD
 #endif
 
 
@@ -112,9 +114,17 @@ cmd_init (void)
 	if (!maxfd && (maxfd = sysconf (_SC_OPEN_MAX)) < 0) {
 		/* possibly log or emit a warning here, since there's no
 		 * guarantee that our guess at maxfd will be adequate */
-		maxfd = 256;
+		maxfd = DEFAULT_MAXFD;
 	}
 #endif
+
+	/* if maxfd is unnaturally high, we force it to a lower value
+	 * ( e.g. on SunOS, when ulimit is set to unlimited: 2147483647 this would cause
+	 * a segfault when following calloc is called ...  ) */
+
+	if ( maxfd > MAXFD_LIMIT ) {
+		maxfd = MAXFD_LIMIT;
+	}
 
 	if (!_cmd_pids)
 		_cmd_pids = calloc (maxfd, sizeof (pid_t));
@@ -284,7 +294,7 @@ int
 cmd_run (const char *cmdstring, output * out, output * err, int flags)
 {
 	int fd, pfd_out[2], pfd_err[2];
-	int i = 0, argc;
+	int i = 0, argc, rst;
 	size_t cmdlen;
 	char **argv = NULL;
 	char *cmd = NULL;
@@ -308,11 +318,16 @@ cmd_run (const char *cmdstring, output * out, output * err, int flags)
 	cmd[cmdlen] = '\0';
 
 	/* This is not a shell, so we don't handle "???" */
-	if (strstr (cmdstring, "\"")) return -1;
+	if (strstr (cmdstring, "\"")) {
+		free(cmd);
+		return -1;
+	}
 
 	/* allow single quotes, but only if non-whitesapce doesn't occur on both sides */
-	if (strstr (cmdstring, " ' ") || strstr (cmdstring, "'''"))
+	if (strstr (cmdstring, " ' ") || strstr (cmdstring, "'''")) {
+		free(cmd);
 		return -1;
+	}
 
 	/* each arg must be whitespace-separated, so args can be a maximum
 	 * of (len / 2) + 1. We add 1 extra to the mix for NULL termination */
@@ -321,6 +336,7 @@ cmd_run (const char *cmdstring, output * out, output * err, int flags)
 
 	if (argv == NULL) {
 		printf ("%s\n", _("Could not malloc argv array in popen()"));
+		free(cmd);
 		return -1;
 	}
 
@@ -331,8 +347,11 @@ cmd_run (const char *cmdstring, output * out, output * err, int flags)
 
 		if (strstr (str, "'") == str) {	/* handle SIMPLE quoted strings */
 			str++;
-			if (!strstr (str, "'"))
-				return -1;							/* balanced? */
+			if (!strstr (str, "'")) { /* balanced? */
+				free(cmd);
+				free(argv);
+				return -1;
+			}
 			cmd = 1 + strstr (str, "'");
 			str[strcspn (str, "'")] = 0;
 		}
@@ -342,17 +361,23 @@ cmd_run (const char *cmdstring, output * out, output * err, int flags)
 				str[strcspn (str, " \t\r\n")] = 0;
 			}
 			else {
+				free(cmd);
 				cmd = NULL;
 			}
 		}
 
-		if (cmd && strlen (cmd) == strspn (cmd, " \t\r\n"))
+		if (cmd && strlen (cmd) == strspn (cmd, " \t\r\n")) {
+			free(cmd);
 			cmd = NULL;
+		}
 
 		argv[i++] = str;
 	}
 
-	return cmd_run_array (argv, out, err, flags);
+	rst = cmd_run_array (argv, out, err, flags);
+	free(cmd);
+	free(argv);
+	return rst;
 }
 
 int
@@ -387,9 +412,12 @@ cmd_file_read ( char *filename, output *out, int flags)
 	if ((fd = open(filename, O_RDONLY)) == -1) {
 		die( STATE_UNKNOWN, _("Error opening %s: %s"), filename, strerror(errno) );
 	}
-	
+
 	if(out)
 		out->lines = _cmd_fetch_output (fd, out, flags);
+	
+	if (close(fd) == -1)
+		die( STATE_UNKNOWN, _("Error closing %s: %s"), filename, strerror(errno) );
 
 	return 0;
 }

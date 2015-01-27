@@ -416,7 +416,7 @@ double offset_request(const char *host, int *status){
 	/* now do AVG_NUM checks to each host.  we stop before timeout/2 seconds
 	 * have passed in order to ensure post-processing and jitter time. */
 	now_time=start_ts=time(NULL);
-	while(servers_completed<num_hosts && now_time-start_ts <= socket_timeout/2){
+	while(servers_completed<num_hosts && now_time-start_ts <= timeout_interval/2){
 		/* loop through each server and find each one which hasn't
 		 * been touched in the past second or so and is still lacking
 		 * some responses.  for each of these servers, send a new request,
@@ -472,7 +472,7 @@ double offset_request(const char *host, int *status){
 	}
 
 	if (one_read == 0) {
-		die(STATE_CRITICAL, "NTP CRITICAL: No response from NTP server\n");
+		die(timeout_state, "%s: No response from NTP server\n", state_text(timeout_state));
 	}
 
 	/* now, pick the best server from the list */
@@ -517,13 +517,14 @@ setup_control_request(ntp_control_message *p, uint8_t opcode, uint16_t seq){
 double jitter_request(const char *host, int *status){
 	int conn=-1, i, npeers=0, num_candidates=0, syncsource_found=0;
 	int run=0, min_peer_sel=PEER_INCLUDED, num_selected=0, num_valid=0;
-	int peers_size=0, peer_offset=0;
+	int peers_size=0, peer_offset=0, bytes_read=0;
 	ntp_assoc_status_pair *peers=NULL;
 	ntp_control_message req;
 	const char *getvar = "jitter";
 	double rval = 0.0, jitter = -1.0;
 	char *startofvalue=NULL, *nptr=NULL;
 	void *tmp;
+	int ntp_cm_ints = sizeof(uint16_t) * 5 + sizeof(uint8_t) * 2;
 
 	/* Long-winded explanation:
 	 * Getting the jitter requires a number of steps:
@@ -608,7 +609,15 @@ double jitter_request(const char *host, int *status){
 
 				req.count = htons(MAX_CM_SIZE);
 				DBG(printf("recieving READVAR response...\n"));
-				read(conn, &req, SIZEOF_NTPCM(req));
+
+				/* cov-66524 - req.data not null terminated before usage. Also covers verifying struct was returned correctly*/
+				if ((bytes_read = read(conn, &req, SIZEOF_NTPCM(req))) == -1)
+					die(STATE_UNKNOWN, _("Cannot read from socket: %s"), strerror(errno));
+				if (bytes_read != ntp_cm_ints + req.count)
+					die(STATE_UNKNOWN, _("Invalid NTP response: %d bytes read does not equal %d plus %d data segment"), bytes_read, ntp_cm_ints, req.count); 
+				/* else null terminate */
+				req.data[req.count] = '\0';
+
 				DBG(print_ntp_control_message(&req));
 
 				if(req.op&REM_ERROR && strstr(getvar, "jitter")) {
@@ -712,7 +721,7 @@ int process_arguments(int argc, char **argv){
 			server_address = strdup(optarg);
 			break;
 		case 't':
-			socket_timeout=atoi(optarg);
+			timeout_interval = parse_timeout_string(optarg);
 			break;
 		case '4':
 			address_family = AF_INET;
@@ -778,7 +787,7 @@ int main(int argc, char *argv[]){
 	signal (SIGALRM, socket_timeout_alarm_handler);
 
 	/* set socket timeout */
-	alarm (socket_timeout);
+	alarm (timeout_interval);
 
 	offset = offset_request(server_address, &offset_result);
 	/* check_ntp used to always return CRITICAL if offset_result == STATE_UNKNOWN.

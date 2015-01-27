@@ -28,6 +28,12 @@
 * 
 * 
 *****************************************************************************/
+#define IF_RECORD(label, querytype, verb_str) if (strstr (chld_out.line[i], label) && (strncmp(query_type, querytype, query_size) == 0 || strncmp(query_type, "-querytype=ANY", query_size) == 0)) { \
+      if (verbose) printf(verb_str); \
+      temp_buffer = rindex (chld_out.line[i], ' '); \
+      addresses[n_addresses++] = check_new_address(temp_buffer); \
+      strncpy(query_found, querytype, sizeof(query_found)); \
+      memset(query_found, '\0', sizeof(query_found));
 
 const char *progname = "check_dns";
 const char *copyright = "2000-2014";
@@ -48,8 +54,10 @@ void print_usage (void);
 #define ADDRESS_LENGTH 384 
 char query_address[ADDRESS_LENGTH] = "";
 char dns_server[ADDRESS_LENGTH] = "";
+char tmp_dns_server[ADDRESS_LENGTH] = "";
 char ptr_server[ADDRESS_LENGTH] = "";
 char query_type[16] = "";
+int query_set = FALSE;
 int verbose = FALSE;
 char **expected_address = NULL;
 int expected_address_cnt = 0;
@@ -76,11 +84,9 @@ check_new_address(char *temp_buffer)
         /* NOOP */;
 
       strip(temp_buffer);
-      if (temp_buffer==NULL || strlen(temp_buffer)==0) {
-        die (STATE_CRITICAL,
-             _("DNS CRITICAL - '%s' returned empty host name string\n"),
-             NSLOOKUP_COMMAND);
-      }
+      if (temp_buffer==NULL || strlen(temp_buffer)==0)
+        die (STATE_CRITICAL, "%s%s%s\n", _("DNS CRITICAL - '"), NSLOOKUP_COMMAND, _("' returned empty host name string"));
+
       return temp_buffer;
 }
 
@@ -93,8 +99,8 @@ main (int argc, char **argv)
   char **addresses = NULL;
   int n_addresses = 0;
   char *msg = NULL;
-  char query_found[16] = "";
-  int query_size = 16;
+  char query_found[24] = "";
+  int query_size = 24;
   char *temp_buffer = NULL;
   int non_authoritative = TRUE;
   int result = STATE_UNKNOWN;
@@ -111,16 +117,14 @@ main (int argc, char **argv)
   textdomain (PACKAGE);
 
   /* Set signal handling and alarm */
-  if (signal (SIGALRM, runcmd_timeout_alarm_handler) == SIG_ERR) {
+  if (signal (SIGALRM, runcmd_timeout_alarm_handler) == SIG_ERR)
     usage_va(_("Cannot catch SIGALRM"));
-  }
 
   /* Parse extra opts if any */
   argv=np_extra_opts (&argc, argv, progname);
 
-  if (process_arguments (argc, argv) == ERROR) {
+  if (process_arguments (argc, argv) == ERROR)
     usage_va(_("Could not parse arguments"));
-  }
 
   /* get the command to run */
   xasprintf (&command_line, "%s %s %s %s", NSLOOKUP_COMMAND, query_type, query_address, dns_server);
@@ -147,6 +151,39 @@ main (int argc, char **argv)
     if (verbose)
       puts(chld_out.line[i]);
 
+    /* bug ID: 2946553 - Older versions of bind will use all available dns
+    + servers, we have to match the one specified */
+    if (strlen(dns_server) > 0 && strstr(chld_out.line[i], "Server:")) {
+        temp_buffer = strchr(chld_out.line[i], ':');
+        temp_buffer++;
+
+	if (temp_buffer > (char *)1) {
+          /* Strip leading tabs */
+          for (; *temp_buffer != '\0' && *temp_buffer == '\t'; temp_buffer++)
+            /* NOOP */;
+
+        strip(temp_buffer);
+        if (temp_buffer==NULL || strlen(temp_buffer)==0)
+          die (STATE_CRITICAL, "%s%s%s\n", _("DNS CRITICAL - '"), NSLOOKUP_COMMAND, _("' returned empty server string"));
+
+        if (strcmp(temp_buffer, dns_server) != 0)
+          die (STATE_CRITICAL, "%s %s\n", _("DNS CRITICAL - No response from DNS server:"), dns_server);
+      }
+    }
+    /* Provide the server name\ip to error_scan when not using -s */
+    else if (strlen(tmp_dns_server) == 0) {
+	temp_buffer = strchr(chld_out.line[i], ':');
+	temp_buffer++;
+	if (temp_buffer > (char *)1) {
+	  /* Strip leading tabs */
+	  for (; *temp_buffer != '\0' && *temp_buffer == '\t'; temp_buffer++)
+	      /* NOOP */;
+
+	  strip(temp_buffer);
+	  strncpy(tmp_dns_server, temp_buffer, ADDRESS_LENGTH);
+	}
+    }
+
     if (strstr (chld_out.line[i], "Authoritative answers can be found from:")) {
       non_authoritative = FALSE;
       break;
@@ -155,25 +192,18 @@ main (int argc, char **argv)
     if (strstr (chld_out.line[i], "Name:"))
       parse_address = TRUE;
     /* begin handling types of records */
-    if (strstr (chld_out.line[i], "AAAA address") && (strncmp(query_type, "-querytype=AAAA", query_size) == 0 || strncmp(query_type, "-querytype=ALL", query_size) == 0)) {
-      if (verbose) printf("Found AAAA record\n");
-      temp_buffer = rindex (chld_out.line[i], ' ');
-      addresses[n_addresses++] = check_new_address(temp_buffer);
-      strncpy(query_found, "-querytype=AAAA", sizeof(query_found));
-    }
-    else if (strstr (chld_out.line[i], "exchanger =") && (strncmp(query_type, "-querytype=MX", query_size) == 0 || strncmp(query_type, "-querytype=ALL", query_size) == 0)) {
-      if (verbose) printf("Found MX record\n");
-      temp_buffer = index (chld_out.line[i], '=');
-      addresses[n_addresses++] = check_new_address(temp_buffer);
-      strncpy(query_found, "-querytype=MX", sizeof(query_found));
-    }
-    else if (strstr (chld_out.line[i], "service =") && (strncmp(query_type, "-querytype=SRV", query_size) == 0 || strncmp(query_type, "-querytype=ALL", query_size) == 0)) {
-      if (verbose) printf("Found SRV record\n");
-      temp_buffer = index (chld_out.line[i], '=');
-      addresses[n_addresses++] = check_new_address(temp_buffer);
-      strncpy(query_found, "-querytype=SRV", sizeof(query_found));
-    }
-    else if (accept_cname && strstr (chld_out.line[i], "canonical name =") && (strncmp(query_type, "-querytype=CNAME", query_size) == 0 || strncmp(query_type, "-querytype=ALL", query_size) == 0)) {
+    IF_RECORD("AAAA address", "-querytype=AAAA", "Found AAAA record\n") }
+    else IF_RECORD("exchanger =", "-querytype=MX", "Found MX record\n") }
+    else IF_RECORD("service =", "-querytype=SRV", "Found SRV record\n") }
+    else IF_RECORD("nameserver =", "-querytype=NS", "Found NS record\n") }
+    else IF_RECORD("dname =", "-querytype=DNAME", "Found DNAME record\n") }
+    else IF_RECORD("protocol =", "-querytype=WKS", "Found WKS record\n") }
+    /* TODO: needs to be changed to handle txt output and max size of txt recrods */
+    else IF_RECORD("text =", "-querytype=TXT", "Found TXT record\n") }
+    /* only matching for origin records, if requested other fields could be included at a later date */
+    else IF_RECORD("origin =", "-querytype=SOA", "Found SOA record\n") }
+    /* cnames cannot use macro as we must check for accepting them separately */
+    else if (accept_cname && strstr (chld_out.line[i], "canonical name =") && (strncmp(query_type, "-querytype=CNAME", query_size) == 0 || strncmp(query_type, "-querytype=ANY", query_size) == 0)) {
       if (verbose) printf("Found CNAME record\n");
       temp_buffer = index (chld_out.line[i], '=');
       addresses[n_addresses++] = check_new_address(temp_buffer);
@@ -186,51 +216,26 @@ main (int argc, char **argv)
       addresses[n_addresses++] = check_new_address(temp_buffer);
       strncpy(query_found, "-querytype=A", sizeof(query_found));
     }
-    else if (strstr (chld_out.line[i], "nameserver =") && (strncmp(query_type, "-querytype=NS", query_size) == 0 || strncmp(query_type, "-querytype=ALL", query_size) == 0)) {
-      if (verbose) printf("Found NS record\n");
-      temp_buffer = index (chld_out.line[i], '=');
-      addresses[n_addresses++] = check_new_address(temp_buffer);
-      strncpy(query_found, "-querytype=NS", sizeof(query_found));
-    }
-    else if (strstr (chld_out.line[i], "dname =") && (strncmp(query_type, "-querytype=DNAME", query_size) == 0 || strncmp(query_type, "-querytype=ALL", query_size) == 0)) {
-      if (verbose) printf("Found DNAME record\n");
-      temp_buffer = index (chld_out.line[i], '=');
-      addresses[n_addresses++] = check_new_address(temp_buffer);
-      strncpy(query_found, "-querytype=DNAME", sizeof(query_found));
-    }
     /* must be after other records with "name" as an identifier, as ptr does not spefify */
-    else if (strstr (chld_out.line[i], "name =") && (strncmp(query_type, "-querytype=PTR", query_size) == 0 || strncmp(query_type, "-querytype=ALL", query_size) == 0)) {
-      if (verbose) printf("Found PTR record\n");
-      temp_buffer = index (chld_out.line[i], '=');
-      addresses[n_addresses++] = check_new_address(temp_buffer);
-      strncpy(query_found, "-querytype=PTR", sizeof(query_found));
-    }
-    else if (strstr (chld_out.line[i], "protocol =") && (strncmp(query_type, "-querytype=WKS", query_size) == 0 || strncmp(query_type, "-querytype=ALL", query_size) == 0)) {
-      if (verbose) printf("Found WKS record\n");
-      temp_buffer = index (chld_out.line[i], '=');
-      addresses[n_addresses++] = check_new_address(temp_buffer);
-      strncpy(query_found, "-querytype=WKS", sizeof(query_found));
-    }
-    /* TODO: needs to be changed to handle txt output and max size of txt recrods */
-    else if (strstr (chld_out.line[i], "text =") && (strncmp(query_type, "-querytype=TXT", query_size) == 0 || strncmp(query_type, "-querytype=ALL", query_size) == 0)) {
-      if (verbose) printf("Found TXT record\n");
-      temp_buffer = index (chld_out.line[i], '=');
-      addresses[n_addresses++] = check_new_address(temp_buffer);
-      strncpy(query_found, "-querytype=TXT", sizeof(query_found));
-    }
-    /* only matching for origin records, if requested other fields could be included at a later date */
-    else if (strstr (chld_out.line[i], "origin =") && (strncmp(query_type, "-querytype=SOA", query_size) == 0 || strncmp(query_type, "-querytype=ALL", query_size) == 0)) {
-      if (verbose) printf("Found SOA record\n");
-      temp_buffer = index(chld_out.line[i], '=');
-      addresses[n_addresses++] = check_new_address(temp_buffer);
-      strncpy(query_found, "-querytype=SOA", sizeof(query_found));
+    else IF_RECORD("name =", "-querytype=PTR", "Found PTR record\n") }
+    /* needed for non-query ptr\reverse lookup checks */
+    else if (strstr(chld_out.line[i], ".in-addr.arpa") && !query_set) {
+      if ((temp_buffer = strstr(chld_out.line[i], "name = ")))
+        addresses[n_addresses++] = strdup(temp_buffer);
+      else {
+        msg = (char *)_("Warning plugin error");
+        result = STATE_WARNING;
+      }
     }
 
-    if (strstr (chld_out.line[i], _("Non-authoritative answer:"))) {
+    if (strstr (chld_out.line[i], _("Non-authoritative answer:")))
       non_authoritative = TRUE;
-    }
 
-    result = error_scan (chld_out.line[i]);
+    int tmp = error_scan(chld_out.line[i]);
+    result = (result == STATE_UNKNOWN)
+      ? tmp
+      : (result < tmp)
+        ? tmp : result;
     if (result != STATE_OK) {
       msg = strchr (chld_out.line[i], ':');
       if(msg) msg++;
@@ -254,9 +259,9 @@ main (int argc, char **argv)
     int i,slen;
     char *adrp;
     qsort(addresses, n_addresses, sizeof(*addresses), qstrcmp);
-    for(i=0, slen=1; i < n_addresses; i++) {
+    for(i=0, slen=1; i < n_addresses; i++)
       slen += strlen(addresses[i])+1;
-    }
+
     adrp = address = malloc(slen);
     for(i=0; i < n_addresses; i++) {
       if (i) *adrp++ = ',';
@@ -265,9 +270,7 @@ main (int argc, char **argv)
     }
     *adrp = 0;
   } else
-    die (STATE_CRITICAL,
-         _("DNS CRITICAL - '%s' msg parsing exited with no address\n"),
-         NSLOOKUP_COMMAND);
+    die (STATE_CRITICAL, "%s%s%s\n", _("DNS CRITICAL - '"), NSLOOKUP_COMMAND, _("' msg parsing exited with no address"));
 
   /* compare to expected address */
   if (result == STATE_OK && expected_address_cnt > 0) {
@@ -281,7 +284,7 @@ main (int argc, char **argv)
     if (result == STATE_CRITICAL) {
       /* Strip off last semicolon... */
       temp_buffer[strlen(temp_buffer)-2] = '\0';
-      xasprintf(&msg, _("expected '%s' but got '%s'"), temp_buffer, address);
+      xasprintf(&msg, "%s%s%s%s%s", _("expected '"), temp_buffer, _("' but got '"), address, "'");
     }
   }
 
@@ -290,18 +293,18 @@ main (int argc, char **argv)
     result = STATE_CRITICAL;
 
     if (strncmp(dns_server, "", 1))
-      xasprintf(&msg, _("server %s is not authoritative for %s"), dns_server, query_address);
+      xasprintf(&msg, "%s %s %s %s", _("server"), dns_server, _("is not authoritative for"), query_address);
     else
-      xasprintf(&msg, _("there is no authoritative server for %s"), query_address);
+      xasprintf(&msg, "%s %s", _("there is no authoritative server for"), query_address);
   }
 
   /* compare query type to query found, if query type is ANY we can skip as any record is accepted*/
   if (result == STATE_OK && strncmp(query_type, "", 1) && (strncmp(query_type, "-querytype=ANY", 15) != 0)) {
     if (strncmp(query_type, query_found, 16) != 0) {
       if (verbose)
-        printf( "Failed query for %s only found %s, or nothing\n", query_type, query_found);
+        printf( "%s %s %s %s %s\n", _("Failed query for"), query_type, _("only found"), query_found, _(", or nothing"));
       result = STATE_CRITICAL;
-      xasprintf(&msg, _("query type of %s was not found for %s"), query_type, query_address);
+      xasprintf(&msg, "%s %s %s %s", _("query type of"), query_type, _("was not found for"), query_address);
     }
   }
 
@@ -316,14 +319,14 @@ main (int argc, char **argv)
 
     result = get_status(elapsed_time, time_thresholds);
     if (result == STATE_OK) {
-      printf ("DNS %s: ", _("OK"));
+      printf ("%s %s: ", _("DNS"), _("OK"));
     } else if (result == STATE_WARNING) {
-      printf ("DNS %s: ", _("WARNING"));
+      printf ("%s %s: ", _("DNS"), _("WARNING"));
     } else if (result == STATE_CRITICAL) {
-      printf ("DNS %s: ", _("CRITICAL"));
+      printf ("%s %s: ", _("DNS"), _("CRITICAL"));
     }
     printf (ngettext("%.3f second response time", "%.3f seconds response time", elapsed_time), elapsed_time);
-    printf (_(". %s returns %s"), query_address, address);
+    printf (". %s %s %s", query_address, _("returns"), address);
     if ((time_thresholds->warning != NULL) && (time_thresholds->critical != NULL)) {
       printf ("|%s\n", fperfdata ("time", elapsed_time, "s",
                                   TRUE, time_thresholds->warning->end,
@@ -343,14 +346,11 @@ main (int argc, char **argv)
       printf ("|%s\n", fperfdata ("time", elapsed_time, "s", FALSE, 0, FALSE, 0, TRUE, 0, FALSE, 0));
   }
   else if (result == STATE_WARNING)
-    printf (_("DNS WARNING - %s\n"),
-            !strcmp (msg, "") ? _(" Probably a non-existent host/domain") : msg);
+    printf ("%s %s\n", _("DNS WARNING -"), !strcmp (msg, "") ? _("Probably a non-existent host/domain") : msg);
   else if (result == STATE_CRITICAL)
-    printf (_("DNS CRITICAL - %s\n"),
-            !strcmp (msg, "") ? _(" Probably a non-existent host/domain") : msg);
+    printf ("%s %s\n", _("DNS CRITICAL -"), !strcmp (msg, "") ? _("Probably a non-existent host/domain") : msg);
   else
-    printf (_("DNS UNKNOWN - %s\n"),
-            !strcmp (msg, "") ? _(" Probably a non-existent host/domain") : msg);
+    printf ("%s %s\n", _("DNS UNKNOWN -"), !strcmp (msg, "") ? _("Probably a non-existent host/domain") : msg);
 
   return result;
 }
@@ -369,11 +369,11 @@ error_scan (char *input_buffer)
 
   /* DNS server is not running... */
   else if (strstr (input_buffer, "No response from server"))
-    die (STATE_CRITICAL, _("No response from DNS %s\n"), dns_server);
+    die (STATE_CRITICAL, "%s %s\n", _("No response from DNS"), (strlen(dns_server)==0)?tmp_dns_server:dns_server);
 
   /* Host name is valid, but server doesn't have records... */
   else if (strstr (input_buffer, "No records") || strstr (input_buffer, "No answer"))
-    die (STATE_CRITICAL, _("DNS %s has no records\n"), dns_server);
+    die (STATE_CRITICAL, "%s %s %s\n", _("DNS"), (strlen(dns_server)==0)?tmp_dns_server:dns_server, _("has no records"));
 
   /* Connection was refused */
   else if (strstr (input_buffer, "Connection refused") ||
@@ -381,29 +381,29 @@ error_scan (char *input_buffer)
            strstr (input_buffer, "Refused") ||
            (strstr (input_buffer, "** server can't find") &&
             strstr (input_buffer, ": REFUSED")))
-    die (STATE_CRITICAL, _("Connection to DNS %s was refused\n"), dns_server);
+    die (STATE_CRITICAL, "%s %s %s\n", _("Connection to DNS"), (strlen(dns_server)==0)?tmp_dns_server:dns_server, _("was refused"));
 
   /* Query refused (usually by an ACL in the namserver) */
   else if (strstr (input_buffer, "Query refused"))
-    die (STATE_CRITICAL, _("Query was refused by DNS server at %s\n"), dns_server);
+    die (STATE_CRITICAL, "%s %s\n", _("Query was refused by DNS server at"), (strlen(dns_server)==0)?tmp_dns_server:dns_server);
 
   /* No information (e.g. nameserver IP has two PTR records) */
   else if (strstr (input_buffer, "No information"))
-    die (STATE_CRITICAL, _("No information returned by DNS server at %s\n"), dns_server);
+    die (STATE_CRITICAL, "%s %s\n", _("No information returned by DNS server at"), (strlen(dns_server)==0)?tmp_dns_server:dns_server);
 
   /* Host or domain name does not exist */
   else if (strstr (input_buffer, "Non-existent") ||
            strstr (input_buffer, "** server can't find") ||
      strstr (input_buffer,"NXDOMAIN"))
-    die (STATE_CRITICAL, _("Domain %s was not found by the server\n"), query_address);
+    die (STATE_CRITICAL, "%s %s %s\n", _("Domain"), query_address, _("was not found by the server"));
 
   /* Network is unreachable */
   else if (strstr (input_buffer, "Network is unreachable"))
-    die (STATE_CRITICAL, _("Network is unreachable\n"));
+    die (STATE_CRITICAL, "%s\n", _("Network is unreachable"));
 
   /* Internal server failure */
   else if (strstr (input_buffer, "Server failure"))
-    die (STATE_CRITICAL, _("DNS failure for %s\n"), dns_server);
+    die (STATE_CRITICAL, "%s %s\n", _("DNS failure for"), (strlen(dns_server)==0)?tmp_dns_server:dns_server);
 
   /* Request error or the DNS lookup timed out */
   else if (strstr (input_buffer, "Format error") ||
@@ -464,11 +464,11 @@ process_arguments (int argc, char **argv)
       verbose = TRUE;
       break;
     case 't': /* timeout period */
-      timeout_interval = atoi (optarg);
+      timeout_interval = parse_timeout_string (optarg);
       break;
     case 'H': /* hostname */
       if (strlen (optarg) >= ADDRESS_LENGTH)
-        die (STATE_UNKNOWN, _("Input buffer overflow\n"));
+        die (STATE_UNKNOWN, "%s\n", _("Input buffer overflow"));
       strcpy (query_address, optarg);
       break;
     case 's': /* server name */
@@ -476,35 +476,38 @@ process_arguments (int argc, char **argv)
        * Better to confirm nslookup response matches */
       host_or_die(optarg);
       if (strlen (optarg) >= ADDRESS_LENGTH)
-        die (STATE_UNKNOWN, _("Input buffer overflow\n"));
+        die (STATE_UNKNOWN, "%s\n", _("Input buffer overflow"));
       strcpy (dns_server, optarg);
       break;
     case 'r': /* reverse server name */
       /* TODO: Is this host_or_die necessary? */
       host_or_die(optarg);
       if (strlen (optarg) >= ADDRESS_LENGTH)
-        die (STATE_UNKNOWN, _("Input buffer overflow\n"));
+        die (STATE_UNKNOWN, "%s\n", _("Input buffer overflow"));
       strcpy (ptr_server, optarg);
       break;
     case 'a': /* expected address */
       if (strlen (optarg) >= ADDRESS_LENGTH)
-        die (STATE_UNKNOWN, _("Input buffer overflow\n"));
+        die (STATE_UNKNOWN, "%s\n", _("Input buffer overflow"));
       expected_address = (char **)realloc(expected_address, (expected_address_cnt+1) * sizeof(char**));
       expected_address[expected_address_cnt] = strdup(optarg);
       expected_address_cnt++;
       break;
     case 'q': /* querytype -- A or AAAA or ANY or SRV or TXT, etc. */
       if (strlen (optarg) < 1 || strlen (optarg) > 5)
-	die (STATE_UNKNOWN, _("Missing valid querytype parameter.  Try using 'A' or 'AAAA' or 'SRV'\n"));
+	die (STATE_UNKNOWN, "%s\n", _("Missing valid querytype parameter.  Try using 'A' or 'AAAA' or 'SRV'"));
       strntoupper(optarg, sizeof(optarg));
       strcpy(query_type, "-querytype=");
       strcat(query_type, optarg);
+      query_set = TRUE;
+      /* logic is set such that we must accept cnames if they are querying for them */
+      if (strcmp(query_type, "-querytype=CNAME") != 0)
+        break;
+    case 'n': /* accept cname responses as a result */
+      accept_cname = TRUE;
       break;
     case 'A': /* expect authority */
       expect_authority = TRUE;
-      break;
-    case 'n': /* accept cname responses as a result */
-      accept_cname = TRUE;
       break;
     case 'w':
       warning = optarg;
@@ -515,21 +518,6 @@ process_arguments (int argc, char **argv)
     default: /* args not parsable */
       usage5();
     }
-  }
-
-  c = optind;
-  if (strlen(query_address)==0 && c<argc) {
-    if (strlen(argv[c])>=ADDRESS_LENGTH)
-      die (STATE_UNKNOWN, _("Input buffer overflow\n"));
-    strcpy (query_address, argv[c++]);
-  }
-
-  if (strlen(dns_server)==0 && c<argc) {
-    /* TODO: See -s option */
-    host_or_die(argv[c]);
-    if (strlen(argv[c]) >= ADDRESS_LENGTH)
-      die (STATE_UNKNOWN, _("Input buffer overflow\n"));
-    strcpy (dns_server, argv[c++]);
   }
 
   set_thresholds(&time_thresholds, warning, critical);
@@ -553,7 +541,7 @@ print_help (void)
 {
   print_revision (progname, NP_VERSION);
 
-  printf ("Copyright (c) 1999 Ethan Galstad <nagios@nagios.org>\n");
+  printf ("%s\n", "Copyright (c) 1999 Ethan Galstad <nagios@nagios.org>");
   printf (COPYRIGHT, copyright, email);
 
   printf ("%s\n", _("This plugin uses the nslookup program to obtain the IP address for the given host/domain query."));
@@ -567,27 +555,27 @@ print_help (void)
   printf (UT_HELP_VRSN);
   printf (UT_EXTRA_OPTS);
 
-  printf (" -H, --hostname=HOST\n");
+  printf ("%s\n", " -H, --hostname=HOST");
   printf ("    %s\n", _("The name or address you want to query"));
-  printf (" -s, --server=HOST\n");
+  printf ("%s\n", " -s, --server=HOST");
   printf ("    %s\n", _("Optional DNS server you want to use for the lookup"));
-  printf (" -q, --querytype=TYPE\n");
+  printf ("%s\n", " -q, --querytype=TYPE");
   printf ("    %s\n", _("Optional DNS record query type where TYPE =(A, AAAA, SRV, TXT, MX, ANY)"));
   printf ("    %s\n", _("The default query type is 'A' (IPv4 host entry)"));
-  printf (" -a, --expected-address=IP-ADDRESS|HOST\n");
+  printf ("%s\n", " -a, --expected-address=IP-ADDRESS|HOST");
   printf ("    %s\n", _("Optional IP-ADDRESS you expect the DNS server to return. HOST must end with"));
   printf ("    %s\n", _("a dot (.). This option can be repeated multiple times (Returns OK if any"));
   printf ("    %s\n", _("value match). If multiple addresses are returned at once, you have to match"));
   printf ("    %s\n", _("the whole string of addresses separated with commas (sorted alphabetically)."));
   printf ("    %s\n", _("If you would like to test for the presence of a cname, combine with -n param."));
-  printf (" -A, --expect-authority\n");
+  printf ("%s\n", " -A, --expect-authority");
   printf ("    %s\n", _("Optionally expect the DNS server to be authoritative for the lookup"));
-  printf (" -n, --accept-cname\n");
+  printf ("%s\n", " -n, --accept-cname");
   printf ("    %s\n", _("Optionally accept cname responses as a valid result to a query"));
   printf ("    %s\n", _("The default is to ignore cname responses as part of the result"));
-  printf (" -w, --warning=seconds\n");
+  printf ("%s\n", " -w, --warning=seconds");
   printf ("    %s\n", _("Return warning if elapsed time exceeds value. Default off"));
-  printf (" -c, --critical=seconds\n");
+  printf ("%s\n", " -c, --critical=seconds");
   printf ("    %s\n", _("Return critical if elapsed time exceeds value. Default off"));
 
   printf (UT_CONN_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
@@ -600,5 +588,5 @@ void
 print_usage (void)
 {
   printf ("%s\n", _("Usage:"));
-  printf ("%s -H host [-s server] [-q type ] [-a expected-address] [-A] [-n] [-t timeout] [-w warn] [-c crit]\n", progname);
+  printf ("%s %s\n", progname, "-H host [-s server] [-q type ] [-a expected-address] [-A] [-n] [-t timeout] [-w warn] [-c crit]");
 }

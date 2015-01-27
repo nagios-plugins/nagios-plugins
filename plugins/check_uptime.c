@@ -173,10 +173,7 @@ static int process_arguments (int argc, char **argv) {
 				warning = optarg;
 				break;
 			case 't': /* timeout period */
-				if (!is_intpos (optarg))
-					usage2 (_("Timeout interval must be a positive integer"), optarg);
-				else
-					timeout_interval = atoi (optarg);
+				timeout_interval = parse_timeout_string (optarg);
 				break;
 			} // end case
 		} // end while

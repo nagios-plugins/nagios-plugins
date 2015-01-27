@@ -66,6 +66,7 @@ main (int argc, char **argv)
 	int procppid = 0;
 	int procvsz = 0;
 	int procrss = 0;
+	char *proc_cgroup_hierarchy;
 	float procpcpu = 0;
 	char procstat[8];
 #ifdef PS_USES_PROCETIME
@@ -253,11 +254,7 @@ process_arguments (int argc, char **argv)
 				     _("Expiration time must be an integer (seconds)\n"));
 			break;
 		case 't':									/* timeout */
-			if (is_intnonneg (optarg))
-				timeout_interval = atoi (optarg);
-			else
-				die (STATE_UNKNOWN,
-				     _("Timeout must be an integer (seconds)\n"));
+			timeout_interval = parse_timeout_string (optarg);
 			break;
 		case 'v':
 			verbose++;

@@ -81,7 +81,7 @@ main (int argc, char **argv)
 	signal (SIGALRM, socket_timeout_alarm_handler);
 
 	/* set socket timeout */
-	alarm (socket_timeout);
+	alarm (timeout_interval);
 	time (&start_time);
 
 	/* try to connect to the host at the given port number */
@@ -298,10 +298,7 @@ process_arguments (int argc, char **argv)
 				server_port = atoi (optarg);
 			break;
 		case 't':									/* timeout */
-			if (!is_intnonneg (optarg))
-				usage2 (_("Timeout interval must be a positive integer"), optarg);
-			else
-				socket_timeout = atoi (optarg);
+			timeout_interval = parse_timeout_string (optarg);
 			break;
 		case 'u':									/* udp */
 			use_udp = TRUE;

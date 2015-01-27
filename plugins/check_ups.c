@@ -66,7 +66,7 @@ enum {
 #define UPSSTATUS_BOOST    512
 #define UPSSTATUS_CHRG    1024
 #define UPSSTATUS_DISCHRG 2048
-#define UPSSTATUS_UNKOWN  4096
+#define UPSSTATUS_UNKNOWN  4096
 
 enum { NOSUCHVAR = ERROR-1 };
 
@@ -125,7 +125,7 @@ main (int argc, char **argv)
 	signal (SIGALRM, socket_timeout_alarm_handler);
 
 	/* set socket timeout */
-	alarm (socket_timeout);
+	alarm (timeout_interval);
 
 	/* get the ups status if possible */
 	if (determine_status () != OK)
@@ -181,7 +181,7 @@ main (int argc, char **argv)
 			if (status & UPSSTATUS_DISCHRG) {
 				xasprintf (&ups_status, "%s%s", ups_status, _(", Discharging"));
 			}
-			if (status & UPSSTATUS_UNKOWN) {
+			if (status & UPSSTATUS_UNKNOWN) {
 				xasprintf (&ups_status, "%s%s", ups_status, _(", Unknown"));
 			}
 		}
@@ -379,7 +379,7 @@ determine_status (void)
 		else if (!strcmp (ptr, "DISCHRG"))
 			status |= UPSSTATUS_DISCHRG;
 		else
-			status |= UPSSTATUS_UNKOWN;
+			status |= UPSSTATUS_UNKNOWN;
 	}
 
 	return OK;
@@ -549,12 +549,7 @@ process_arguments (int argc, char **argv)
 				usage2 (_("Unrecognized UPS variable"), optarg);
 			break;
 		case 't':									/* timeout */
-			if (is_intnonneg (optarg)) {
-				socket_timeout = atoi (optarg);
-			}
-			else {
-				usage4 (_("Timeout interval must be a positive integer"));
-			}
+			timeout_interval = parse_timeout_string (optarg);
 			break;
 		case 'V':									/* version */
 			print_revision (progname, NP_VERSION);

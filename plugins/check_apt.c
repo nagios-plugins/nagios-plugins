@@ -168,7 +168,7 @@ int process_arguments (int argc, char **argv) {
 			verbose++;
 			break;
 		case 't':
-			timeout_interval=atoi(optarg);
+			timeout_interval=parse_timeout_string(optarg);
 			break;
 		case 'd':
 			upgrade=DIST_UPGRADE;
@@ -222,6 +222,9 @@ int run_upgrade(int *pkgcount, int *secpkgcount){
 	struct output chld_out, chld_err;
 	regex_t ireg, ereg, sreg;
 	char *cmdline=NULL, rerrbuf[64];
+
+	/* initialize ereg as it is possible it is printed while uninitialized */
+	memset(&ereg, '\0', sizeof(ereg.buffer));
 
 	if(upgrade==NO_UPGRADE) return STATE_OK;
 

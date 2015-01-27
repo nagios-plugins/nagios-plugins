@@ -173,7 +173,7 @@ main (int argc, char **argv)
 
   /* initialize alarm signal handling, set socket timeout, start timer */
   (void) signal (SIGALRM, socket_timeout_alarm_handler);
-  (void) alarm (socket_timeout);
+  (void) alarm (timeout_interval);
   gettimeofday (&tv, NULL);
 
   result = check_http ();
@@ -274,10 +274,7 @@ process_arguments (int argc, char **argv)
       exit (STATE_OK);
       break;
     case 't': /* timeout period */
-      if (!is_intnonneg (optarg))
-        usage2 (_("Timeout interval must be a positive integer"), optarg);
-      else
-        socket_timeout = atoi (optarg);
+      timeout_interval = parse_timeout_string(optarg);
       break;
     case 'c': /* critical time threshold */
       critical_thresholds = optarg;
@@ -533,8 +530,8 @@ process_arguments (int argc, char **argv)
 
   set_thresholds(&thlds, warning_thresholds, critical_thresholds);
 
-  if (critical_thresholds && thlds->critical->end>(double)socket_timeout)
-    socket_timeout = (int)thlds->critical->end + 1;
+  if (critical_thresholds && thlds->critical->end>(double)timeout_interval)
+    timeout_interval = (int)thlds->critical->end + 1;
 
   if (http_method == NULL)
     http_method = strdup ("GET");
@@ -673,6 +670,115 @@ expected_statuscode (const char *reply, const char *statuscodes)
     }
 
   free (expected);
+  return result;
+}
+
+char *
+decode_chunked_page (const char *raw, char *dst)
+{
+  unsigned long int chunksize;
+  char *raw_pos = (char *)raw;
+  char *dst_pos = (char *)dst;
+  const char *raw_end = raw + strlen(raw);
+
+  while (chunksize = strtoul(raw_pos, NULL, 16)) {
+    if (chunksize <= 0) {
+      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, invalid chunk size\n"));
+    }
+
+    // soak up the optional chunk params (which we will ignore)
+    while (*raw_pos && *raw_pos != '\r' && *raw_pos != '\n') raw_pos++;
+
+    // soak up the leading CRLF
+    if (*raw_pos && *raw_pos == '\r' && *(++raw_pos) && *raw_pos == '\n') {
+      raw_pos++;
+    }
+    else {
+      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, invalid format\n"));
+    }
+
+    // move chunk from raw into dst, only if we can fit within the buffer
+    if (*raw_pos && *dst_pos && (raw_pos + chunksize) < raw_end ) {
+      strncpy(dst_pos, raw_pos, chunksize);
+    }
+    else {
+      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, too large for destination\n"));
+    }
+
+    raw_pos += chunksize;
+    dst_pos += chunksize;
+
+    // soak up the ending CRLF
+    if (*raw_pos && *raw_pos == '\r' && *(++raw_pos) && *raw_pos == '\n') {
+      raw_pos++;
+    }
+    else {
+      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, invalid format\n"));
+    }
+  }
+
+  if (*dst_pos) *dst_pos = '\0';
+  else {
+    die (STATE_UNKNOWN, _("HTTP UNKNOWN - Memory allocation error\n"));
+  }
+
+  return dst;
+}
+
+static char *
+header_value (const char *headers, const char *header)
+{
+  char *s;
+  char *value;
+  const char *value_end;
+  int value_size;
+
+  if (!(s = strcasestr(headers, header))) {
+    return NULL;
+  }
+
+  s += strlen(header);
+
+  while (*s && (isspace(*s) || *s == ':')) s++;
+  while (*s && isspace(*s)) s++;
+
+  value_end = strchr(s, '\r');
+  if (!value_end) {
+      die (STATE_UNKNOWN, _("HTTP_UNKNOWN - Failed to parse response headers\n"));
+  }
+
+  value_size = value_end - s;
+
+  value = malloc(value_size + 1);
+  if (!value) {
+    die (STATE_UNKNOWN, _("HTTP_UNKNOWN - Memory allocation error\n"));
+  }
+
+  if (!strncpy(value, s, value_size)) {
+    die(STATE_UNKNOWN, _("HTTP_UNKNOWN - Memory copy failure\n"));
+  }
+  value[value_size] = '\0';
+
+  return value;
+}
+
+static int
+chunked_transfer_encoding (const char *headers)
+{
+  int result;
+  char *encoding = header_value(headers, "Transfer-Encoding");
+  if (!encoding) {
+    return 0;
+  }
+
+  if (! strncmp(encoding, "chunked", sizeof("chunked"))) {
+    result = 1;
+  }
+  else {
+    result = 0;
+  }
+
+  free(encoding);
   return result;
 }
 
@@ -869,6 +975,7 @@ check_http (void)
   double elapsed_time_transfer = 0.0;
   int page_len = 0;
   int result = STATE_OK;
+  char *force_host_header = NULL;
 
   /* try to connect to the host at the given port number */
   gettimeofday (&tv_temp, NULL);
@@ -898,18 +1005,32 @@ check_http (void)
   /* tell HTTP/1.1 servers not to keep the connection alive */
   xasprintf (&buf, "%sConnection: close\r\n", buf);
 
+  /* check if Host header is explicitly set in options */
+  if (http_opt_headers_count) {
+    for (i = 0; i < http_opt_headers_count ; i++) {
+      if (strcmp(http_opt_headers[i], "Host: ")) {
+        force_host_header = http_opt_headers[i];
+      }
+    }
+  }
+
   /* optionally send the host header info */
   if (host_name) {
-    /*
-     * Specify the port only if we're using a non-default port (see RFC 2616,
-     * 14.23).  Some server applications/configurations cause trouble if the
-     * (default) port is explicitly specified in the "Host:" header line.
-     */
-    if ((use_ssl == FALSE && server_port == HTTP_PORT) ||
-        (use_ssl == TRUE && server_port == HTTPS_PORT))
-      xasprintf (&buf, "%sHost: %s\r\n", buf, host_name);
-    else
-      xasprintf (&buf, "%sHost: %s:%d\r\n", buf, host_name, server_port);
+    if (force_host_header) {
+      xasprintf (&buf, "%s%s\r\n", buf, force_host_header);
+    }
+    else {
+      /*
+       * Specify the port only if we're using a non-default port (see RFC 2616,
+       * 14.23).  Some server applications/configurations cause trouble if the
+       * (default) port is explicitly specified in the "Host:" header line.
+       */
+      if ((use_ssl == FALSE && server_port == HTTP_PORT) ||
+          (use_ssl == TRUE && server_port == HTTPS_PORT))
+        xasprintf (&buf, "%sHost: %s\r\n", buf, host_name);
+      else
+        xasprintf (&buf, "%sHost: %s:%d\r\n", buf, host_name, server_port);
+    }
   }
 
   /* Inform server we accept any MIME type response
@@ -921,7 +1042,9 @@ check_http (void)
   /* optionally send any other header tag */
   if (http_opt_headers_count) {
     for (i = 0; i < http_opt_headers_count ; i++) {
-      xasprintf (&buf, "%s%s\r\n", buf, http_opt_headers[i]);
+      if (force_host_header != http_opt_headers[i]) {
+        xasprintf (&buf, "%s%s\r\n", buf, http_opt_headers[i]);
+      }
     }
     /* This cannot be free'd here because a redirection will then try to access this and segfault */
     /* Covered in a testcase in tests/check_http.t */
@@ -1044,13 +1167,21 @@ check_http (void)
     page += (size_t) strcspn (page, "\r\n");
     pos = page;
     if ((strspn (page, "\r") == 1 && strspn (page, "\r\n") >= 2) ||
-        (strspn (page, "\n") == 1 && strspn (page, "\r\n") >= 2))
+        (strspn (page, "\n") == 1 && strspn (page, "\r\n") >= 2)) {
       page += (size_t) 2;
-    else
+      pos += (size_t) 2;
+    }
+    else {
       page += (size_t) 1;
+      pos += (size_t) 1;
+    }
   }
   page += (size_t) strspn (page, "\r\n");
   header[pos - header] = 0;
+
+  if (chunked_transfer_encoding(header))
+    page = decode_chunked_page(page, page);
+
   if (verbose)
     printf ("**** HEADER ****\n%s\n**** CONTENT ****\n%s\n", header,
                 (no_body ? "  [[ skipped ]]" : page));
@@ -1125,6 +1256,7 @@ check_http (void)
     result = max_state_alt(check_document_dates(header, &msg), result);
   }
 
+
   /* Page and Header content checks go here */
   if (strlen (header_expect)) {
     if (!strstr (header, header_expect)) {
@@ -1136,7 +1268,6 @@ check_http (void)
       result = STATE_CRITICAL;
     }
   }
-
 
   if (strlen (string_expect)) {
     if (!strstr (page, string_expect)) {
@@ -1249,6 +1380,7 @@ redir (char *pos, char *status_line)
   if (addr == NULL)
     die (STATE_UNKNOWN, _("HTTP UNKNOWN - Could not allocate addr\n"));
 
+  memset(addr, 0, MAX_IPV4_HOSTLENGTH);
   url = malloc (strcspn (pos, "\r\n"));
   if (url == NULL)
     die (STATE_UNKNOWN, _("HTTP UNKNOWN - Could not allocate URL\n"));
@@ -1339,8 +1471,8 @@ redir (char *pos, char *status_line)
          max_depth, type, addr, i, url, (display_html ? "</A>" : ""));
 
   if (server_port==i &&
-      !strcmp(server_address, addr) &&
-      (host_name && !strcmp(host_name, addr)) &&
+      !strncmp(server_address, addr, MAX_IPV4_HOSTLENGTH) &&
+      (host_name && !strncmp(host_name, addr, MAX_IPV4_HOSTLENGTH)) &&
       !strcmp(server_url, url))
     die (STATE_WARNING,
          _("HTTP WARNING - redirection creates an infinite loop - %s://%s:%d%s%s\n"),
@@ -1349,11 +1481,11 @@ redir (char *pos, char *status_line)
   strcpy (server_type, type);
 
   free (host_name);
-  host_name = strdup (addr);
+  host_name = strndup (addr, MAX_IPV4_HOSTLENGTH);
 
   if (!(followsticky & STICKY_HOST)) {
     free (server_address);
-    server_address = strdup (addr);
+    server_address = strndup (addr, MAX_IPV4_HOSTLENGTH);
   }
   if (!(followsticky & STICKY_PORT)) {
     server_port = i;
@@ -1372,6 +1504,7 @@ redir (char *pos, char *status_line)
     printf (_("Redirection to %s://%s:%d%s\n"), server_type,
             host_name ? host_name : server_address, server_port, server_url);
 
+  free(addr);
   check_http ();
 }
 

@@ -41,7 +41,7 @@
 # include <sys/un.h>
 # ifndef UNIX_PATH_MAX
    /* linux uses this, on sun it's hard-coded at 108 without a define */
-#  define UNIX_PATH_MAX 108
+#  define UNIX_PATH_MAX 104
 # endif /* UNIX_PATH_MAX */
 #endif /* HAVE_SYS_UN_H */
 
@@ -81,8 +81,6 @@ void host_or_die(const char *str);
 #  define is_hostname(addr) resolve_host_or_addr(addr, AF_INET)
 #endif
 
-extern unsigned int socket_timeout;
-extern unsigned int socket_timeout_state;
 extern int econn_refuse_state;
 extern int was_refused;
 extern int address_family;

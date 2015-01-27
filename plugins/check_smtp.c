@@ -173,7 +173,7 @@ main (int argc, char **argv)
 	(void) signal (SIGALRM, socket_timeout_alarm_handler);
 
 	/* set socket timeout */
-	(void) alarm (socket_timeout);
+	(void) alarm (timeout_interval);
 
 	/* start timer */
 	gettimeofday (&tv, NULL);
@@ -574,12 +574,7 @@ process_arguments (int argc, char **argv)
 			ignore_send_quit_failure++;             /* ignore problem sending QUIT */
 			break;
 		case 't':									/* timeout */
-			if (is_intnonneg (optarg)) {
-				socket_timeout = atoi (optarg);
-			}
-			else {
-				usage4 (_("Timeout interval must be a positive integer"));
-			}
+			timeout_interval = parse_timeout_string (optarg);
 			break;
 		case 'S':
 		/* starttls */

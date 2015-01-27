@@ -177,6 +177,46 @@ timeout_alarm_handler (int signo)
 	}
 }
 
+void
+set_timeout_state (char *state) {
+        if ((timeout_state = translate_state(state)) == ERROR)
+                usage4 (_("Timeout result must be a valid state name (OK, WARNING, CRITICAL, UNKNOWN) or integer (0-3)."));
+}
+
+int
+parse_timeout_string (char *timeout_str)
+{
+	char *seperated_str;
+        char *timeout_val = "";
+	char *timeout_sta = NULL;
+        if ( strstr(timeout_str, ":" ) == NULL) {
+		timeout_val = timeout_str;
+        } else if ( strncmp(timeout_str, ":", 1 ) == 0) {
+		seperated_str = strtok(timeout_str, ":");
+                if ( seperated_str != NULL ) {
+                	timeout_sta = seperated_str;
+		}
+        } else {
+		seperated_str = strtok(timeout_str, ":");
+                timeout_val = seperated_str;
+                seperated_str = strtok(NULL, ":");
+                if (seperated_str != NULL) {
+                        timeout_sta = seperated_str;
+                }
+        }
+        if ( timeout_sta != NULL ) {
+		set_timeout_state(timeout_sta);
+	}
+	if (( timeout_val == NULL ) || ( timeout_val[0] == '\0' )) {
+		return timeout_interval;
+	} else if (is_intpos(timeout_val)) {
+		return atoi(timeout_val);
+	} else {
+		usage4 (_("Timeout value must be a positive integer"));
+		exit (STATE_UNKNOWN);
+	}
+}
+
 int
 is_numeric (char *number)
 {

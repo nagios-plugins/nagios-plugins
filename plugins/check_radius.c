@@ -302,10 +302,7 @@ process_arguments (int argc, char **argv)
 				usage4 (_("Number of retries must be a positive integer"));
 			break;
 		case 't':									/* timeout */
-			if (is_intpos (optarg))
-				timeout_interval = atoi (optarg);
-			else
-				usage2 (_("Timeout interval must be a positive integer"), optarg);
+			timeout_interval = parse_timeout_string (optarg);
 			break;
 		}
 	}

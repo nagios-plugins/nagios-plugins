@@ -54,6 +54,7 @@ void print_usage (void);
 
 char ld_defattr[] = "(objectclass=*)";
 char *ld_attr = ld_defattr;
+char *ld_uri = NULL;
 char *ld_host = NULL;
 char *ld_base = NULL;
 char *ld_passwd = NULL;
@@ -115,19 +116,35 @@ main (int argc, char *argv[])
 	signal (SIGALRM, socket_timeout_alarm_handler);
 
 	/* set socket timeout */
-	alarm (socket_timeout);
+	alarm (timeout_interval);
 
 	/* get the start time */
 	gettimeofday (&tv, NULL);
 
 	/* initialize ldap */
+	if (ld_uri != NULL)
+	{
+#ifdef HAVE_LDAP_INITIALIZE
+		int result = ldap_initialize(&ld, ld_uri);
+		if (result != LDAP_SUCCESS)
+		{
+			printf ("Failed to connect to LDAP server at %s: %s\n",
+				ld_uri, ldap_err2string(result));
+			return STATE_CRITICAL;
+		}
+#else
+		printf ("Sorry, this version of %s was compiled without URI support!\n",
+			argv[0]);
+		return STATE_CRITICAL;
+#endif
+	}
 #ifdef HAVE_LDAP_INIT
-	if (!(ld = ldap_init (ld_host, ld_port))) {
+	else if (!(ld = ldap_init (ld_host, ld_port))) {
 		printf ("Could not connect to the server at port %i\n", ld_port);
 		return STATE_CRITICAL;
 	}
 #else
-	if (!(ld = ldap_open (ld_host, ld_port))) {
+	else if (!(ld = ldap_open (ld_host, ld_port))) {
 		if (verbose)
 			ldap_perror(ld, "ldap_open");
 		printf (_("Could not connect to the server at port %i\n"), ld_port);
@@ -248,6 +265,7 @@ process_arguments (int argc, char **argv)
 		{"version", no_argument, 0, 'V'},
 		{"timeout", required_argument, 0, 't'},
 		{"hostname", required_argument, 0, 'H'},
+		{"uri", required_argument, 0, 'U'},
 		{"base", required_argument, 0, 'b'},
 		{"attr", required_argument, 0, 'a'},
 		{"bind", required_argument, 0, 'D'},
@@ -276,7 +294,7 @@ process_arguments (int argc, char **argv)
 	}
 
 	while (1) {
-		c = getopt_long (argc, argv, "hvV234TS6t:c:w:H:b:p:a:D:P:", longopts, &option);
+		c = getopt_long (argc, argv, "hvV234TS6t:c:w:H:b:p:a:D:P:U:", longopts, &option);
 
 		if (c == -1 || c == EOF)
 			break;
@@ -289,10 +307,10 @@ process_arguments (int argc, char **argv)
 			print_revision (progname, NP_VERSION);
 			exit (STATE_OK);
 		case 't':									/* timeout period */
-			if (!is_intnonneg (optarg))
-				usage2 (_("Timeout interval must be a positive integer"), optarg);
-			else
-				socket_timeout = atoi (optarg);
+			timeout_interval = parse_timeout_string(optarg);
+			break;
+		case 'U':
+			ld_uri = optarg;
 			break;
 		case 'H':
 			ld_host = optarg;
@@ -375,11 +393,12 @@ process_arguments (int argc, char **argv)
 int
 validate_arguments ()
 {
-	if (ld_host==NULL || strlen(ld_host)==0)
-		usage4 (_("Please specify the host name\n"));
+	if ((ld_host==NULL || strlen(ld_host)==0) &&
+		(ld_uri==NULL || strlen(ld_uri)==0))
+		usage4 (_("Please specify the host name or LDAP URI\n"));
 
 	if (ld_base==NULL)
-		usage4 (_("Please specify the LDAP base\n"));
+		usage4 (_("Please specify the LDAP base DN\n"));
 
 	return OK;
 }
@@ -449,8 +468,8 @@ void
 print_usage (void)
 {
   printf ("%s\n", _("Usage:"));
-	printf (" %s -H <host> -b <base_dn> [-p <port>] [-a <attr>] [-D <binddn>]",progname);
-  printf ("\n       [-P <password>] [-w <warn_time>] [-c <crit_time>] [-t timeout]%s\n",
+  printf (" %s (-H <host>|-U <uri>) -b <base_dn> [-p <port>] [-a <attr>] [-D <binddn>]\n", progname);
+  printf ("       [-P <password>] [-w <warn_time>] [-c <crit_time>] [-t timeout]%s\n",
 #ifdef HAVE_LDAP_SET_OPTION
 			"\n       [-2|-3] [-4|-6]"
 #else

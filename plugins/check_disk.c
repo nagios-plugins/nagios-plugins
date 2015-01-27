@@ -51,6 +51,9 @@ const char *email = "devel@nagios-plugins.org";
 # include <limits.h>
 #endif
 #include "regex.h"
+#if HAVE_PTHREAD_H
+# include <pthread.h>
+#endif
 
 #ifdef __CYGWIN__
 # include <windows.h>
@@ -130,6 +133,7 @@ void print_help (void);
 void print_usage (void);
 double calculate_percent(uintmax_t, uintmax_t);
 void stat_path (struct parameter_list *p);
+void *do_stat_path (void *p);
 void get_stats (struct parameter_list *p, struct fs_usage *fsp);
 void get_path_stats (struct parameter_list *p, struct fs_usage *fsp);
 
@@ -172,6 +176,7 @@ main (int argc, char **argv)
   char *details;
   char *perf;
   char *preamble;
+  char *flag_header;
   double inode_space_pct;
   double warning_high_tide;
   double critical_high_tide;
@@ -354,6 +359,12 @@ main (int argc, char **argv)
       if (disk_result==STATE_OK && erronly && !verbose)
         continue;
 
+      if (disk_result && verbose) {
+	      xasprintf(&flag_header, " %s [", state_text (disk_result));
+      }
+      else {
+	      xasprintf(&flag_header, "");
+      }
       xasprintf (&output, "%s %s %.0f %s (%.0f%%",
                 output,
                 (!strcmp(me->me_mountdir, "none") || display_mntp) ? me->me_devname : me->me_mountdir,
@@ -363,17 +374,19 @@ main (int argc, char **argv)
       /* Whether or not to put all disks on new line */
       if (newlines) {
         if (path->dused_inodes_percent < 0) {
-          xasprintf(&output, "%s inode=-);\n", output);
+          xasprintf(&output, "%s inode=-)%s;\n", output, (disk_result ? "]" : ""));
         } else {
-          xasprintf(&output, "%s inode=%.0f%%);\n", output, path->dfree_inodes_percent );
+          xasprintf(&output, "%s inode=%.0f%%)%s;\n", output, path->dfree_inodes_percent, ((disk_result && verbose) ? "]" : ""));
         }
       } else {
         if (path->dused_inodes_percent < 0) {
-          xasprintf(&output, "%s inode=-);", output);
+          xasprintf(&output, "%s inode=-)%s;", output, (disk_result ? "]" : ""));
         } else {
-          xasprintf(&output, "%s inode=%.0f%%);", output, path->dfree_inodes_percent );
+          xasprintf(&output, "%s inode=%.0f%%)%s;", output, path->dfree_inodes_percent, ((disk_result && verbose) ? "]" : ""));
         }
       }
+
+      free(flag_header);
 
       /* TODO: Need to do a similar debug line
       xasprintf (&details, _("%s\n\
@@ -497,14 +510,8 @@ process_arguments (int argc, char **argv)
 
     switch (c) {
     case 't':                 /* timeout period */
-      if (is_integer (optarg)) {
-        timeout_interval = atoi (optarg);
-        break;
-      }
-      else {
-        usage2 (_("Timeout interval must be a positive integer"), optarg);
-      }
-
+      timeout_interval = parse_timeout_string(optarg);
+      break;
     /* See comments for 'c' */
     case 'w':                 /* warning threshold */
       if (strstr(optarg, "%")) {
@@ -981,6 +988,44 @@ print_usage (void)
 void
 stat_path (struct parameter_list *p)
 {
+#ifdef HAVE_PTHREAD_H
+  pthread_t stat_thread;
+  int statdone = 0;
+  int timer = timeout_interval;
+  struct timespec req, rem;
+
+  req.tv_sec = 0;
+  pthread_create(&stat_thread, NULL, do_stat_path, p);
+  while (timer-- > 0) {
+    req.tv_nsec = 10000000;
+    nanosleep(&req, &rem);
+    if (pthread_kill(stat_thread, 0)) {
+      statdone = 1;
+      break;
+    } else {
+      req.tv_nsec = 990000000;
+      nanosleep(&req, &rem);
+    }
+  }
+  if (statdone == 1) {
+    pthread_join(stat_thread, NULL);
+  } else {
+    pthread_detach(stat_thread);
+    if (verbose >= 3)
+      printf("stat did not return within %ds on %s\n", timeout_interval, p->name);
+    printf("DISK %s - ", _("CRITICAL"));
+    die (STATE_CRITICAL, _("%s %s: %s\n"), p->name, _("hangs"), _("Timeout"));
+  }
+#else
+  do_stat_path(p);
+#endif
+}
+
+void *
+do_stat_path (void *in)
+{
+  struct parameter_list *p = in;
+
   /* Stat entry to check that dir exists and is accessible */
   if (verbose >= 3)
     printf("calling stat on %s\n", p->name);
@@ -990,6 +1035,7 @@ stat_path (struct parameter_list *p)
     printf("DISK %s - ", _("CRITICAL"));
     die (STATE_CRITICAL, _("%s %s: %s\n"), p->name, _("is not accessible"), strerror(errno));
   }
+  return NULL;
 }
 
 

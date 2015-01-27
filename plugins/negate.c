@@ -35,16 +35,16 @@ const char *email = "devel@nagios-plugins.org";
 
 #define DEFAULT_TIMEOUT 11
 
-#include <ctype.h>
-
 #include "common.h"
 #include "utils.h"
 #include "utils_cmd.h"
 
+#include <ctype.h>
+
 /* char *command_line; */
 
 static const char **process_arguments (int, char **);
-int validate_arguments (char **);
+void validate_arguments (char **);
 void print_help (void);
 void print_usage (void);
 int subst_text = FALSE;
@@ -98,8 +98,7 @@ main (int argc, char **argv)
 		die (max_state_alt (result, STATE_UNKNOWN), _("No data returned from command\n"));
 
 	for (i = 0; i < chld_out.lines; i++) {
-		if (subst_text && result != state[result] &&
-		    result >= 0 && result <= 4) {
+		if (subst_text && result >= 0 && result <= 3 && result != state[result])  {
 			/* Loop over each match found */
 			while ((sub = strstr (chld_out.line[i], state_text (result)))) {
 				/* Terminate the first part and skip over the string we'll substitute */
@@ -159,10 +158,7 @@ process_arguments (int argc, char **argv)
 			print_revision (progname, NP_VERSION);
 			exit (EXIT_SUCCESS);
 		case 't':     /* timeout period */
-			if (!is_integer (optarg))
-				usage2 (_("Timeout interval must be a positive integer"), optarg);
-			else
-				timeout_interval = atoi (optarg);
+			timeout_interval = parse_timeout_string (optarg);
 			break;
 		case 'T':     /* Result to return on timeouts */
 			if ((timeout_state = translate_state(optarg)) == ERROR)
@@ -206,7 +202,7 @@ process_arguments (int argc, char **argv)
 }
 
 
-int
+void
 validate_arguments (char **command_line)
 {
 	if (command_line[0] == NULL)

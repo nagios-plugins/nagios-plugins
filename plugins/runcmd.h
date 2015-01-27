@@ -26,6 +26,7 @@
 
 #include "common.h"
 #include "utils_cmd.h" /* for the "output" type */
+#include "utils.h"
 
 /** prototypes **/
 int np_runcmd(const char *, output *, output *, int);

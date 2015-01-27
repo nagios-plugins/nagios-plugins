@@ -169,7 +169,8 @@ process_arguments (int argc, char **argv)
 		{"verbose", no_argument, 0, 'v'},
 		{"fork", no_argument, 0, 'f'},
 		{"timeout", required_argument, 0, 't'},
-		{"host", required_argument, 0, 'H'},
+		{"host", required_argument, 0, 'H'},    /* backward compatibility */
+		{"hostname", required_argument, 0, 'H'},
 		{"port", required_argument,0,'p'},
 		{"output", required_argument, 0, 'O'},
 		{"name", required_argument, 0, 'n'},
@@ -216,10 +217,7 @@ process_arguments (int argc, char **argv)
 			verbose = TRUE;
 			break;
 		case 't':									/* timeout period */
-			if (!is_integer (optarg))
-				usage_va(_("Timeout interval must be a positive integer"));
-			else
-				timeout_interval = atoi (optarg);
+			timeout_interval = parse_timeout_string (optarg);
 			break;
 		case 'H':									/* host */
 			host_or_die(optarg);

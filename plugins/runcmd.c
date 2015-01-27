@@ -261,15 +261,14 @@ runcmd_timeout_alarm_handler (int signo)
 	size_t i;
 
 	if (signo == SIGALRM)
-		puts(_("CRITICAL - Plugin timed out while executing system call\n"));
+		printf("%s - Plugin timed out while executing system call\n", state_text(timeout_state));
 
 	if(np_pids) for(i = 0; i < maxfd; i++) {
 		if(np_pids[i] != 0) kill(np_pids[i], SIGKILL);
 	}
 
-	exit (STATE_CRITICAL);
+	exit (timeout_state);
 }
-
 
 static int
 np_fetch_output(int fd, output *op, int flags)

@@ -30,9 +30,6 @@
 #include "common.h"
 #include "netutils.h"
 
-unsigned int socket_timeout = DEFAULT_SOCKET_TIMEOUT;
-unsigned int socket_timeout_state = STATE_CRITICAL;
-
 int econn_refuse_state = STATE_CRITICAL;
 int was_refused = FALSE;
 #if USE_IPV6
@@ -46,13 +43,12 @@ void
 socket_timeout_alarm_handler (int sig)
 {
 	if (sig == SIGALRM)
-		printf (_("%s - Socket timeout after %d seconds\n"), state_text(socket_timeout_state),  socket_timeout);
+		printf (_("%s - Socket timeout after %d seconds\n"), state_text(timeout_state),  timeout_interval);
 	else
-		printf (_("%s - Abnormal timeout after %d seconds\n"), state_text(socket_timeout_state), socket_timeout);
+		printf (_("%s - Abnormal timeout after %d seconds\n"), state_text(timeout_state), timeout_interval);
 
-	exit (socket_timeout_state);
+	exit (timeout_state);
 }
-
 
 /* connects to a host on a specified tcp port, sends a string, and gets a
 	 response. loops on select-recv until timeout or eof to get all of a
@@ -83,7 +79,7 @@ process_tcp_request2 (const char *server_address, int server_port,
 	while (1) {
 		/* wait up to the number of seconds for socket timeout
 		   minus one for data from the host */
-		tv.tv_sec = socket_timeout - 1;
+		tv.tv_sec = timeout_interval - 1;
 		tv.tv_usec = 0;
 		FD_ZERO (&readfds);
 		FD_SET (sd, &readfds);
@@ -162,7 +158,7 @@ int
 np_net_connect (const char *host_name, int port, int *sd, int proto)
 {
 	struct addrinfo hints;
-	struct addrinfo *r, *res;
+	struct addrinfo *res;
 	struct sockaddr_un su;
 	char port_str[6], host[MAX_HOST_ADDRESS_LENGTH];
 	size_t len;
@@ -196,19 +192,18 @@ np_net_connect (const char *host_name, int port, int *sd, int proto)
 			return STATE_UNKNOWN;
 		}
 
-		r = res;
-		while (r) {
+		while (res) {
 			/* attempt to create a socket */
-			*sd = socket (r->ai_family, socktype, r->ai_protocol);
+			*sd = socket (res->ai_family, socktype, res->ai_protocol);
 
 			if (*sd < 0) {
 				printf ("%s\n", _("Socket creation failed"));
-				freeaddrinfo (r);
+				freeaddrinfo (res);
 				return STATE_UNKNOWN;
 			}
 
 			/* attempt to open a connection */
-			result = connect (*sd, r->ai_addr, r->ai_addrlen);
+			result = connect (*sd, res->ai_addr, res->ai_addrlen);
 
 			if (result == 0) {
 				was_refused = FALSE;
@@ -224,7 +219,7 @@ np_net_connect (const char *host_name, int port, int *sd, int proto)
 			}
 
 			close (*sd);
-			r = r->ai_next;
+			res = res->ai_next;
 		}
 		freeaddrinfo (res);
 	}
@@ -293,7 +288,7 @@ send_request (int sd, int proto, const char *send_buffer, char *recv_buffer, int
 
 	/* wait up to the number of seconds for socket timeout minus one
 	   for data from the host */
-	tv.tv_sec = socket_timeout - 1;
+	tv.tv_sec = timeout_interval - 1;
 	tv.tv_usec = 0;
 	FD_ZERO (&readfds);
 	FD_SET (sd, &readfds);

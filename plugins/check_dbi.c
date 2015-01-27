@@ -35,9 +35,7 @@ const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"
 #include "utils.h"
-
 #include "netutils.h"
-
 #include "regex.h"
 
 /* required for NAN */
@@ -47,9 +45,7 @@ const char *email = "devel@nagios-plugins.org";
 
 #include <assert.h>
 #include <math.h>
-
 #include <dbi/dbi.h>
-
 #include <stdarg.h>
 
 typedef enum {
@@ -215,7 +211,7 @@ main (int argc, char **argv)
 	}
 
 	if (dbi_conn_connect (conn) < 0) {
-		np_dbi_print_error (conn, "UNKOWN - failed to connect to database");
+		np_dbi_print_error (conn, "UNKNOWN - failed to connect to database");
 		return STATE_UNKNOWN;
 	}
 
@@ -241,7 +237,7 @@ main (int argc, char **argv)
 			printf ("Selecting database '%s'\n", np_dbi_database);
 
 		if (dbi_conn_select_db (conn, np_dbi_database)) {
-			np_dbi_print_error (conn, "UNKOWN - failed to select database '%s'",
+			np_dbi_print_error (conn, "UNKNOWN - failed to select database '%s'",
 					np_dbi_database);
 			return STATE_UNKNOWN;
 		}
@@ -420,10 +416,8 @@ process_arguments (int argc, char **argv)
 				usage2 (_("Invalid metric"), optarg);
 			break;
 		case 't':     /* timeout */
-			if (!is_intnonneg (optarg))
-				usage2 (_("Timeout interval must be a positive integer"), optarg);
-			else
-				timeout_interval = atoi (optarg);
+			timeout_interval = parse_timeout_string(optarg);
+			break;
 
 		case 'H':     /* host */
 			if (!is_host (optarg))
@@ -456,7 +450,7 @@ process_arguments (int argc, char **argv)
 				new = realloc (np_dbi_options,
 						(np_dbi_options_num + 1) * sizeof (*new));
 				if (! new) {
-					printf ("UNKOWN - failed to reallocate memory\n");
+					printf ("UNKNOWN - failed to reallocate memory\n");
 					exit (STATE_UNKNOWN);
 				}
 
