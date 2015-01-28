@@ -125,3 +125,26 @@ FITNESS FOR A PARTICULAR PURPOSE.
 
 See the `COPYING` file for the complete text of the GNU General Public
 License, version 3.
+
+Static Analysis Tools
+--------------
+
+Coverity is a tool used to statically analyze C\C++ code and determine
+possible vulnerabilities, bugs, and usage errors. Nagios-Plugins considers
+these items to be extremely important for proper code coverage and
+longevity. It should be noted that a "Passed", does not mean that all
+Coverity reported issues have been resolved, instead that the latest build
+submitted did not have any newly found issues, and may or may not have
+eliminated previously found issues. We use several testing processes that
+end with a submission to Coverity on each successful build. This means that
+you will often see this badge pending or with new issues found as new
+features, pull requests, and github issue resolutions submitted in other
+branches will reflect on the badge displayed on the master branch. However,
+the master branch and therefore any releases will not be updated without a
+current clean scan from Coverity. With that said, below you can find the
+current state of the Nagios-Plugins project per Coverity's view.
+
+<a href="https://scan.coverity.com/projects/2376">
+  <img alt="Coverity Scan Build Status"
+       src="https://scan.coverity.com/projects/2376/badge.svg"/>
+</a>
