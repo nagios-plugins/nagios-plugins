@@ -57,6 +57,7 @@ char *dns_server = NULL;
 char *dig_args = "";
 char *query_transport = "";
 int verbose = FALSE;
+int negative = FALSE;
 int server_port = DEFAULT_PORT;
 int number_tries = DEFAULT_TRIES;
 double warning_interval = UNDEFINED;
@@ -148,7 +149,12 @@ main (int argc, char **argv)
 
   if (result == STATE_UNKNOWN) {
     msg = (char *)_("No ANSWER SECTION found");
-    result = STATE_CRITICAL;
+    if (negative) {
+      result = STATE_OK;
+    }
+    else {
+      result = STATE_CRITICAL;
+    }
   }
 
   /* If we get anything on STDERR, at least set warning */
@@ -209,6 +215,7 @@ process_arguments (int argc, char **argv)
     {"port", required_argument, 0, 'p'},
     {"use-ipv4", no_argument, 0, '4'},
     {"use-ipv6", no_argument, 0, '6'},
+    {"negative", no_argument, 0, 'f'},
     {0, 0, 0, 0}
   };
 
@@ -216,7 +223,7 @@ process_arguments (int argc, char **argv)
     return ERROR;
 
   while (1) {
-    c = getopt_long (argc, argv, "hVvt:l:H:w:c:T:p:a:A:46r:", longopts, &option);
+    c = getopt_long (argc, argv, "hVvt:l:H:w:c:T:p:a:A:46r:f", longopts, &option);
 
     if (c == -1 || c == EOF)
       break;
@@ -293,6 +300,9 @@ process_arguments (int argc, char **argv)
     case '6':
       query_transport = "-6";
       break;
+    case 'f':
+      negative = TRUE;
+      break;
     default:                  /* usage5 */
       usage5();
     }
@@ -364,6 +374,8 @@ print_help (void)
   printf ("    %s\n",_("Pass STRING as argument(s) to dig"));
   printf (" %s\n","-r, --retries=INTEGER");
   printf ("    %s\n",_("Number of retries passed to dig, timeout is divided by this value (Default: 3)"));
+  printf (" %s\n","-f, --negative");
+  printf ("    %s\n",_("Check for negative result"));
   printf (UT_WARN_CRIT);
   printf (UT_CONN_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
   printf (UT_VERBOSE);
@@ -384,5 +396,5 @@ print_usage (void)
   printf ("%s\n", _("Usage:"));
   printf ("%s -l <query_address> [-H <host>] [-p <server port>]\n", progname);
   printf (" [-T <query type>] [-w <warning interval>] [-c <critical interval>]\n");
-  printf (" [-t <timeout>] [-r <retries>] [-a <expected answer address>] [-v]\n");
+  printf (" [-t <timeout>] [-r <retries>] [-a <expected answer address>] [-f] [-v]\n");
 }
