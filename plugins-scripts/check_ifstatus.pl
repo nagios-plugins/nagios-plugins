@@ -84,6 +84,7 @@ my $ifdown =0;
 my $ifdormant = 0;
 my $ifexclude = 0 ;
 my $ifunused = 0;
+my $ifunused_up = 0;
 my $ifmessage = "";
 my $snmp_version = 1;
 my $ifXTable;
@@ -165,59 +166,92 @@ alarm(0);
 
 foreach $key (keys %ifStatus) {
 
-	# skip unused interfaces
-	if (!defined($ifStatus{$key}{'notInUse'})) {
-		# check only if interface is administratively up
-    if ($ifStatus{$key}{$snmpIfAdminStatus} == 1 ) {
-    
+	# check only if interface is administratively up
+	if ($ifStatus{$key}{$snmpIfAdminStatus} == 1 ) {
+
+		# skip unused interfaces 
+		if (!defined($ifStatus{$key}{'notInUse'})) {
+
 			# check only if interface type is not listed in %excluded
 			if (!defined $excluded{$ifStatus{$key}{$snmpIfType}} ) {
-				if ($ifStatus{$key}{$snmpIfOperStatus} == 1 ) { $ifup++ ;}
+				if ($ifStatus{$key}{$snmpIfOperStatus} == 1 ) {
+					$ifup++ ;
+				}
 				if ($ifStatus{$key}{$snmpIfOperStatus} == 2 ) {
-								$ifdown++ ;
-								if (defined $ifXTable) {
-									$ifmessage .= sprintf("%s: down -> %s<BR>",
-                                $ifStatus{$key}{$snmpIfName},
-																$ifStatus{$key}{$snmpIfAlias});
-								}else{
-									$ifmessage .= sprintf("%s: down <BR>",
-																$ifStatus{$key}{$snmpIfDescr});
-								}
+					$ifdown++ ;
+					if (defined $ifXTable) {
+						$ifmessage .= sprintf("%s: down -> %s\n",
+								      $ifStatus{$key}{$snmpIfName},
+								      $ifStatus{$key}{$snmpIfAlias});
+					}
+					else {
+						$ifmessage .= sprintf("%s (%s): down\n",
+								      $ifStatus{$key}{$snmpIfDescr},
+								      $key);
+					}
 				}
 				if ($ifStatus{$key}{$snmpIfOperStatus} == 5 ) { $ifdormant++ ;}
-			}else{
+			}
+			else {
 				$ifexclude++;
 			}
-		
 		}
-	}else{
-		$ifunused++;
+		else {
+			if ($ifStatus{$key}{$snmpIfOperStatus} == 1 ) {
+				$ifunused_up++;
+				if (defined $ifXTable) {
+					$ifmessage .= sprintf("%s: unused_up -> %s\n",
+							      $ifStatus{$key}{$snmpIfName},
+							      $ifStatus{$key}{$snmpIfAlias});
+				}
+				else {
+					$ifmessage .= sprintf("%s (%s): unused_up\n",
+							      $ifStatus{$key}{$snmpIfDescr},
+							      $key);
+				}
+			}
+		}
 	}
 }
 
-   if ($ifdown > 0) {
-      $state = 'CRITICAL';
-      $answer = sprintf("host '%s', interfaces up: %d, down: %d, dormant: %d, excluded: %d, unused: %d<BR>",
-                        $hostname,
-			$ifup,
-			$ifdown,
-			$ifdormant,
-			$ifexclude,
-			$ifunused);
-      $answer = $answer . $ifmessage . "\n";
-   }
-   else {
-      $state = 'OK';
-      $answer = sprintf("host '%s', interfaces up: %d, down: %d, dormant: %d, excluded: %d, unused: %d",
-                        $hostname,
-			$ifup,
-			$ifdown,
-			$ifdormant,
-			$ifexclude,
-			$ifunused);
-   }
-my $perfdata = sprintf("up=%d down=%d dormant=%d excluded=%d unused=%d",$ifup,$ifdown,$ifdormant,$ifexclude,$ifunused);
-print ("$state: $answer |$perfdata\n");
+if ($ifdown > 0) {
+	$state = 'CRITICAL';
+	$answer = sprintf("host '%s', interfaces up: %d, down: %d, dormant: %d, excluded: %d, unused: %d, unused_up: %d\n",
+			  $hostname,
+			  $ifup,
+			  $ifdown,
+			  $ifdormant,
+			  $ifexclude,
+			  $ifunused,
+			  $ifunused_up);
+	$answer = $answer . $ifmessage;
+}
+elsif ($ifunused_up > 0) {
+	$state = 'WARNING';
+	$answer = sprintf("host '%s', interfaces up: %d, down: %d, dormant: %d, excluded: %d, unused: %d, unused_up: %d\n",
+			  $hostname,
+			  $ifup,
+			  $ifdown,
+			  $ifdormant,
+			  $ifexclude,
+			  $ifunused,
+			  $ifunused_up);
+	$answer = $answer . $ifmessage;
+}
+else {
+	$state = 'OK';
+	$answer = sprintf("host '%s', interfaces up: %d, down: %d, dormant: %d, excluded: %d, unused: %d, unused_up: %d",
+			  $hostname,
+			  $ifup,
+			  $ifdown,
+			  $ifdormant,
+			  $ifexclude,
+			  $ifunused,
+			  $ifunused_up);
+}
+
+my $perfdata = sprintf("up=%d down=%d dormant=%d excluded=%d unused=%d unused_up=%d",$ifup,$ifdown,$ifdormant,$ifexclude,$ifunused,$ifunused_up);
+print ("$state: $answer|$perfdata\n");
 exit $ERRORS{$state};
 
 sub usage($) {
