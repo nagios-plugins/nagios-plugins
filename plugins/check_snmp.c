@@ -335,8 +335,8 @@ main (int argc, char **argv)
 	if (signal (SIGALRM, runcmd_timeout_alarm_handler) == SIG_ERR) {
 		usage4 (_("Cannot catch SIGALRM"));
 	}
-	alarm(timeout_interval * retries + 5);
-
+	alarm((retries+1) * timeout_interval + 5);
+	
 	/* Run the command */
 	return_code = cmd_run_array (command_line, &chld_out, &chld_err, 0);
 
