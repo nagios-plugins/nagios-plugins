@@ -241,7 +241,7 @@ main (int argc, char **argv)
 	if (process_arguments (argc, argv) == ERROR)
 		usage4 (_("Could not parse arguments"));
 	
-	command_interval = timeout_interval / retries;
+	command_interval = timeout_interval / retries + 1;
 	if (command_interval < 1) {
 		usage4 (_("Command timeout must be 1 second or greater. Please increase timeout (-t) value or decrease retries (-e) value."));
 		exit (STATE_UNKNOWN);
