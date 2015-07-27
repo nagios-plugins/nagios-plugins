@@ -178,9 +178,10 @@ void strntolower (char * test_char, int size);
     Critical range\n")
 
 #define UT_CONN_TIMEOUT _("\
- -t, --timeout=INTEGER\n\
-    Seconds before connection times out (default: %d)\n")
-
+ -t, --timeout=INTEGER:<timeout state>\n\
+    Seconds before connection times out (default: %d)\n\
+    Optional \":<timeout state>\" can be a state integer (0,1,2,3) or a state STRING\n")
+ 
 #define UT_PLUG_TIMEOUT _("\
  -t, --timeout=INTEGER\n\
     Seconds before plugin times out (default: %d)\n")
