@@ -1,5 +1,56 @@
 This file documents the major additions and syntax changes between releases.
 
+2.1.0 TBD
+	SECURITY FIXES
+	ssl_utils.c - Disable SSLv3 & SSLv2 autonegotiation by default to limit poodle and other weak cipher attacks (sreinhardt) 
+
+	ENHANCEMENTS	
+	Timeout States Implemented - Plugins that support a timeout state will now also support specifying the exit state in case of timeout with the syntax -t <timeout>:<state> (abrist)
+	Perl plugins now use FindBin for path discovery, obsoleting the nasty AWK script (evgeni, abrist)
+	check_http.c - Added support for chunked transfer-encoding (koenwtje, dermoth, sreinhardt)
+	check_snmp.c - Added thresholds to performance data (seemuellera)
+	check_snmp.c - Added new option (-N) for SNMPv3 context (Johannes Engel)
+	check_snmp.c - Added IPv6 support (abrist)
+	check_ldap.c - Added a new option (-U) for LDAP URI support (qris)
+	check_ifstatus.pl - Added new option (-n) to exclude interfaces (peelman, weiss)
+	check_file_age.pl - Performance data output added (hggh)
+	check_mailq.pl - Now supports sudo (Christopher Schultz, weiss)
+	check_log.sh - Added a new option (-w) defining upper value to return a warning code (arvanus)	
+
+	FIXES
+	check_by_ssh.c - Added --hostname support (sni)
+	check_dbi.c - Spelling corrections (sreinhardt)
+	check_dig.c - Fixed to work with dig/drill tools and ip version switch is now respected (abgandar)
+	check_disk.c - Fix for hanging filesystems (Gerhard Lausser)
+	check_disk.c - Partitions in problem state now reported in verbose mode (waja)
+	check_disk.c - Prevent large tide values from truncation (JesperForsberg)
+	check_dns.c - Server specific fixes and other cleanup (sreinhardt)
+	check_http.c - Some small changes for readability (koenwtje)
+	check_mrtgtraf.c - Added verbose output (sreinhardt)
+	check_mrtgtraf.c - Perfdata now complies with UOM definition (Bobzikwick)
+	check_ntp_peer.c - No longer uses uninitialized results for max state (sni)
+	check_procs.c - Rare race condition fixed (Mikael Falkvidd)
+	check_ssh.c - Now exits with CRITICAL when version/protocol string check fails to match (sni)
+	check_tcp.c - Help description of escape characters now correct (Sebastian Herbszt)
+	check_tcp.c - Fix to support Openfire servers with check_jabber (weiss)
+	check_ups.c - Spelling corrections (sreinhardt)
+	plugins-scripts/*.sh - Trusted path fixes (waja)
+	netutils.h - Decreased max path to 104 bytes to compensate for BSD paths (sreinhardt)
+	configure.ac - Fix for HP-UX ps command (Tontonitch)
+	lib/utils_cmd.c - Fix for potential segfault when ulimits are set to unlimited (nafets)
+	lib/parse_ini.c - Many small fixes from coverity scans and the community (sreinhardt, weiss)
+	lib/util_base.c - Code cleanup (sreinhardt)
+	lib/utils_base.c - Add EIUD to state retention path for multi-user permissions support (sreinhardt)
+	po/* - Spelling corrections (sreinhardt)
+	Multiple resource leaks fixed (sreinhardt)
+	Many other small fixes and cleanup caught by coverity (multiple contributors)
+	
+	TESTS
+	Many small fixes to tests (multiple contributors)
+	
+	LOCALIZATION
+	Many small fixes for locales and localizations (multiple contributors)
+
 2.0.3 26th June 2014
 	SECURITY FIXES
 	parse_ini.c - Additional fixes for the SUID plugins vulnerabilities (sreinhardt) 
