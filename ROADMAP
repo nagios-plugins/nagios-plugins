@@ -58,6 +58,8 @@ Reserved:
 -H, --hostname = STRING
 -F, --file = STRING (usually input) 
 -O, --output = STRING (output file) 
+-4, (Use IPv4)
+-6, (Use IPv6)
 
 Recommended, but not reserverd: 
 
