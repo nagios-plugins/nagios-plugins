@@ -7,7 +7,11 @@ This document describes the process to release a new version of Nagios Plugins.
 Verify that the release branch is not behind master on any commits.  If it is, merge master into release branch first.
 Then merge the release branch into master and push to origin.
 Checkout master, pull, and then build one more time. Check compilation, make all, and make test.
-  $ . tools/devmode (if you are feeling adventurous.) $ ./configure$ make all$ make test
+  
+  $ . tools/devmode (if you are feeling adventurous.) 
+  $ ./configure
+  $ make all
+  $ make test
 
 
 *** Verify Attribution Files:
@@ -38,17 +42,16 @@ Commit NEWS, configure.ac, and NP-VERSION-GEN - use the commit message "Prep for
 
 *** Push the Code and Tag to Origin:
 
-  $ git push origin master$ git push origin release-x.x.x
+  $ git push origin master
+  $ git push origin release-x.x.x
 
 
 *** Prepare Tarball for Release:
 
-[to do by Scott]
-
- 
-*** Release the New Tarball:
-
-[to do by Scott]
+  $ git pull
+  $ tools/setup
+  $ ./configure
+  $ make dist VERSION="x.x.x"
 
 
 *** New Release Announcement Format:
@@ -61,16 +64,15 @@ Title/Subject:
 
 Body:
 
-  The Nagios Plugins Development Team is proud to announce that nagios-plugins x.x.x has been released and is available for download (http://nagios-plugins.org/downloads/).[A short description of the big changes in the release][Release changes from NEWS file
+  The Nagios Plugins Development Team is proud to announce that nagios-plugins x.x.x has been released and is available for download (http://nagios-plugins.org/downloads/).
+
+  [A short description of the big changes in the release]
+
+  [Release changes from NEWS file]
 
  
 *** Announce New Release:
 
 1. Post to: https://nagios-plugins.org/
-Use the same format as previous release posts.
-
 2. Post to: https://support.nagios.com/forum/viewforum.php?f=35
-Use the same format as previous release posts.
-Make sure to change the topic type to "Announce" and remove the "Announce" type from the current Nagios-Plugins release post.
-
 3. Email announcement to mailing list:  nagios-announce@lists.nagios.com
