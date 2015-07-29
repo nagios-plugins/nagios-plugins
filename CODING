@@ -133,6 +133,8 @@ $service_port instead of $ServicePort as the former is much more readable.
 -H, --hostname = STRING
 -F, --file = STRING (usually input) 
 -O, --output = STRING (output file) 
+-4, (use IPv4)
+-6, (use IPv6)
 
 Recommended, but not reserverd: 
 
