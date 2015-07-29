@@ -3,12 +3,11 @@ LEAVERS
 These are the steps for someone leaving the team.
 
 Leaver has to:
-  - Update all current issues on GitHub
+  - Update all open issues and PRs responded to on GitHub
 
 Administration tasks:
-  - Reassign leaver's tracker items to project lead
-  - Remove from GitHub's project members. This will include Git access.
-  - Remove access from project server
+  - Reassign leaver's Github issues to project lead
+  - Remove from GitHub's project members. This will include Git access. They will need to make PRs like everyone else.
+  - If applicable, remove admin access to nagios-plugins.org
   - If applicable, remove from mailing list administrators
-  - Keep on nagiosplug-team mailing list, unless specifically requested to be removed
-
+  - If applicable, remove member access to coverity

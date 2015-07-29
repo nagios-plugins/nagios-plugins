@@ -4,21 +4,11 @@ These are the steps for adding someone to the team.
 
 Need to know:
   - Name
-  - Primary email for nagiosplug-team mailings
+  - Primary email for the relevant mailing lists, accounts, etc.
   - GitHub account
   - Type of member (translator, developer, release manager, project administrator)
 
-1. Add member to nagiosplug-team mailing list (https://lists.sourceforge.net/lists/admin/nagiosplug-team)
-   and to the nagiosplug-checkins mailing list (https://lists.sourceforge.net/lists/admin/nagiosplug-checkins,
-   add sourceforge email address via Privacy Options->Sender filters)
-2. Add Sourceforge access:
-  - Translator: CVS access, Shell access, Release Tech (no)
-  - Developer: Project role: Developer, CVS access, Shell access, Release Tech (no), Task Manager (A&T),
-               Forums (Moderator), Doc Manager (Editor)
-               Update Developer Permissions.
-	       For each tracker, set to Technician (need to add all trackers first, then change to 
-		technician for each one)
-3. Create account on project server
-  - Add public ssh keys
-4. Add Git access on repos.or.cz
-5. Send email to nagiosplug-team introducing new member
+1. Grant Contributor access to Github https://github.com/nagios-plugins
+2. Update team members at: https://nagios-plugins.org/team/ 
+3. Send and email introducing new member nagios-announce@lists.nagios.com
+4. Grant Member access to coverity https://scan.coverity.com/projects/2376
