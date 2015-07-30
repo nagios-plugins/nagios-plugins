@@ -1,6 +1,6 @@
 This file documents the major additions and syntax changes between releases.
 
-2.1.0 TBD
+2.1.0 30th July 2015
 	SECURITY FIXES
 	ssl_utils.c - Disable SSLv3 & SSLv2 autonegotiation by default to limit poodle and other weak cipher attacks (sreinhardt) 
 
@@ -35,6 +35,7 @@ This file documents the major additions and syntax changes between releases.
 	check_tcp.c - Help description of escape characters now correct (Sebastian Herbszt)
 	check_tcp.c - Fix to support Openfire servers with check_jabber (weiss)
 	check_ups.c - Spelling corrections (sreinhardt)
+	pst3.c - Fix for unclosed file handle in pst3 on Solaris (jwinkle01)
 	plugins-scripts/*.sh - Trusted path fixes (waja)
 	netutils.h - Decreased max path to 104 bytes to compensate for BSD paths (sreinhardt)
 	configure.ac - Fix for HP-UX ps command (Tontonitch)
