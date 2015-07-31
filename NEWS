@@ -1,5 +1,9 @@
 This file documents the major additions and syntax changes between releases.
 
+2.1.1 31th July 2015
+	FIXES
+	lib/utils_cmd.c - Reverted to fix check_procs segfault (abrist)
+
 2.1.0 30th July 2015
 	SECURITY FIXES
 	ssl_utils.c - Disable SSLv3 & SSLv2 autonegotiation by default to limit poodle and other weak cipher attacks (sreinhardt) 
