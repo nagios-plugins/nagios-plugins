@@ -297,7 +297,7 @@ cmd_run (const char *cmdstring, output * out, output * err, int flags)
 	int i = 0, argc, rst;
 	size_t cmdlen;
 	char **argv = NULL;
-	char *cmd = NULL, *svcmd;
+	char *cmd = NULL;
 	char *str = NULL;
 
 	if (cmdstring == NULL)
@@ -314,7 +314,6 @@ cmd_run (const char *cmdstring, output * out, output * err, int flags)
 	cmdlen = strlen (cmdstring);
 	if ((cmd = malloc (cmdlen + 1)) == NULL)
 		return -1;
-    svcmd = cmd;
 	memcpy (cmd, cmdstring, cmdlen);
 	cmd[cmdlen] = '\0';
 
@@ -349,7 +348,7 @@ cmd_run (const char *cmdstring, output * out, output * err, int flags)
 		if (strstr (str, "'") == str) {	/* handle SIMPLE quoted strings */
 			str++;
 			if (!strstr (str, "'")) { /* balanced? */
-				free(svcmd);
+				free(cmd);
 				free(argv);
 				return -1;
 			}
@@ -362,13 +361,13 @@ cmd_run (const char *cmdstring, output * out, output * err, int flags)
 				str[strcspn (str, " \t\r\n")] = 0;
 			}
 			else {
-				free(svcmd);
+				free(cmd);
 				cmd = NULL;
 			}
 		}
 
 		if (cmd && strlen (cmd) == strspn (cmd, " \t\r\n")) {
-			free(svcmd);
+			free(cmd);
 			cmd = NULL;
 		}
 
@@ -376,7 +375,7 @@ cmd_run (const char *cmdstring, output * out, output * err, int flags)
 	}
 
 	rst = cmd_run_array (argv, out, err, flags);
-	free(svcmd);
+	free(cmd);
 	free(argv);
 	return rst;
 }
