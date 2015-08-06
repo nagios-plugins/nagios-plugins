@@ -1,6 +1,7 @@
 #Tooling:
 tags
 cscope.out
+nbproject/
 
 # In all paths
 NP-VERSION-FILE
