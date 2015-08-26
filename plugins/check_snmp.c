@@ -479,7 +479,7 @@ main (int argc, char **argv)
 			is_ticks = 1;
 		}
 		else
-			show = response + 3;
+			show = response;
 
 		iresult = STATE_DEPENDENT;
 
