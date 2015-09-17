@@ -192,7 +192,7 @@ np_net_connect (const char *host_name, int port, int *sd, int proto)
 			return STATE_UNKNOWN;
 		}
 
-        res0 = res;
+		res0 = res;
 
 		while (res) {
 			/* attempt to create a socket */
