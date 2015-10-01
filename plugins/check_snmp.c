@@ -1,31 +1,31 @@
 /*****************************************************************************
-* 
+*
 * Nagios check_snmp plugin
-* 
+*
 * License: GPL
 * Copyright (c) 1999-2014 Nagios Plugins Development Team
-* 
+*
 * Description:
-* 
+*
 * This file contains the check_snmp plugin
-* 
+*
 * Check status of remote machines and obtain system information via SNMP
-* 
-* 
+*
+*
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation, either version 3 of the License, or
 * (at your option) any later version.
-* 
+*
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 * GNU General Public License for more details.
-* 
+*
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-* 
-* 
+*
+*
 *****************************************************************************/
 
 const char *progname = "check_snmp";
@@ -208,6 +208,7 @@ main (int argc, char **argv)
 	char *conv = "12345678";
 	int is_counter=0;
 	int command_interval;
+	int is_ticks= 0;
 
 	setlocale (LC_ALL, "");
 	bindtextdomain (PACKAGE, LOCALEDIR);
@@ -240,7 +241,7 @@ main (int argc, char **argv)
 
 	if (process_arguments (argc, argv) == ERROR)
 		usage4 (_("Could not parse arguments"));
-	
+
 	command_interval = timeout_interval / retries + 1;
 	if (command_interval < 1) {
 		usage4 (_("Command timeout must be 1 second or greater. Please increase timeout (-t) value or decrease retries (-e) value."));
@@ -322,7 +323,7 @@ main (int argc, char **argv)
 	for (i = 0; i < numcontext; i++) {
 		command_line[10 + i] = contextargs[i];
 	}
-	
+
 	for (i = 0; i < numauthpriv; i++) {
 		command_line[10 + numcontext + i] = authpriv[i];
 	}
@@ -332,12 +333,12 @@ main (int argc, char **argv)
 	/* This is just for display purposes, so it can remain a string */
 	xasprintf(&cl_hidden_auth, "%s -Le -t %d -r %d -m %s -v %s %s %s%s:%s",
 		snmpcmd, command_interval, retries,
-		strlen(miblist) ? miblist : "''", 
+		strlen(miblist) ? miblist : "''",
 		proto, "[authpriv]", ip_version, server_address, port);
 
 	for (i = 0; i < numoids; i++) {
 		command_line[10 + numcontext + numauthpriv + 1 + i] = oids[i];
-		xasprintf(&cl_hidden_auth, "%s %s", cl_hidden_auth, oids[i]);	
+		xasprintf(&cl_hidden_auth, "%s %s", cl_hidden_auth, oids[i]);
 	}
 
 	command_line[10 + numcontext + numauthpriv + 1 + numoids] = NULL;
@@ -414,14 +415,14 @@ main (int argc, char **argv)
 		/* We strip out the datatype indicator for PHBs */
 		if (strstr (response, "Gauge: ")) {
 			show = strstr (response, "Gauge: ") + 7;
-		} 
+		}
 		else if (strstr (response, "Gauge32: ")) {
 			show = strstr (response, "Gauge32: ") + 9;
-		} 
+		}
 		else if (strstr (response, "Counter32: ")) {
 			show = strstr (response, "Counter32: ") + 11;
 			is_counter=1;
-			if(!calculate_rate) 
+			if(!calculate_rate)
 				strcpy(type, "c");
 		}
 		else if (strstr (response, "Counter64: ")) {
@@ -475,6 +476,8 @@ main (int argc, char **argv)
 		}
 		else if (strstr (response, "Timeticks: ")) {
 			show = strstr (response, "Timeticks: ");
+			show = strpbrk (show, "-0123456789");
+			is_ticks = 1;
 		}
 		else
 			show = response + 3;
@@ -483,7 +486,7 @@ main (int argc, char **argv)
 
 		/* Process this block for numeric comparisons */
 		/* Make some special values,like Timeticks numeric only if a threshold is defined */
-		if (thlds[i]->warning || thlds[i]->critical || calculate_rate) {
+		if (thlds[i]->warning || thlds[i]->critical || calculate_rate || is_ticks) {
 			ptr = strpbrk (show, "-0123456789");
 			if (ptr == NULL)
 				die (STATE_UNKNOWN,_("No valid data returned (%s)\n"), show);
@@ -635,7 +638,7 @@ main (int argc, char **argv)
 		state_string=malloc(string_length);
 		if(state_string==NULL)
 			die(STATE_UNKNOWN, _("Cannot malloc"));
-		
+
 		current_length=0;
 		for(i=0; i<total_oids; i++) {
 			xasprintf(&temp_string,"%.0f",response_value[i]);
@@ -657,7 +660,7 @@ main (int argc, char **argv)
 		state_string[--current_length]='\0';
 		if (verbose > 2)
 			printf("State string=%s\n",state_string);
-		
+
 		/* This is not strictly the same as time now, but any subtle variations will cancel out */
 		np_state_write_string(current_time, state_string );
 		if(previous_state==NULL) {
@@ -1030,7 +1033,7 @@ validate_arguments ()
 			contextargs[0] = strdup ("-n");
 			contextargs[1] = strdup (context);
 		}
-		
+
 		if (seclevel == NULL)
 			xasprintf(&seclevel, "noAuthNoPriv");
 
