@@ -36,7 +36,7 @@ use lib "$FindBin::Bin";
 use lib '@libexecdir@';
 use utils qw(%ERRORS &print_revision &support &usage );
 
-my ($sudo)
+my ($sudo);
 
 sub print_help ();
 sub print_usage ();
