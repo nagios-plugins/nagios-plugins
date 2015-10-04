@@ -48,39 +48,80 @@ int np_net_ssl_init_with_hostname_and_version(int sd, char *host_name, int versi
 }
 
 int np_net_ssl_init_with_hostname_version_and_cert(int sd, char *host_name, int version, char *cert, char *privkey) {
-	const SSL_METHOD *method = NULL;
-	long ssl_options = NULL;
+	SSL_METHOD *method = NULL;
+	long options = 0;
 
 	switch (version) {
-	case 0: /* Deafult to auto negotiation */
-		method = SSLv23_client_method();
-		ssl_options = SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3;
-		break;
-	case 1: /* TLSv1 protocol */
-		method = TLSv1_client_method();
-		ssl_options = SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3;
-		break;
-	case 2: /* SSLv2 protocol */
+	case MP_SSLv2: /* SSLv2 protocol */
 #if defined(USE_GNUTLS) || defined(OPENSSL_NO_SSL2)
-		printf(("%s\n", _("CRITICAL - SSL protocol version 2 is not supported by your SSL library.")));
-		return STATE_CRITICAL;
+		printf("%s\n", _("UNKNOWN - SSL protocol version 2 is not supported by your SSL library."));
+		return STATE_UNKNOWN;
 #else
 		method = SSLv2_client_method();
-		ssl_options = SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1;
-#endif
 		break;
-	case 3: /* SSLv3 protocol */
+#endif
+	case MP_SSLv3: /* SSLv3 protocol */
 #if defined(OPENSSL_NO_SSL3)
-		printf(("%s\n", _("CRITICAL - SSL protocol version 3 is not supported by your SSL library.")));
-		return STATE_CRITICAL;
+		printf("%s\n", _("UNKNOWN - SSL protocol version 3 is not supported by your SSL library."));
+		return STATE_UNKNOWN;
 #else
 		method = SSLv3_client_method();
 		ssl_options = SSL_OP_NO_SSLv2 | SSL_OP_NO_TLSv1;
 		break;
 #endif
-	default: /* Unsupported */
-		printf("%s\n", _("CRITICAL - Unsupported SSL protocol version."));
-		return STATE_CRITICAL;
+	case MP_TLSv1: /* TLSv1 protocol */
+#if defined(OPENSSL_NO_TLS1)
+		printf("%s\n", _("UNKNOWN - TLS protocol version 1 is not supported by your SSL library."));
+		return STATE_UNKNOWN;
+#else
+		method = TLSv1_client_method();
+		break;
+#endif
+	case MP_TLSv1_1: /* TLSv1.1 protocol */
+#if !defined(SSL_OP_NO_TLSv1_1)
+		printf("%s\n", _("UNKNOWN - TLS protocol version 1.1 is not supported by your SSL library."));
+		return STATE_UNKNOWN;
+#else
+		method = TLSv1_1_client_method();
+		break;
+#endif
+	case MP_TLSv1_2: /* TLSv1.2 protocol */
+#if !defined(SSL_OP_NO_TLSv1_2)
+		printf("%s\n", _("UNKNOWN - TLS protocol version 1.2 is not supported by your SSL library."));
+		return STATE_UNKNOWN;
+#else
+		method = TLSv1_2_client_method();
+		break;
+#endif
+	case MP_TLSv1_2_OR_NEWER:
+#if !defined(SSL_OP_NO_TLSv1_1)
+		printf("%s\n", _("UNKNOWN - Disabling TLSv1.1 is not supported by your SSL library."));
+		return STATE_UNKNOWN;
+#else
+		options |= SSL_OP_NO_TLSv1_1;
+#endif
+		/* FALLTHROUGH */
+	case MP_TLSv1_1_OR_NEWER:
+#if !defined(SSL_OP_NO_TLSv1)
+		printf("%s\n", _("UNKNOWN - Disabling TLSv1 is not supported by your SSL library."));
+		return STATE_UNKNOWN;
+#else
+		options |= SSL_OP_NO_TLSv1;
+#endif
+		/* FALLTHROUGH */
+	case MP_TLSv1_OR_NEWER:
+#if defined(SSL_OP_NO_SSLv3)
+		options |= SSL_OP_NO_SSLv3;
+#endif
+		/* FALLTHROUGH */
+	case MP_SSLv3_OR_NEWER:
+#if defined(SSL_OP_NO_SSLv2)
+		options |= SSL_OP_NO_SSLv2;
+#endif
+	case MP_SSLv2_OR_NEWER:
+		/* FALLTHROUGH */
+	default: /* Default to auto negotiation */
+		method = SSLv23_client_method();
 	}
 	if (!initialized) {
 		/* Initialize SSL context */
@@ -104,9 +145,9 @@ int np_net_ssl_init_with_hostname_version_and_cert(int sd, char *host_name, int 
 #endif
 	}
 #ifdef SSL_OP_NO_TICKET
-	ssl_options |= SSL_OP_NO_TICKET;
+	options |= SSL_OP_NO_TICKET;
 #endif
-	if (ssl_options) SSL_CTX_set_options(c, ssl_options);
+	SSL_CTX_set_options(c, options);
 	SSL_CTX_set_mode(c, SSL_MODE_AUTO_RETRY);
 	if ((s = SSL_new(c)) != NULL) {
 #ifdef SSL_set_tlsext_host_name
