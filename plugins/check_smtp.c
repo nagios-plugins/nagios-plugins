@@ -587,11 +587,6 @@ process_arguments (int argc, char **argv)
 		case 't':									/* timeout */
 			timeout_interval = parse_timeout_string (optarg);
 			break;
-		case 'S':
-		/* starttls */
-			use_ssl = TRUE;
-			use_ehlo = TRUE;
-			break;
 		case 'D':
 		/* Check SSL cert validity */
 #ifdef USE_OPENSSL
@@ -617,6 +612,10 @@ process_arguments (int argc, char **argv)
 #else
 			usage (_("SSL support not available - install OpenSSL and recompile"));
 #endif
+		case 'S':
+		/* starttls */
+			use_ssl = TRUE;
+			use_ehlo = TRUE;
 			break;
 		case '4':
 			address_family = AF_INET;
