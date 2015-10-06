@@ -286,6 +286,7 @@ main (int argc, char **argv)
 #  ifdef USE_OPENSSL
 		  if ( check_cert ) {
                     result = np_net_ssl_check_cert(days_till_exp_warn, days_till_exp_crit);
+		    smtp_quit();
 		    my_close();
 		    return result;
 		  }
@@ -612,6 +613,7 @@ process_arguments (int argc, char **argv)
                             days_till_exp_warn = atoi (optarg);
                         }
 			check_cert = TRUE;
+			ignore_send_quit_failure = TRUE;
 #else
 			usage (_("SSL support not available - install OpenSSL and recompile"));
 #endif
