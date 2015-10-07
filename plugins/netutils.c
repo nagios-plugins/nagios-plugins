@@ -42,10 +42,31 @@ int address_family = AF_INET;
 void
 socket_timeout_alarm_handler (int sig)
 {
+	const char msg1[] = " - Socket timeout";
+	const char msg2[] = " - Abnormal timeout";
+	switch(timeout_state) {
+		case STATE_OK:
+			write(STDOUT_FILENO, "OK", 2);
+			break;
+		case STATE_WARNING:
+			write(STDOUT_FILENO, "WARNING", 7);
+			break;
+		case STATE_CRITICAL:
+			write(STDOUT_FILENO, "CRITICAL", 8);
+			break;
+		case STATE_DEPENDENT:
+			write(STDOUT_FILENO, "DEPENDENT", 9);
+			break;
+		default:
+			write(STDOUT_FILENO, "UNKNOWN", 7);
+			break;
+	}
 	if (sig == SIGALRM)
-		printf (_("%s - Socket timeout after %d seconds\n"), state_text(timeout_state),  timeout_interval);
+		write(STDOUT_FILENO, msg1, sizeof(msg1) - 1);
+/*		printf (_("%s - Socket timeout after %d seconds\n"), state_text(timeout_state),  timeout_interval); */
 	else
-		printf (_("%s - Abnormal timeout after %d seconds\n"), state_text(timeout_state), timeout_interval);
+		write(STDOUT_FILENO, msg2, sizeof(msg2) - 1);
+/*		printf (_("%s - Abnormal timeout after %d seconds\n"), state_text(timeout_state), timeout_interval); */
 
 	exit (timeout_state);
 }

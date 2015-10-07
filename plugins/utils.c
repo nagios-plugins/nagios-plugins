@@ -170,9 +170,28 @@ state_text (int result)
 void
 timeout_alarm_handler (int signo)
 {
+	const char msg[] = " - Plugin timed out\n";
 	if (signo == SIGALRM) {
-		printf (_("%s - Plugin timed out after %d seconds\n"),
-						state_text(timeout_state), timeout_interval);
+/*		printf (_("%s - Plugin timed out after %d seconds\n"),
+						state_text(timeout_state), timeout_interval); */
+		switch(timeout_state) {
+			case STATE_OK:
+				write(STDOUT_FILENO, "OK", 2);
+				break;
+			case STATE_WARNING:
+				write(STDOUT_FILENO, "WARNING", 7);
+				break;
+			case STATE_CRITICAL:
+				write(STDOUT_FILENO, "CRITICAL", 8);
+				break;
+			case STATE_DEPENDENT:
+				write(STDOUT_FILENO, "DEPENDENT", 9);
+				break;
+			default:
+				write(STDOUT_FILENO, "UNKNOWN", 7);
+				break;
+		}
+		write(STDOUT_FILENO, msg, sizeof(msg) - 1);
 		exit (timeout_state);
 	}
 }

@@ -295,16 +295,20 @@ RETSIGTYPE
 popen_timeout_alarm_handler (int signo)
 {
 	int fh;
+	const char msg1[] = "CRITICAL - Plugin timed out\n";
+	const char msg2[] = "CRITICAL - popen timeout received, but no child process\n";
 	if (signo == SIGALRM) {
 		if (child_process != NULL) {
 			fh=fileno (child_process);
 			if(fh >= 0){
 				kill (childpid[fh], SIGKILL);
 			}
-			printf (_("CRITICAL - Plugin timed out after %d seconds\n"),
-						timeout_interval);
+			/* printf (_("CRITICAL - Plugin timed out after %d seconds\n"),
+						timeout_interval); */
+			write(STDOUT_FILENO, msg1, sizeof(msg1));
 		} else {
-			printf ("%s\n", _("CRITICAL - popen timeout received, but no child process"));
+			/* printf ("%s\n", _("CRITICAL - popen timeout received, but no child process")); */
+			write(STDOUT_FILENO, msg2, sizeof(msg2));
 		}
 		exit (STATE_CRITICAL);
 	}
