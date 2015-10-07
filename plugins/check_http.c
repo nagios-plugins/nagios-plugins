@@ -109,6 +109,7 @@ char *critical_thresholds = NULL;
 thresholds *thlds;
 char user_auth[MAX_INPUT_BUFFER] = "";
 char proxy_auth[MAX_INPUT_BUFFER] = "";
+char accept_header[MAX_INPUT_BUFFER] = "*/*";
 int display_html = FALSE;
 char **http_opt_headers;
 int http_opt_headers_count = 0;
@@ -217,6 +218,7 @@ process_arguments (int argc, char **argv)
     {"authorization", required_argument, 0, 'a'},
     {"proxy-authorization", required_argument, 0, 'b'},
     {"header-string", required_argument, 0, 'd'},
+    {"accept-string", required_argument, 0, 'z'},
     {"string", required_argument, 0, 's'},
     {"expect", required_argument, 0, 'e'},
     {"regex", required_argument, 0, 'r'},
@@ -257,7 +259,7 @@ process_arguments (int argc, char **argv)
   }
 
   while (1) {
-    c = getopt_long (argc, argv, "Vvh46t:c:w:A:k:H:P:j:T:I:a:b:d:e:p:s:R:r:u:f:C:J:K:nlLS::m:M:NE", longopts, &option);
+    c = getopt_long (argc, argv, "Vvh46t:c:w:A:k:H:P:j:T:I:a:b:d:e:p:z:s:R:r:u:f:C:J:K:nlLS::m:M:NE", longopts, &option);
     if (c == -1 || c == EOF)
       break;
 
@@ -405,6 +407,10 @@ process_arguments (int argc, char **argv)
     case 'b': /* proxy-authorization info */
       strncpy (proxy_auth, optarg, MAX_INPUT_BUFFER - 1);
       proxy_auth[MAX_INPUT_BUFFER - 1] = 0;
+      break;
+    case 'z': /* Accept header override */
+      strncpy (accept_header, optarg, MAX_INPUT_BUFFER - 1);
+      accept_header[MAX_INPUT_BUFFER - 1] = 0;
       break;
     case 'P': /* HTTP POST data in URL encoded format; ignored if settings already */
       if (! http_post_data)
@@ -1033,11 +1039,7 @@ check_http (void)
     }
   }
 
-  /* Inform server we accept any MIME type response
-   * TODO: Take an arguement to determine what type(s) to accept,
-   * so that we can alert if a response is of an invalid type.
-  */
-  xasprintf(&buf, "%sAccept: */*\r\n", buf);
+  xasprintf(&buf, "%sAccept: %s\r\n", buf, accept_header);
 
   /* optionally send any other header tag */
   if (http_opt_headers_count) {
@@ -1659,6 +1661,8 @@ print_help (void)
   printf ("    %s\n", _("Username:password on proxy-servers with basic authentication"));
   printf (" %s\n", "-A, --useragent=STRING");
   printf ("    %s\n", _("String to be sent in http header as \"User Agent\""));
+  printf (" %s\n", "-z, --acceptstring=STRING");
+  printf ("    %s\n", _("Specify Accept header. Default is Accept: \"*/*\""));
   printf (" %s\n", "-k, --header=STRING");
   printf ("    %s\n", _("Any other tags to be sent in http header. Use multiple times for additional headers"));
   printf (" %s\n", "-E, --extended-perfdata");
@@ -1734,5 +1738,5 @@ print_usage (void)
   printf ("       [-e <expect>] [-d string] [-s string] [-l] [-r <regex> | -R <case-insensitive regex>]\n");
   printf ("       [-P string] [-m <min_pg_size>:<max_pg_size>] [-4|-6] [-N] [-M <age>]\n");
   printf ("       [-A string] [-k string] [-S <version>] [--sni] [-C <warn_age>[,<crit_age>]]\n");
-  printf ("       [-T <content-type>] [-j method]\n");
+  printf ("       [-T <content-type>] [-z <accept string>] [-j method]\n");
 }
