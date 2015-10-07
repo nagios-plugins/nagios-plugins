@@ -131,7 +131,17 @@ main (int argc, char **argv)
 	struct timeval tv;
 
 	/* Catch pipe errors in read/write - sometimes occurs when writing QUIT */
+#ifdef HAVE_SIGACTION
+	struct sigaction sig_action;
+
+	sig_action.sa_sigaction = NULL;
+	sig_action.sa_handler = SIG_IGN;
+	sigemptyset(&sig_action.sa_mask);
+	sig_action.sa_flags = 0;
+	sigaction(SIGPIPE, &sig_action, NULL);
+#else /* HAVE_SIGACTION */
 	(void) signal (SIGPIPE, SIG_IGN);
+#endif /* HAVE_SIGACTION */
 
 	setlocale (LC_ALL, "");
 	bindtextdomain (PACKAGE, LOCALEDIR);

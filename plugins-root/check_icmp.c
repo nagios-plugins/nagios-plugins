@@ -378,6 +378,9 @@ main(int argc, char **argv)
 	int icmp_sockerrno, udp_sockerrno, tcp_sockerrno;
 	int result;
 	struct rta_host *host;
+#ifdef HAVE_SIGACTION
+	struct sigaction sig_action;
+#endif
 
 	setlocale (LC_ALL, "");
 	bindtextdomain (PACKAGE, LOCALEDIR);
@@ -575,10 +578,21 @@ main(int argc, char **argv)
 	if(warn.rta > crit.rta) warn.rta = crit.rta;
 	if(warn_down > crit_down) crit_down = warn_down;
 
+#ifdef HAVE_SIGACTION
+	sig_action.sa_sigaction = NULL;
+	sig_action.sa_handler = finish;
+	sigfillset(&sig_action.sa_mask);
+	sig_action.sa_flags = SA_NODEFER|SA_RESTART;
+	sigaction(SIGINT, &sig_action, NULL);
+	sigaction(SIGHUP, &sig_action, NULL);
+	sigaction(SIGTERM, &sig_action, NULL);
+	sigaction(SIGALRM, &sig_action, NULL);
+#else /* HAVE_SIGACTION */
 	signal(SIGINT, finish);
 	signal(SIGHUP, finish);
 	signal(SIGTERM, finish);
 	signal(SIGALRM, finish);
+#endif /* HAVE_SIGACTION */
 	if(debug) printf("Setting alarm timeout to %u seconds\n", timeout);
 	alarm(timeout);
 
@@ -976,10 +990,10 @@ finish(int sig)
 
 	host = list;
 	while(host) {
-		if(debug) puts("");
+		if(debug) write(STDOUT_FILENO, "\n", 1);
 		if(i) {
-			if(i < targets) printf(" :: ");
-			else printf("\n");
+			if(i < targets) write(STDOUT_FILENO, " :: ", 4);
+			else write(STDOUT_FILENO, "\n", 1);
 		}
 		i++;
 		if(!host->icmp_recv) {
@@ -1008,7 +1022,7 @@ finish(int sig)
 	i = 0;
 	host = list;
 	while(host) {
-		if(debug) puts("");
+		if(debug) write(STDOUT_FILENO, "\n", 1);
 		printf("%srta=%0.3fms;%0.3f;%0.3f;0; %spl=%u%%;%u;%u;; %srtmax=%0.3fms;;;; %srtmin=%0.3fms;;;; ",
 			   (targets > 1) ? host->name : "",
 			   host->rta / 1000, (float)warn.rta / 1000, (float)crit.rta / 1000,

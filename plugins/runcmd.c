@@ -259,9 +259,29 @@ void
 runcmd_timeout_alarm_handler (int signo)
 {
 	size_t i;
+	const char msg[] = " - Plugin timed out while executing system call\n";
 
-	if (signo == SIGALRM)
-		printf("%s - Plugin timed out while executing system call\n", state_text(timeout_state));
+	if (signo == SIGALRM) {
+		/* printf("%s - Plugin timed out while executing system call\n", state_text(timeout_state)); */
+		switch(timeout_state) {
+			case STATE_OK:
+				write(STDOUT_FILENO, "OK", 2);
+				break;
+			case STATE_WARNING:
+				write(STDOUT_FILENO, "WARNING", 7);
+				break;
+			case STATE_CRITICAL:
+				write(STDOUT_FILENO, "CRITICAL", 8);
+				break;
+			case STATE_DEPENDENT:
+				write(STDOUT_FILENO, "DEPENDENT", 9);
+				break;
+			default:
+				write(STDOUT_FILENO, "UNKNOWN", 7);
+				break;
+		}
+		write(STDOUT_FILENO, msg, sizeof(msg) - 1);
+	}
 
 	if(np_pids) for(i = 0; i < maxfd; i++) {
 		if(np_pids[i] != 0) kill(np_pids[i], SIGKILL);
