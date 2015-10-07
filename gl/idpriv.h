@@ -14,8 +14,8 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef _IDPRIV_H
-#define _IDPRIV_H
+#ifndef NAGIOS_GL_IDPRIV_H_INCLUDED
+#define NAGIOS_GL_IDPRIV_H_INCLUDED
 
 #ifdef __cplusplus
 extern "C" {
@@ -113,4 +113,4 @@ extern int idpriv_temp_restore (void);
 #endif
 
 
-#endif /* _IDPRIV_H */
+#endif /* NAGIOS_GL_IDPRIV_H_INCLUDED */

@@ -15,8 +15,8 @@
    You should have received a copy of the GNU General Public License along
    with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef _MSVC_NOTHROW_H
-#define _MSVC_NOTHROW_H
+#ifndef NGAIOS_MSVC_NOTHROW_H_INCLUDED
+#define NGAIOS_MSVC_NOTHROW_H_INCLUDED
 
 /* With MSVC runtime libraries with the "invalid parameter handler" concept,
    functions like fprintf(), dup2(), or close() crash when the caller passes
@@ -40,4 +40,4 @@ extern intptr_t _gl_nothrow_get_osfhandle (int fd);
 
 #endif
 
-#endif /* _MSVC_NOTHROW_H */
+#endif /* NGAIOS_MSVC_NOTHROW_H_INCLUDED */

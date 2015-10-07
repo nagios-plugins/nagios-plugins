@@ -21,8 +21,8 @@
 * 
 *****************************************************************************/
 
-#ifndef NAGIOSPLUG_RUNCMD_H
-#define NAGIOSPLUG_RUNCMD_H
+#ifndef NAGIOSPLUG_RUNCMD_H_INCLUDED
+#define NAGIOSPLUG_RUNCMD_H_INCLUDED
 
 #include "common.h"
 #include "utils_cmd.h" /* for the "output" type */
@@ -41,4 +41,4 @@ void np_runcmd_init(void);
 #define RUNCMD_NO_ARRAYS 0x01 /* don't populate arrays at all */
 #define RUNCMD_NO_ASSOC 0x02  /* output.line won't point to buf */
 
-#endif /* NAGIOSPLUG_RUNCMD_H */
+#endif /* NAGIOSPLUG_RUNCMD_H_INCLUDED */

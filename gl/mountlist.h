@@ -16,8 +16,8 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef MOUNTLIST_H_
-# define MOUNTLIST_H_
+#ifndef NAGIOS_MOUNTLIST_H_INCLUDED
+# define NAGIOS_MOUNTLIST_H_INCLUDED
 
 # include <stdbool.h>
 # include <sys/types.h>

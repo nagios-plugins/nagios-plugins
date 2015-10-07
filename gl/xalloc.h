@@ -15,8 +15,8 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef XALLOC_H_
-#define XALLOC_H_
+#ifndef NAGIOS_XALLOC_H_INCLUDED
+#define NAGIOS_XALLOC_H_INCLUDED
 
 #include <stddef.h>
 
@@ -257,4 +257,4 @@ xmemdup (T const *p, size_t s)
 #endif
 
 
-#endif /* !XALLOC_H_ */
+#endif /* !NAGIOS_XALLOC_H_INCLUDED */

@@ -15,8 +15,8 @@
    You should have received a copy of the GNU General Public License along
    with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef _LIBGETTEXT_H
-#define _LIBGETTEXT_H 1
+#ifndef NAGIOS_GL_GETTEXT_H_INCLUDED
+#define NAGIOS_GL_GETTEXT_H_INCLUDED
 
 /* NLS can be disabled through the configure --disable-nls option.  */
 #if ENABLE_NLS
@@ -285,4 +285,4 @@ dcnpgettext_expr (const char *domain,
   return (n == 1 ? msgid : msgid_plural);
 }
 
-#endif /* _LIBGETTEXT_H */
+#endif /* NAGIOS_GL_GETTEXT_H_INCLUDED */

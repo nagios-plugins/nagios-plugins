@@ -18,8 +18,8 @@
 
 /* Space usage statistics for a file system.  Blocks are 512-byte. */
 
-#if !defined FSUSAGE_H_
-# define FSUSAGE_H_
+#if !defined NAGIOS_FSUSAGE_H_INCLUDED
+# define NAGIOS_FSUSAGE_H_INCLUDED
 
 # include <stdint.h>
 # include <stdbool.h>

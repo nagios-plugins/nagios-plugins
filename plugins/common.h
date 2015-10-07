@@ -28,8 +28,8 @@
 * 
 *****************************************************************************/
 
-#ifndef _COMMON_H_
-#define _COMMON_H_
+#ifndef NAGIOS_COMMON_H_INCLUDED
+#define NAGIOS_COMMON_H_INCLUDED
 
 #include "config.h"
 
@@ -213,4 +213,4 @@ enum {
 # define __attribute__(x) /* do nothing */
 #endif
 
-#endif /* _COMMON_H_ */
+#endif /* NAGIOS_COMMON_H_INCLUDED */

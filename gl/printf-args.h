@@ -15,8 +15,8 @@
    You should have received a copy of the GNU General Public License along
    with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef _PRINTF_ARGS_H
-#define _PRINTF_ARGS_H
+#ifndef NAGIOS_PRINTF_ARGS_H_INCLUDED
+#define NAGIOS_PRINTF_ARGS_H_INCLUDED
 
 /* This file can be parametrized with the following macros:
      ENABLE_UNISTDIO    Set to 1 to enable the unistdio extensions.
@@ -155,4 +155,4 @@ extern
 #endif
 int PRINTF_FETCHARGS (va_list args, arguments *a);
 
-#endif /* _PRINTF_ARGS_H */
+#endif /* NAGIOS_PRINTF_ARGS_H_INCLUDED */

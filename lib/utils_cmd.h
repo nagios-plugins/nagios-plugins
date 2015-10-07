@@ -1,5 +1,5 @@
-#ifndef _UTILS_CMD_
-#define _UTILS_CMD_
+#ifndef NAGIOS_UTILS_CMD_H_INCLUDED
+#define NAGIOS_UTILS_CMD_H_INCLUDED
 
 /* 
  * Header file for nagios plugins utils_cmd.c
@@ -32,4 +32,4 @@ void cmd_init (void);
 #define CMD_NO_ARRAYS 0x01   /* don't populate arrays at all */
 #define CMD_NO_ASSOC 0x02    /* output.line won't point to buf */
 
-#endif /* _UTILS_CMD_ */
+#endif /* NAGIOS_UTILS_CMD_H_INCLUDED */

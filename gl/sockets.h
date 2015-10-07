@@ -17,8 +17,8 @@
 
 /* Written by Simon Josefsson */
 
-#ifndef SOCKETS_H
-# define SOCKETS_H 1
+#ifndef NAGIOS_SOCKETS_H_INCLUDED
+# define NAGIOS_SOCKETS_H_INCLUDED
 
 #define SOCKETS_1_0 0x100  /* don't use - does not work on Windows XP */
 #define SOCKETS_1_1 0x101
@@ -59,4 +59,4 @@ gl_fd_to_handle (int fd)
 
 #endif /* WINDOWS_SOCKETS */
 
-#endif /* SOCKETS_H */
+#endif /* NAGIOS_SOCKETS_H_INCLUDED */

@@ -75,8 +75,8 @@
 */
 
 
-#ifndef _LOCK_H
-#define _LOCK_H
+#ifndef NAGIOS_GL_LOCK_H_INCLUDED
+#define NAGIOS_GL_LOCK_H_INCLUDED
 
 #include <errno.h>
 #include <stdlib.h>
@@ -924,4 +924,4 @@ typedef int gl_once_t;
 
 /* ========================================================================= */
 
-#endif /* _LOCK_H */
+#endif /* NAGIOS_GL_LOCK_H_INCLUDED */

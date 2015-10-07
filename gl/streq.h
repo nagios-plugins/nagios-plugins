@@ -16,8 +16,8 @@
 
 /* Written by Bruno Haible <bruno@clisp.org>.  */
 
-#ifndef _GL_STREQ_H
-#define _GL_STREQ_H
+#ifndef NAGIOS_GL_STREQ_H_INCLUDED
+#define NAGIOS_GL_STREQ_H_INCLUDED
 
 #include <string.h>
 
@@ -173,4 +173,4 @@ streq0 (const char *s1, const char *s2, char s20, char s21, char s22, char s23, 
 
 #endif
 
-#endif /* _GL_STREQ_H */
+#endif /* NAGIOS_GL_STREQ_H_INCLUDED */

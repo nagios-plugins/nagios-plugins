@@ -15,8 +15,8 @@
    You should have received a copy of the GNU General Public License
    along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef _MALLOCA_H
-#define _MALLOCA_H
+#ifndef NAGIOS_MALLOCA_H_INCLUDED
+#define NAGIOS_MALLOCA_H_INCLUDED
 
 #include <alloca.h>
 #include <stddef.h>
@@ -130,4 +130,4 @@ enum
   sa_increment = ((sizeof (int) + sa_alignment_max - 1) / sa_alignment_max) * sa_alignment_max
 };
 
-#endif /* _MALLOCA_H */
+#endif /* NAGIOS_MALLOCA_H_INCLUDED */

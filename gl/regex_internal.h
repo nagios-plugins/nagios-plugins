@@ -17,8 +17,8 @@
    License along with the GNU C Library; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#ifndef _REGEX_INTERNAL_H
-#define _REGEX_INTERNAL_H 1
+#ifndef NAGIOS_REGEX_INTERNAL_H_INCLUDED
+#define NAGIOS_REGEX_INTERNAL_H_INCLUDED
 
 #include <assert.h>
 #include <ctype.h>
@@ -906,4 +906,4 @@ re_string_elem_size_at (const re_string_t *pstr, Idx idx)
 # define __attribute_warn_unused_result__ /* empty */
 #endif
 
-#endif /*  _REGEX_INTERNAL_H */
+#endif /*  NAGIOS_REGEX_INTERNAL_H_INCLUDED */

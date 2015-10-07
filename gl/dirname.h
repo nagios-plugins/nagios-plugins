@@ -16,8 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef DIRNAME_H_
-# define DIRNAME_H_ 1
+#ifndef NAGIOS_DIRNAME_H_INCLUDED
+#define NAGIOS_DIRNAME_H_INCLUDED
 
 # include <stdbool.h>
 # include <stddef.h>
@@ -43,4 +43,4 @@ char *last_component (char const *file) _GL_ATTRIBUTE_PURE;
 
 bool strip_trailing_slashes (char *file);
 
-#endif /* not DIRNAME_H_ */
+#endif /* not NAGIOS_DIRNAME_H_INCLUDED */

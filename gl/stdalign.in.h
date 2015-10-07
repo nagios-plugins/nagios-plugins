@@ -17,8 +17,8 @@
 
 /* Written by Paul Eggert and Bruno Haible.  */
 
-#ifndef _GL_STDALIGN_H
-#define _GL_STDALIGN_H
+#ifndef NAGIOS_GL_STDALIGN_H_INCLUDED
+#define NAGIOS_GL_STDALIGN_H_INCLUDED
 
 /* ISO C11 <stdalign.h> for platforms that lack it.
 
@@ -106,4 +106,4 @@
 # define __alignas_is_defined 1
 #endif
 
-#endif /* _GL_STDALIGN_H */
+#endif /* NAGIOS_GL_STDALIGN_H_INCLUDED */

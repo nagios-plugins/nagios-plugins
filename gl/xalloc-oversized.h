@@ -15,8 +15,8 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef XALLOC_OVERSIZED_H_
-# define XALLOC_OVERSIZED_H_
+#ifndef NAGIOS_GL_XALLOC_OVERSIZED_H_INCLUDED
+# define NAGIOS_GL_XALLOC_OVERSIZED_H_INCLUDED
 
 # include <stddef.h>
 
@@ -35,4 +35,4 @@
 # define xalloc_oversized(n, s) \
     ((size_t) (sizeof (ptrdiff_t) <= sizeof (size_t) ? -1 : -2) / (s) < (n))
 
-#endif /* !XALLOC_OVERSIZED_H_ */
+#endif /* !NAGIOS_GL_XALLOC_OVERSIZED_H_INCLUDED */

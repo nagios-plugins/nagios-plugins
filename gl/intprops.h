@@ -17,8 +17,8 @@
 
 /* Written by Paul Eggert.  */
 
-#ifndef _GL_INTPROPS_H
-#define _GL_INTPROPS_H
+#ifndef NAGIOS_GL_INTPROPS_H_INCLUDED
+#define NAGIOS_GL_INTPROPS_H_INCLUDED
 
 #include <limits.h>
 
@@ -316,4 +316,4 @@
                       _GL_INT_MINIMUM (0 * (b) + (a)),          \
                       _GL_INT_MAXIMUM (0 * (b) + (a)))
 
-#endif /* _GL_INTPROPS_H */
+#endif /* NAGIOS_GL_INTPROPS_H_INCLUDED */
