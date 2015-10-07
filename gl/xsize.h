@@ -15,8 +15,8 @@
    You should have received a copy of the GNU General Public License
    along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef _XSIZE_H
-#define _XSIZE_H
+#ifndef NAGIOS_XSIZE_H_INCLUDED
+#define NAGIOS_XSIZE_H_INCLUDED
 
 /* Get size_t.  */
 #include <stddef.h>
@@ -111,4 +111,4 @@ xmax (size_t size1, size_t size2)
 
 _GL_INLINE_HEADER_END
 
-#endif /* _XSIZE_H */
+#endif /* NAGIOS_XSIZE_H_INCLUDED */

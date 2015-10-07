@@ -14,8 +14,8 @@
    You should have received a copy of the GNU General Public License along
    with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef _MSVC_INVAL_H
-#define _MSVC_INVAL_H
+#ifndef NAGIOS_MSVC_INVAL_H_INCLUDED
+#define NAGIOS_MSVC_INVAL_H_INCLUDED
 
 /* With MSVC runtime libraries with the "invalid parameter handler" concept,
    functions like fprintf(), dup2(), or close() crash when the caller passes
@@ -219,4 +219,4 @@ extern struct gl_msvc_inval_per_thread *gl_msvc_inval_current (void);
 
 #endif
 
-#endif /* _MSVC_INVAL_H */
+#endif /* NAGIOS_MSVC_INVAL_H_INCLUDED */

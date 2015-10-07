@@ -1,5 +1,5 @@
-#ifndef _PARSE_INI_H_
-#define _PARSE_INI_H_
+#ifndef NAGIOS_PARSE_INI_H_INCLUDED
+#define NAGIOS_PARSE_INI_H_INCLUDED
 
 /*
  * parse_ini.h: routines for loading nagios-plugin defaults from ini
@@ -18,5 +18,5 @@ typedef struct np_arg_el {
  */
 np_arg_list* np_get_defaults(const char *locator, const char *default_section);
 
-#endif /* _PARSE_INI_H_ */
+#endif /* NAGIOS_PARSE_INI_H_INCLUDED */
 

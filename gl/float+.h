@@ -15,8 +15,8 @@
    You should have received a copy of the GNU General Public License
    along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef _FLOATPLUS_H
-#define _FLOATPLUS_H
+#ifndef NAGIOS_FLOATPLUS_H_INCLUDED
+#define NAGIOS_FLOATPLUS_H_INCLUDED
 
 #include <float.h>
 #include <limits.h>
@@ -144,4 +144,4 @@ typedef int verify_sizeof_flt[SIZEOF_FLT <= sizeof (float) ? 1 : -1];
 typedef int verify_sizeof_dbl[SIZEOF_DBL <= sizeof (double) ? 1 : - 1];
 typedef int verify_sizeof_ldbl[SIZEOF_LDBL <= sizeof (long double) ? 1 : - 1];
 
-#endif /* _FLOATPLUS_H */
+#endif /* NAGIOS_FLOATPLUS_H_INCLUDED */

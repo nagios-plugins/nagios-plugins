@@ -28,8 +28,8 @@
 * 
 *****************************************************************************/
 
-#ifndef _NETUTILS_H_
-#define _NETUTILS_H_
+#ifndef NAGIOS_NETUGILS_H_INCLUDED_
+#define NAGIOS_NETUGILS_H_INCLUDED_
 
 #include "common.h"
 #include "utils.h"
@@ -100,4 +100,4 @@ int np_net_ssl_read(void *buf, int num);
 int np_net_ssl_check_cert(int days_till_exp_warn, int days_till_exp_crit);
 #endif /* HAVE_SSL */
 
-#endif /* _NETUTILS_H_ */
+#endif /* NAGIOS_NETUGILS_H_INCLUDED_ */

@@ -16,8 +16,8 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef _ERROR_H
-#define _ERROR_H 1
+#ifndef NAGIOS_GL_ERROR_H_INCLUDED
+#define NAGIOS_GL_ERROR_H_INCLUDED
 
 /* The __attribute__ feature is available in gcc versions 2.5 and later.
    The __-protected variants of the attributes 'format' and 'printf' are

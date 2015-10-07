@@ -14,8 +14,8 @@
    You should have received a copy of the GNU General Public License
    along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef _GL_STDBOOL_H
-#define _GL_STDBOOL_H
+#ifndef NAGIOS_GL_STDBOOL_H_INCLUDED
+#define NAGIOS_GL_STDBOOL_H_INCLUDED
 
 /* ISO C 99 <stdbool.h> for platforms that lack it.  */
 
@@ -129,4 +129,4 @@ typedef enum { _Bool_must_promote_to_int = -1, false = 0, true = 1 } _Bool;
 
 #define __bool_true_false_are_defined 1
 
-#endif /* _GL_STDBOOL_H */
+#endif /* NAGIOS_GL_STDBOOL_H_INCLUDED */

@@ -15,8 +15,8 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 
-#ifndef FD_HOOK_H
-#define FD_HOOK_H
+#ifndef NAGIOS_FD_HOOK_H_INCLUDED
+#define NAGIOS_FD_HOOK_H_INCLUDED
 
 #ifdef __cplusplus
 extern "C" {
@@ -116,4 +116,4 @@ extern void unregister_fd_hook (struct fd_hook *link);
 }
 #endif
 
-#endif /* FD_HOOK_H */
+#endif /* NAGIOS_FD_HOOK_H_INCLUDED */

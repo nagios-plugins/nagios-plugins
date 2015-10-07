@@ -1,5 +1,5 @@
-#ifndef _EXTRA_OPTS_H_
-#define _EXTRA_OPTS_H_
+#ifndef NAGIOS_EXTRA_OPTS_H_INCLUDED
+#define NAGIOS_EXTRA_OPTS_H_INCLUDED
 
 /*
  * extra_opts.h: routines for loading nagios-plugin defaults from ini
@@ -19,5 +19,5 @@
  */
 char **np_extra_opts(int *argc, char **argv, const char *plugin_name);
 
-#endif /* _EXTRA_OPTS_H_ */
+#endif /* NAGIOS_EXTRA_OPTS_H_INCLUDED */
 

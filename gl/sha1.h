@@ -16,8 +16,8 @@
    You should have received a copy of the GNU General Public License
    along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef SHA1_H
-# define SHA1_H 1
+#ifndef NAGIOS_GL_SHA1_H_INCLUDED
+# define NAGIOS_GL_SHA1_H_INCLUDED
 
 # include <stdio.h>
 # include <stdint.h>

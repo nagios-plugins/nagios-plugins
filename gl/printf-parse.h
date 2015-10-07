@@ -15,8 +15,8 @@
    You should have received a copy of the GNU General Public License along
    with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef _PRINTF_PARSE_H
-#define _PRINTF_PARSE_H
+#ifndef NAGIOS_PRINTF_PARSE_H_INCLUDED
+#define NAGIOS_PRINTF_PARSE_H_INCLUDED
 
 /* This file can be parametrized with the following macros:
      ENABLE_UNISTDIO    Set to 1 to enable the unistdio extensions.
@@ -190,4 +190,4 @@ extern
 int printf_parse (const char *format, char_directives *d, arguments *a);
 #endif
 
-#endif /* _PRINTF_PARSE_H */
+#endif /* NAGIOS_PRINTF_PARSE_H_INCLUDED */

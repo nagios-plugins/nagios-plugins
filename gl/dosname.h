@@ -17,8 +17,8 @@
 
    From Paul Eggert and Jim Meyering.  */
 
-#ifndef _DOSNAME_H
-#define _DOSNAME_H
+#ifndef NAGIOS_GL_DOSNAME_H_INCLUDED
+#define NAGIOS_GL_DOSNAME_H_INCLUDED
 
 #if (defined _WIN32 || defined __WIN32__ ||     \
      defined __MSDOS__ || defined __CYGWIN__ || \

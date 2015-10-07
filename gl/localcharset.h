@@ -15,8 +15,8 @@
    You should have received a copy of the GNU General Public License along
    with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef _LOCALCHARSET_H
-#define _LOCALCHARSET_H
+#ifndef NAGIOS_GL_LOCALCHARSET_H_INCLUDED
+#define NAGIOS_GL_LOCALCHARSET_H_INCLUDED
 
 
 #ifdef __cplusplus
@@ -37,4 +37,4 @@ extern const char * locale_charset (void);
 #endif
 
 
-#endif /* _LOCALCHARSET_H */
+#endif /* NAGIOS_GL_LOCALCHARSET_H_INCLUDED */

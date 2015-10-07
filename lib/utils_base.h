@@ -1,5 +1,5 @@
-#ifndef _UTILS_BASE_
-#define _UTILS_BASE_
+#ifndef NAGIOS_UTILS_BASE_H_INCLUDED
+#define NAGIOS_UTILS_BASE_H_INCLUDED
 /* Header file for nagios plugins utils_base.c */
 
 #include "sha1.h"
@@ -112,4 +112,4 @@ void np_cleanup();
 + * running a suid plugin */
 #define np_suid() (getuid() != geteuid())
 
-#endif /* _UTILS_BASE_ */
+#endif /* NAGIOS_UTILS_BASE_H_INCLUDED */

@@ -17,8 +17,8 @@
 
 /* Written by Paul Eggert, Bruno Haible, and Jim Meyering.  */
 
-#ifndef _GL_VERIFY_H
-#define _GL_VERIFY_H
+#ifndef NAGIOS_GL_VERIFY_H_INCLUDED
+#define NAGIOS_GL_VERIFY_H_INCLUDED
 
 
 /* Define _GL_HAVE__STATIC_ASSERT to 1 if _Static_assert works as per C11.
