@@ -32,8 +32,8 @@
       if (verbose) printf(verb_str); \
       temp_buffer = rindex (chld_out.line[i], ' '); \
       addresses[n_addresses++] = check_new_address(temp_buffer); \
-      strncpy(query_found, querytype, sizeof(query_found)); \
-      query_found[sizeof(querytype)] = '\0';
+      memset(query_found, '\0', sizeof(query_found)); \
+      strncpy(query_found, querytype, sizeof(query_found)); 
 
 const char *progname = "check_dns";
 const char *copyright = "2000-2014";
