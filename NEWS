@@ -1,6 +1,6 @@
 This file documents the major additions and syntax changes between releases.
 
-2.2 [...]
+2.1.x xxxx-xx-xx
 	ENHANCEMENTS
 	check_snmp's performance data now also includes warning/critical
 	  thresholds

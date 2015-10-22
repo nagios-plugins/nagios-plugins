@@ -380,6 +380,7 @@ main(int argc, char **argv)
 	struct rta_host *host;
 #ifdef HAVE_SIGACTION
 	struct sigaction sig_action;
+#endif
 #ifdef SO_TIMESTAMP
 	int on = 1;
 #endif
