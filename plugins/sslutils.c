@@ -48,7 +48,7 @@ int np_net_ssl_init_with_hostname_and_version(int sd, char *host_name, int versi
 }
 
 int np_net_ssl_init_with_hostname_version_and_cert(int sd, char *host_name, int version, char *cert, char *privkey) {
-	SSL_METHOD *method = NULL;
+	const SSL_METHOD *method = NULL;
 	long options = 0;
 
 	switch (version) {
@@ -66,7 +66,7 @@ int np_net_ssl_init_with_hostname_version_and_cert(int sd, char *host_name, int 
 		return STATE_UNKNOWN;
 #else
 		method = SSLv3_client_method();
-		ssl_options = SSL_OP_NO_SSLv2 | SSL_OP_NO_TLSv1;
+		options = SSL_OP_NO_SSLv2 | SSL_OP_NO_TLSv1;
 		break;
 #endif
 	case MP_TLSv1: /* TLSv1 protocol */
