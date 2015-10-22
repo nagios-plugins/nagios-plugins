@@ -77,6 +77,7 @@ int np_net_ssl_init_with_hostname_version_and_cert(int sd, char *host_name, int 
 		method = SSLv3_client_method();
 		ssl_options = SSL_OP_NO_SSLv2 | SSL_OP_NO_TLSv1;
 		break;
+#endif
 	default: /* Unsupported */
 		printf("%s\n", _("CRITICAL - Unsupported SSL protocol version."));
 		return STATE_CRITICAL;

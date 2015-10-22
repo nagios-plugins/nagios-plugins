@@ -726,6 +726,8 @@ char *sperfdata (const char *label,
 	}
 
 	return data;
+}
+
 /* set entire string to lower, no need to return as it works on string in place */
 void strntolower (char * test_char, int size) {
 
