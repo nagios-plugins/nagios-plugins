@@ -65,6 +65,7 @@ static int READ_TIMEOUT = 2;
 
 static int server_port = 0;
 static char *server_address = NULL;
+static char *server_name = NULL;
 static int host_specified = FALSE;
 static char *server_send = NULL;
 static char *server_quit = NULL;
@@ -241,7 +242,7 @@ main (int argc, char **argv)
 
 #ifdef HAVE_SSL
 	if (flags & FLAG_SSL){
-		result = np_net_ssl_init(sd);
+		result = np_net_ssl_init_with_hostname(sd, server_name);
 		if (result == STATE_OK && check_cert == TRUE) {
 			result = np_net_ssl_check_cert(days_till_exp_warn, days_till_exp_crit);
 		}
@@ -452,7 +453,7 @@ process_arguments (int argc, char **argv)
 	}
 
 	while (1) {
-		c = getopt_long (argc, argv, "+hVv46EAH:s:e:q:m:c:w:t:p:C:W:d:Sr:jD:M:",
+		c = getopt_long (argc, argv, "+hVv46EAH:s:e:q:m:c:w:t:p:C:W:d:Sr:jD:M:N:",
 		                 longopts, &option);
 
 		if (c == -1 || c == EOF || c == 1)
@@ -603,6 +604,9 @@ process_arguments (int argc, char **argv)
 		case 'A':
 			match_flags |= NP_MATCH_ALL;
 			break;
+		case 'N':                 /* Server Name Indication */
+			server_name = optarg;
+			break;
 		}
 	}
 
@@ -687,4 +691,5 @@ print_usage (void)
   printf ("[-e <expect string>] [-q <quit string>][-m <maximum bytes>] [-d <delay>]\n");
   printf ("[-t <timeout seconds>] [-r <refuse state>] [-M <mismatch state>] [-v] [-4|-6] [-j]\n");
   printf ("[-D <warn days cert expire>[,<crit days cert expire>]] [-S <use SSL>] [-E]\n");
+  printf ("[-N <server name indication>]\n");
 }
