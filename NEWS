@@ -24,9 +24,9 @@ This file documents the major additions and syntax changes between releases.
 	check_snmp.c: Added IPv6 support
 	check_http: Added support for checking SSL-Websites through Proxies
 
-        FIXES
-        check_dig can now also use "drill" instead of "dig"
-        check_dig honor the -4 and -6 switches
+	FIXES
+	check_dig can now also use "drill" instead of "dig"
+	check_dig honor the -4 and -6 switches
 	check_ntp_peer: do not use uninitialized results for max state
 	check_log.sh, check_oracle.sh, check_sensors.sh: Setting PATH at first
 	check_log.sh: droping path from basename while evaluating PROGNAME
@@ -68,13 +68,14 @@ This file documents the major additions and syntax changes between releases.
 	check_dns.c: conditional assignment
 	check_dns.c: macro querytypes and auto cnames
 	utils_cmd.c, utils_base.c: Multiple resource leaks
+	check_http.c: Increase MAX_RE_SIZE from 256 to 2048
 
-        TESTS
-        check_procs.t: Add delay after forking in test to avoid race condition
+	TESTS
+	check_procs.t: Add delay after forking in test to avoid race condition
 	test.pl.in: Use "C" locale when running test suite
 	check_http.t: Adjust date strings to the now-localized output
 	check_dns.t - Fix Perl Warning. perl doesn't understand /d within "".
-        check_snmp.t: skip extented snmp tests if snmpd has no perl support
+	check_snmp.t: skip extented snmp tests if snmpd has no perl support
 	check_snmp.t: fix snmp test for included threshold
 	check_http.t: fix tests for certificates expire date with seconds
 	check_http.t: add faketime based tests for check_http
