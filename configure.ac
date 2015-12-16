@@ -764,33 +764,33 @@ dnl 	ac_cv_ps_format=["%*s %d %d %d %d %*d %*d %d %d%*[ 0123456789abcdef]%[OSRZT
 dnl 	ac_cv_ps_cols=8
 dnl 	AC_MSG_RESULT([$ac_cv_ps_command])
 
-dnl Lets test if cgroups are supported, on systems with ps axwo command:
-elif ps axwo 'stat comm vsz rss user uid pid ppid args cgroup:256' 2>/dev/null | \
+dnl Lets test if cgroups are supported, on systems with ps axwwo command:
+elif ps axwwo 'stat comm vsz rss user uid pid ppid args cgroup:256' 2>/dev/null | \
 	egrep -i ["^ *STAT +[UCOMAND]+ +VSZ +RSS +USER +UID +PID +PPID +COMMAND +CGROUP"] > /dev/null
 then
 	ac_cv_ps_varlist="[procstat,&procuid,&procpid,&procppid,&procvsz,&procrss,&procpcpu,proc_cgroup_hierarchy,procprog,&pos]"
-	ac_cv_ps_command="$PATH_TO_PS axwo 'stat uid pid ppid vsz rss pcpu cgroup:256 comm args'"
+	ac_cv_ps_command="$PATH_TO_PS axwwo 'stat uid pid ppid vsz rss pcpu cgroup:256 comm args'"
 	ac_cv_ps_format="%s %d %d %d %d %d %f %s %s %n"
 	ac_cv_ps_cols=10
 	AC_MSG_RESULT([$ac_cv_ps_command])
 
-dnl cgroups with ps -axwo command:
-elif ps -axwo 'stat comm vsz rss user uid pid ppid args cgroup:256' 2>/dev/null | \
+dnl cgroups with ps -axwwo command:
+elif ps -axwwo 'stat comm vsz rss user uid pid ppid args cgroup:256' 2>/dev/null | \
 	egrep -i ["^ *STAT +[UCOMAND]+ +VSZ +RSS +USER +UID +PID +PPID +COMMAND +CGROUP"] > /dev/null
 then
 	ac_cv_ps_varlist="[procstat,&procuid,&procpid,&procppid,&procvsz,&procrss,&procpcpu,proc_cgroup_hierarchy,procprog,&pos]"
-	ac_cv_ps_command="$PATH_TO_PS -axwo 'stat uid pid ppid vsz rss pcpu cgroup:256 comm args'"
+	ac_cv_ps_command="$PATH_TO_PS -axwwo 'stat uid pid ppid vsz rss pcpu cgroup:256 comm args'"
 	ac_cv_ps_format="%s %d %d %d %d %d %f %s %s %n"
 	ac_cv_ps_cols=10
 	AC_MSG_RESULT([$ac_cv_ps_command])
 
-dnl Some gnu/linux systems (debian for one) don't like -axwo and need axwo.
+dnl Some gnu/linux systems (debian for one) don't like -axwwo and need axwwo.
 dnl so test for this first...
-elif ps axwo 'stat comm vsz rss user uid pid ppid args' 2>/dev/null | \
+elif ps axwwo 'stat comm vsz rss user uid pid ppid args' 2>/dev/null | \
 	egrep -i ["^ *STAT +[UCOMAND]+ +VSZ +RSS +USER +UID +PID +PPID +COMMAND"] > /dev/null
 then
 	ac_cv_ps_varlist="[procstat,&procuid,&procpid,&procppid,&procvsz,&procrss,&procpcpu,procprog,&pos]"
-	ac_cv_ps_command="$PATH_TO_PS axwo 'stat uid pid ppid vsz rss pcpu comm args'"
+	ac_cv_ps_command="$PATH_TO_PS axwwo 'stat uid pid ppid vsz rss pcpu comm args'"
 	ac_cv_ps_format="%s %d %d %d %d %d %f %s %n"
 	ac_cv_ps_cols=9
 	AC_MSG_RESULT([$ac_cv_ps_command])
@@ -798,11 +798,11 @@ then
 dnl For OpenBSD 3.2 & 3.3. Must come before ps -weo
 dnl Should also work for FreeBSD 5.2.1 and 5.3
 dnl  STAT UCOMM              VSZ   RSS USER      PPID COMMAND
-elif ps -axwo 'stat comm vsz rss user uid pid ppid args' 2>/dev/null | \
+elif ps -axwwo 'stat comm vsz rss user uid pid ppid args' 2>/dev/null | \
 	egrep -i ["^ *STAT +[UCOMAND]+ +VSZ +RSS +USER +UID +PID +PPID +COMMAND"] > /dev/null
 then
 	ac_cv_ps_varlist="[procstat,&procuid,&procpid,&procppid,&procvsz,&procrss,&procpcpu,procprog,&pos]"
-	ac_cv_ps_command="$PATH_TO_PS -axwo 'stat uid pid ppid vsz rss pcpu comm args'"
+	ac_cv_ps_command="$PATH_TO_PS -axwwo 'stat uid pid ppid vsz rss pcpu comm args'"
 	ac_cv_ps_format="%s %d %d %d %d %d %f %s %n"
 	ac_cv_ps_cols=9
 	AC_MSG_RESULT([$ac_cv_ps_command])
@@ -810,11 +810,11 @@ then
 dnl Some *BSDs have different format for ps. This is mainly to catch FreeBSD 4.
 dnl Limitation: Only first 16 chars returned for ucomm field
 dnl Must come before ps -weo
-elif ps -axwo 'stat uid pid ppid vsz rss pcpu ucomm command' 2>/dev/null | \
+elif ps -axwwo 'stat uid pid ppid vsz rss pcpu ucomm command' 2>/dev/null | \
 	egrep -i ["^ *STAT +UID +PID +PPID +VSZ +RSS +%CPU +UCOMM +COMMAND"] > /dev/null
 then
 	ac_cv_ps_varlist="[procstat,&procuid,&procpid,&procppid,&procvsz,&procrss,&procpcpu,procprog,&pos]"
-	ac_cv_ps_command="$PATH_TO_PS -axwo 'stat uid pid ppid vsz rss pcpu ucomm command'"
+	ac_cv_ps_command="$PATH_TO_PS -axwwo 'stat uid pid ppid vsz rss pcpu ucomm command'"
 	ac_cv_ps_format="%s %d %d %d %d %d %f %s %n"
 	ac_cv_ps_cols=9
 	AC_MSG_RESULT([$ac_cv_ps_command])
