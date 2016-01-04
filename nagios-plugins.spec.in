@@ -163,10 +163,11 @@ fi
 %install
 rm -rf $RPM_BUILD_ROOT
 make AM_INSTALL_PROGRAM_FLAGS="" DESTDIR=${RPM_BUILD_ROOT} install
+make AM_INSTALL_PROGRAM_FLAGS="" DESTDIR=${RPM_BUILD_ROOT} install-packager
 %find_lang %{name}
 echo "%defattr(755,%{npusr},%{npgrp})" >> %{name}.lang
 comm -13 %{npdir}/ls-plugins-before %{npdir}/ls-plugins-after | egrep -v "\.o$|^\." | gawk -v libexecdir=%{_libexecdir} '{printf( "%s/%s\n", libexecdir, $0);}' >> %{name}.lang
-echo "%defattr(755,root,root)" >> %{name}.lang
+echo "%defattr(4555,root,%{npgrp})" >> %{name}.lang
 comm -13 %{npdir}/ls-plugins-root-before %{npdir}/ls-plugins-root-after | egrep -v "\.o$|^\." | gawk -v libexecdir=%{_libexecdir} '{printf( "%s/%s\n", libexecdir, $0);}' >> %{name}.lang
 echo "%defattr(755,%{npusr},%{npgrp})" >> %{name}.lang
 comm -13 %{npdir}/ls-plugins-scripts-before %{npdir}/ls-plugins-scripts-after | egrep -v "\.o$|^\." | gawk -v libexecdir=%{_libexecdir} '{printf( "%s/%s\n", libexecdir, $0);}' >> %{name}.lang
@@ -182,9 +183,8 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %files -f %{name}.lang
-%config(missingok,noreplace) %{_sysconfdir}/command.cfg
 %doc CODING COPYING FAQ INSTALL LEGAL README REQUIREMENTS SUPPORT THANKS
-%doc ChangeLog command.cfg
+%doc ChangeLog
 %if ! %{isaix}
 %{_datadir}/locale/de/LC_MESSAGES/nagios-plugins.mo
 %{_datadir}/locale/fr/LC_MESSAGES/nagios-plugins.mo
