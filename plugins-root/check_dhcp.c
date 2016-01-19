@@ -228,7 +228,6 @@ struct in_addr requested_address;
 
 
 int process_arguments(int, char **);
-int call_getopt(int, char **);
 int validate_arguments(void);
 void print_usage(void);
 void print_help(void);
@@ -1071,30 +1070,9 @@ int get_results(void){
 
 /* process command-line arguments */
 int process_arguments(int argc, char **argv){
-	int c;
-
-	if(argc<1)
-		return ERROR;
-
-	c=0;
-	while((c+=(call_getopt(argc-c,&argv[c])))<argc){
-
-		/*
-		if(is_option(argv[c]))
-			continue;
-		*/
-		}
-
-	return validate_arguments();
-        }
-
-
-
-int call_getopt(int argc, char **argv){
-	int c=0;
-	int i=0;
-
+	int c = 0;
 	int option_index = 0;
+
 	static struct option long_options[] =
 	{
 		{"serverip",       required_argument,0,'s'},
@@ -1109,10 +1087,11 @@ int call_getopt(int argc, char **argv){
 		{0,0,0,0}
 	};
 
+	if(argc<1)
+		return ERROR;
+
 	while(1){
 		c=getopt_long(argc,argv,"+hVvt:s:r:t:i:m:u",long_options,&option_index);
-
-		i++;
 
 		if(c==-1||c==EOF||c==1)
 			break;
@@ -1122,7 +1101,6 @@ int call_getopt(int argc, char **argv){
 		case 'r':
 		case 't':
 		case 'i':
-			i++;
 			break;
 		default:
 			break;
@@ -1194,7 +1172,8 @@ int call_getopt(int argc, char **argv){
 		        }
 	        }
 
-	return i;
+
+	return validate_arguments();
         }
 
 
