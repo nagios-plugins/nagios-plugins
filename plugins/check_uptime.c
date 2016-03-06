@@ -37,6 +37,8 @@ char *copyright = "2014";
 char *developer = "Andy Brist";
 
 static int process_arguments (int, char **);
+int validate_arguments (void);
+int getuptime (void);
 void print_help (void);
 void print_usage (void);
 int verbose = 0;
