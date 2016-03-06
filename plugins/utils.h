@@ -91,6 +91,8 @@ void usage_va(const char *fmt, ...) __attribute__((noreturn));
 
 const char *state_text (int);
 
+int parse_timeout_string (char *timeout_str);
+
 #define max(a,b) (((a)>(b))?(a):(b))
 #define min(a,b) (((a)<(b))?(a):(b))
 
