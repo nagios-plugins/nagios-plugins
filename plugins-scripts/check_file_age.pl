@@ -25,8 +25,9 @@ use strict;
 use English;
 use Getopt::Long;
 use File::stat;
+use FindBin;
 use vars qw($PROGNAME);
-use lib ".";
+use lib "$FindBin::Bin";
 use utils qw (%ERRORS &print_revision &support);
 
 sub print_help ();
