@@ -1181,7 +1181,7 @@ AC_ARG_WITH(ping6_command,
 		[sets syntax for ICMPv6 ping]),
 	with_ping6_command=$withval,)
 
-if test x"$with_ipv6" != xno ; then
+if test x"$with_ipv6" != xno -a x"$with_ping6_command" != xno ; then
 AC_MSG_CHECKING(for ICMPv6 ping syntax)
 ac_cv_ping6_packets_first=no
 if test -n "$with_ping6_command"
