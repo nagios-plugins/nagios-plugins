@@ -1663,6 +1663,9 @@ AC_CHECK_MEMBERS([struct swapent.se_nblks],,,[
                  #include <sys/stat.h>
                  #include <sys/swap.h>
                  ])
+AC_CHECK_MEMBERS([struct msghdr.msg_control, struct msghdr.msg_controllen],
+		AC_DEFINE([HAVE_MSGHDR_MSG_CONTROL],1,
+		          [Define if struct msghdr has msg_control and msg_controllen]))
 
 if test "$ac_cv_have_decl_swapctl" = "yes";
 then
