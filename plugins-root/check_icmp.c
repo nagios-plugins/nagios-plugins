@@ -42,6 +42,10 @@ char *progname;
 const char *copyright = "2005-2008";
 const char *email = "devel@nagios-plugins.org";
 
+#ifdef __sun
+#define _XPG4_2
+#endif
+
 /** nagios plugins basic includes */
 #include "common.h"
 #include "netutils.h"
