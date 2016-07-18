@@ -699,7 +699,7 @@ decode_chunked_page (const char *raw, char *dst)
 
     // move chunk from raw into dst, only if we can fit within the buffer
     if (*raw_pos && *dst_pos && (raw_pos + chunksize) < raw_end ) {
-      strncpy(dst_pos, raw_pos, chunksize);
+      memmove(dst_pos, raw_pos, chunksize);
     }
     else {
       die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, too large for destination\n"));
