@@ -70,6 +70,9 @@ This file documents the major additions and syntax changes between releases.
 	utils_cmd.c, utils_base.c: Multiple resource leaks
 	check_http.c: Increase MAX_RE_SIZE from 256 to 2048
 	check_procs.c: Changed the ps command args from axwo to axwwo allowing for longer output
+	check_http.c: Allow a server to reply using only 'HTTP/1.x 200 OK' and a
+		body, with no headers
+	check_nt.c: check_nt does not correctly report a DNS entry it cannot resolve
 
 	TESTS
 	check_procs.t: Add delay after forking in test to avoid race condition
