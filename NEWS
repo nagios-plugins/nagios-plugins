@@ -73,6 +73,7 @@ This file documents the major additions and syntax changes between releases.
 	check_http.c: Allow a server to reply using only 'HTTP/1.x 200 OK' and a
 		body, with no headers
 	check_nt.c: check_nt does not correctly report a DNS entry it cannot resolve
+	check_dhcp.c: check_dhcp broken on BSD
 
 	TESTS
 	check_procs.t: Add delay after forking in test to avoid race condition
