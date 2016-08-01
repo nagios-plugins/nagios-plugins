@@ -1,8 +1,91 @@
 This file documents the major additions and syntax changes between releases.
 
-2.1.1 31th July 2015
+2.1.2 2016-08-01
+	SECURITY FIXES
+
+	ENHANCEMENTS
+	check_snmp's performance data now also includes warning/critical
+	  thresholds
+	New check_snmp "-N" option to specify SNMPv3 context name
+	New check_nt "-l" parameters: seconds|minutes|hours|days
+	New check_mailq -s option which tells the plugin to use sudo(8)
+	New -W/-C option for check_ldap to check number of entries (Gerhard Lausser)
+	The check_http -S/--ssl option now accepts the arguments "1.1" and "1.2"
+	  to force TLSv1.1 and TLSv1.2 connections, respectively
+	The check_http -S/--ssl option now allows for specifying the desired
+	  protocol with a "+" suffix to also accept newer versions
+	New check_disk "-v" option to show troubled partition in verbose mode
+	check_log.sh: Added a parameter -w (--max_warning) defining upper value to return a warning code
+	check_ldap: Add support for LDAP URIs.
+	check_file_age: Provide performance data
+	check_by_ssh: added --hostname support
+	check_ifstatus.pl: Add check_ifstatus option to ignore interfaces by name
+	check_snmp: Introduce support for SNMPv3 context using "-N" option
+	check_snmp.c: Added IPv6 support
+	check_http: Added support for checking SSL-Websites through Proxies
+
 	FIXES
-	lib/utils_cmd.c - Reverted to fix check_procs segfault (abrist)
+	check_dig can now also use "drill" instead of "dig"
+	check_dig honor the -4 and -6 switches
+	check_ntp_peer: do not use uninitialized results for max state
+	check_log.sh, check_oracle.sh, check_sensors.sh: Setting PATH at first
+	check_log.sh: droping path from basename while evaluating PROGNAME
+	check_tcp: Fix check_jabber to work with Openfire servers
+	check_ifstatus.pl: Fix "-n" and "-u" options to ignore if either is set, not just both
+	check_mrtgtraf: Fix perfdata to comply with perfdata UOM definition
+	check_real, check_ntp: fix null termination
+	check_apt: fix memset
+	check_ssh: change warning to critical for protocal/version errors
+	utils_cmd.c: avoid a segfault, if ulimit is set to unlimited
+	utils_cmd.c: make constants from maxfd values
+	configure.ac: Added particular ps command for HP-UX
+	check_disk: Fix pthread start routine type
+	check_http: Make header_value() and chunked-encoding decoding more robust
+	check_http: fix Host header if explicitly set with -k
+	sslutils.c: Forcing furter restriction of ciphers for current security concerns
+	check_nagios, check_procs: Enable check_proc to monitor processes in PID name-spaced environments.
+	check_dhcp.c: use /dev/urandom if available
+	check_http.c: Don't decode page if it's not there
+	check_disk.c: Prevent large tide values from truncation
+	pst3.c: Fix for unclosed filehandle in pst3 on Solaris
+	check_snmp: Timeticks are not being parsed correctly before performance data
+        multiple *.h files: standardized header include fences
+        multiple plugins/*.c files: fix unsafe signal handling
+	sslutils.c: Fix compilation with GnuTLS which doesn't provide SSL_CTX_check_private_key()
+	check_mailq.pl: fixed mailer names
+	check_swap.c: Improving output when swap space has zero size
+	check_icmp.c: Use kernel reception time on ICMP packets to compute rtt.
+	check_icmp.c: make use of MSG_CONFIRM optional
+	check_ldap.c: add counting of entries to check_ldap
+	utils.c: add sperfdata() function which can handle threshold ranges
+	sslutils.c: Check if OpenSSL supports SSLv3.
+	check_dhcp.c: Fixes segfaults when running via monitoring worker (off-by-one)
+	check_fping.c: autodetect ipv6 addresses
+	sslutils.c: optimize output if certificate expires in less then 24h
+	check_smtp.c: Let "-D" option imply "-S". Also QUIT SMTP connection when "-D" is used
+	check_smtp.c: modified SSL check for use with -e
+	check_tcp.c: Validate sent data size
+	check_dns.c: conditional assignment
+	check_dns.c: macro querytypes and auto cnames
+	utils_cmd.c, utils_base.c: Multiple resource leaks
+	check_http.c: Increase MAX_RE_SIZE from 256 to 2048
+	check_procs.c: Changed the ps command args from axwo to axwwo allowing for longer output
+	check_http.c: Allow a server to reply using only 'HTTP/1.x 200 OK' and a
+		body, with no headers
+	check_nt.c: check_nt does not correctly report a DNS entry it cannot resolve
+	check_dhcp.c: check_dhcp broken on BSD
+
+	TESTS
+	check_procs.t: Add delay after forking in test to avoid race condition
+	test.pl.in: Use "C" locale when running test suite
+	check_http.t: Adjust date strings to the now-localized output
+	check_dns.t - Fix Perl Warning. perl doesn't understand /d within "".
+	check_snmp.t: skip extented snmp tests if snmpd has no perl support
+	check_snmp.t: fix snmp test for included threshold
+	check_http.t: fix tests for certificates expire date with seconds
+	check_http.t: add faketime based tests for check_http
+
+	LOCALIZATION
 
 2.1.0 30th July 2015
 	SECURITY FIXES

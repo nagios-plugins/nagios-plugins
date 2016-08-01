@@ -353,7 +353,8 @@ main (int argc, char **argv)
 	} else if(total_swap_mb > 0) {
 		percent_used = 100 * ((double) used_swap_mb) / ((double) total_swap_mb);
 	} else {
-		percent_used = 0;
+		percent_used = 100;
+		status = "- Swap is either disabled, not present, or of zero size. ";
 	}
 
 	result = max_state (result, check_swap (percent_used, free_swap_mb));

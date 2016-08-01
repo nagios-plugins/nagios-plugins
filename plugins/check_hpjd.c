@@ -66,7 +66,7 @@ void print_usage (void);
 
 char *community = NULL;
 char *address = NULL;
-char *port = NULL;
+int port = 0;
 
 int
 main (int argc, char **argv)
@@ -371,14 +371,14 @@ process_arguments (int argc, char **argv)
 
 	if (community == NULL) {
 		if (argv[c] != NULL )
-			community = argv[c];
+			community = argv[c++];
 		else
 			community = strdup (DEFAULT_COMMUNITY);
 	}
 
-	if (port == NULL) {
+	if (port == 0) {
 		if (argv[c] != NULL )
-			port = argv[c];
+			port = atoi (argv[c++]);
 		else
 			port = atoi (DEFAULT_PORT);
 	}

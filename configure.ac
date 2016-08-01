@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.59)
-AC_INIT(nagios-plugins,2.1.1)
+AC_INIT(nagios-plugins,2.1.2)
 AC_CONFIG_SRCDIR(NPTest.pm)
 AC_CONFIG_FILES([gl/Makefile 
 	nagios-plugins.spec])
@@ -161,12 +161,6 @@ AC_CHECK_LIB(nsl,main,SOCKETLIBS="$SOCKETLIBS -lnsl")
 AC_CHECK_LIB(socket,socket,SOCKETLIBS="$SOCKETLIBS -lsocket")
 AC_CHECK_LIB(resolv,main,SOCKETLIBS="$SOCKETLIBS -lresolv")
 AC_SUBST(SOCKETLIBS)
-
-dnl Check for POSIX thread libraries
-AC_CHECK_HEADERS(pthread.h)
-AC_CHECK_LIB(pthread,pthread_create,THREADLIBS="-lpthread",
-             AC_CHECK_LIB(pthread,pthread_create,THREADLIBS="-lpthread -lrt",-lrt))
-AC_SUBST(THREADLIBS)
 
 dnl
 dnl check for math-related functions needing -lm
@@ -770,33 +764,33 @@ dnl 	ac_cv_ps_format=["%*s %d %d %d %d %*d %*d %d %d%*[ 0123456789abcdef]%[OSRZT
 dnl 	ac_cv_ps_cols=8
 dnl 	AC_MSG_RESULT([$ac_cv_ps_command])
 
-dnl Lets test if cgroups are supported, on systems with ps axwo command:
-elif ps axwo 'stat comm vsz rss user uid pid ppid args cgroup:256' 2>/dev/null | \
+dnl Lets test if cgroups are supported, on systems with ps axwwo command:
+elif ps axwwo 'stat comm vsz rss user uid pid ppid args cgroup:256' 2>/dev/null | \
 	egrep -i ["^ *STAT +[UCOMAND]+ +VSZ +RSS +USER +UID +PID +PPID +COMMAND +CGROUP"] > /dev/null
 then
 	ac_cv_ps_varlist="[procstat,&procuid,&procpid,&procppid,&procvsz,&procrss,&procpcpu,proc_cgroup_hierarchy,procprog,&pos]"
-	ac_cv_ps_command="$PATH_TO_PS axwo 'stat uid pid ppid vsz rss pcpu cgroup:256 comm args'"
+	ac_cv_ps_command="$PATH_TO_PS axwwo 'stat uid pid ppid vsz rss pcpu cgroup:256 comm args'"
 	ac_cv_ps_format="%s %d %d %d %d %d %f %s %s %n"
 	ac_cv_ps_cols=10
 	AC_MSG_RESULT([$ac_cv_ps_command])
 
-dnl cgroups with ps -axwo command:
-elif ps -axwo 'stat comm vsz rss user uid pid ppid args cgroup:256' 2>/dev/null | \
+dnl cgroups with ps -axwwo command:
+elif ps -axwwo 'stat comm vsz rss user uid pid ppid args cgroup:256' 2>/dev/null | \
 	egrep -i ["^ *STAT +[UCOMAND]+ +VSZ +RSS +USER +UID +PID +PPID +COMMAND +CGROUP"] > /dev/null
 then
 	ac_cv_ps_varlist="[procstat,&procuid,&procpid,&procppid,&procvsz,&procrss,&procpcpu,proc_cgroup_hierarchy,procprog,&pos]"
-	ac_cv_ps_command="$PATH_TO_PS -axwo 'stat uid pid ppid vsz rss pcpu cgroup:256 comm args'"
+	ac_cv_ps_command="$PATH_TO_PS -axwwo 'stat uid pid ppid vsz rss pcpu cgroup:256 comm args'"
 	ac_cv_ps_format="%s %d %d %d %d %d %f %s %s %n"
 	ac_cv_ps_cols=10
 	AC_MSG_RESULT([$ac_cv_ps_command])
 
-dnl Some gnu/linux systems (debian for one) don't like -axwo and need axwo.
+dnl Some gnu/linux systems (debian for one) don't like -axwwo and need axwwo.
 dnl so test for this first...
-elif ps axwo 'stat comm vsz rss user uid pid ppid args' 2>/dev/null | \
+elif ps axwwo 'stat comm vsz rss user uid pid ppid args' 2>/dev/null | \
 	egrep -i ["^ *STAT +[UCOMAND]+ +VSZ +RSS +USER +UID +PID +PPID +COMMAND"] > /dev/null
 then
 	ac_cv_ps_varlist="[procstat,&procuid,&procpid,&procppid,&procvsz,&procrss,&procpcpu,procprog,&pos]"
-	ac_cv_ps_command="$PATH_TO_PS axwo 'stat uid pid ppid vsz rss pcpu comm args'"
+	ac_cv_ps_command="$PATH_TO_PS axwwo 'stat uid pid ppid vsz rss pcpu comm args'"
 	ac_cv_ps_format="%s %d %d %d %d %d %f %s %n"
 	ac_cv_ps_cols=9
 	AC_MSG_RESULT([$ac_cv_ps_command])
@@ -804,11 +798,11 @@ then
 dnl For OpenBSD 3.2 & 3.3. Must come before ps -weo
 dnl Should also work for FreeBSD 5.2.1 and 5.3
 dnl  STAT UCOMM              VSZ   RSS USER      PPID COMMAND
-elif ps -axwo 'stat comm vsz rss user uid pid ppid args' 2>/dev/null | \
+elif ps -axwwo 'stat comm vsz rss user uid pid ppid args' 2>/dev/null | \
 	egrep -i ["^ *STAT +[UCOMAND]+ +VSZ +RSS +USER +UID +PID +PPID +COMMAND"] > /dev/null
 then
 	ac_cv_ps_varlist="[procstat,&procuid,&procpid,&procppid,&procvsz,&procrss,&procpcpu,procprog,&pos]"
-	ac_cv_ps_command="$PATH_TO_PS -axwo 'stat uid pid ppid vsz rss pcpu comm args'"
+	ac_cv_ps_command="$PATH_TO_PS -axwwo 'stat uid pid ppid vsz rss pcpu comm args'"
 	ac_cv_ps_format="%s %d %d %d %d %d %f %s %n"
 	ac_cv_ps_cols=9
 	AC_MSG_RESULT([$ac_cv_ps_command])
@@ -816,11 +810,11 @@ then
 dnl Some *BSDs have different format for ps. This is mainly to catch FreeBSD 4.
 dnl Limitation: Only first 16 chars returned for ucomm field
 dnl Must come before ps -weo
-elif ps -axwo 'stat uid pid ppid vsz rss pcpu ucomm command' 2>/dev/null | \
+elif ps -axwwo 'stat uid pid ppid vsz rss pcpu ucomm command' 2>/dev/null | \
 	egrep -i ["^ *STAT +UID +PID +PPID +VSZ +RSS +%CPU +UCOMM +COMMAND"] > /dev/null
 then
 	ac_cv_ps_varlist="[procstat,&procuid,&procpid,&procppid,&procvsz,&procrss,&procpcpu,procprog,&pos]"
-	ac_cv_ps_command="$PATH_TO_PS -axwo 'stat uid pid ppid vsz rss pcpu ucomm command'"
+	ac_cv_ps_command="$PATH_TO_PS -axwwo 'stat uid pid ppid vsz rss pcpu ucomm command'"
 	ac_cv_ps_format="%s %d %d %d %d %d %f %s %n"
 	ac_cv_ps_cols=9
 	AC_MSG_RESULT([$ac_cv_ps_command])
@@ -1187,7 +1181,7 @@ AC_ARG_WITH(ping6_command,
 		[sets syntax for ICMPv6 ping]),
 	with_ping6_command=$withval,)
 
-if test x"$with_ipv6" != xno ; then
+if test x"$with_ipv6" != xno -a x"$with_ping6_command" != xno ; then
 AC_MSG_CHECKING(for ICMPv6 ping syntax)
 ac_cv_ping6_packets_first=no
 if test -n "$with_ping6_command"
@@ -1669,6 +1663,9 @@ AC_CHECK_MEMBERS([struct swapent.se_nblks],,,[
                  #include <sys/stat.h>
                  #include <sys/swap.h>
                  ])
+AC_CHECK_MEMBERS([struct msghdr.msg_control, struct msghdr.msg_controllen],
+		AC_DEFINE([HAVE_MSGHDR_MSG_CONTROL],1,
+		          [Define if struct msghdr has msg_control and msg_controllen]))
 
 if test "$ac_cv_have_decl_swapctl" = "yes";
 then

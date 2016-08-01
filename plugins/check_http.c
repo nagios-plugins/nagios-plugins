@@ -72,7 +72,7 @@ int maximum_age = -1;
 
 enum {
   REGS = 2,
-  MAX_RE_SIZE = 256
+  MAX_RE_SIZE = 2048
 };
 #include "regex.h"
 regex_t preg;
@@ -340,9 +340,20 @@ process_arguments (int argc, char **argv)
          parameters, like -S and -C combinations */
       use_ssl = TRUE;
       if (c=='S' && optarg != NULL) {
-        ssl_version = atoi(optarg);
-        if (ssl_version < 1 || ssl_version > 3)
-            usage4 (_("Invalid option - Valid values for SSL Version are 1 (TLSv1), 2 (SSLv2) or 3 (SSLv3)"));
+        int got_plus = strchr(optarg, '+') != NULL;
+
+        if (!strncmp (optarg, "1.2", 3))
+          ssl_version = got_plus ? MP_TLSv1_2_OR_NEWER : MP_TLSv1_2;
+        else if (!strncmp (optarg, "1.1", 3))
+          ssl_version = got_plus ? MP_TLSv1_1_OR_NEWER : MP_TLSv1_1;
+        else if (optarg[0] == '1')
+          ssl_version = got_plus ? MP_TLSv1_OR_NEWER : MP_TLSv1;
+        else if (optarg[0] == '3')
+          ssl_version = got_plus ? MP_SSLv3_OR_NEWER : MP_SSLv3;
+        else if (optarg[0] == '2')
+          ssl_version = got_plus ? MP_SSLv2_OR_NEWER : MP_SSLv2;
+        else
+          usage4 (_("Invalid option - Valid SSL/TLS versions: 2, 3, 1, 1.1, 1.2 (with optional '+' suffix)"));
       }
       if (specify_port == FALSE)
         server_port = HTTPS_PORT;
@@ -982,11 +993,35 @@ check_http (void)
   if (my_tcp_connect (server_address, server_port, &sd) != STATE_OK)
     die (STATE_CRITICAL, _("HTTP CRITICAL - Unable to open TCP socket\n"));
   microsec_connect = deltime (tv_temp);
+
+    /* if we are called with the -I option, the -j method is CONNECT and */
+    /* we received -S for SSL, then we tunnel the request through a proxy*/
+    /* @20100414, public[at]frank4dd.com, http://www.frank4dd.com/howto  */
+
+    if ( server_address != NULL && strcmp(http_method, "CONNECT") == 0
+      && host_name != NULL && use_ssl == TRUE) {
+
+    if (verbose) printf ("Entering CONNECT tunnel mode with proxy %s:%d to dst %s:%d\n", server_address, server_port, host_name, HTTPS_PORT);
+    asprintf (&buf, "%s %s:%d HTTP/1.1\r\n%s\r\n", http_method, host_name, HTTPS_PORT, user_agent);
+    asprintf (&buf, "%sProxy-Connection: keep-alive\r\n", buf);
+    asprintf (&buf, "%sHost: %s\r\n", buf, host_name);
+    /* we finished our request, send empty line with CRLF */
+    asprintf (&buf, "%s%s", buf, CRLF);
+    if (verbose) printf ("%s\n", buf);
+    send(sd, buf, strlen (buf), 0);
+    buf[0]='\0';
+
+    if (verbose) printf ("Receive response from proxy\n");
+    read (sd, buffer, MAX_INPUT_BUFFER-1);
+    if (verbose) printf ("%s", buffer);
+    /* Here we should check if we got HTTP/1.1 200 Connection established */
+  }
 #ifdef HAVE_SSL
   elapsed_time_connect = (double)microsec_connect / 1.0e6;
   if (use_ssl == TRUE) {
     gettimeofday (&tv_temp, NULL);
     result = np_net_ssl_init_with_hostname_version_and_cert(sd, (use_sni ? host_name : NULL), ssl_version, client_cert, client_privkey);
+    if (verbose) printf ("SSL initialized\n");
     if (result != STATE_OK)
       die (STATE_CRITICAL, NULL);
     microsec_ssl = deltime (tv_temp);
@@ -1000,7 +1035,11 @@ check_http (void)
   }
 #endif /* HAVE_SSL */
 
-  xasprintf (&buf, "%s %s %s\r\n%s\r\n", http_method, server_url, host_name ? "HTTP/1.1" : "HTTP/1.0", user_agent);
+  if ( server_address != NULL && strcmp(http_method, "CONNECT") == 0
+       && host_name != NULL && use_ssl == TRUE)
+    asprintf (&buf, "%s %s %s\r\n%s\r\n", "GET", server_url, host_name ? "HTTP/1.1" : "HTTP/1.0", user_agent);
+  else
+    asprintf (&buf, "%s %s %s\r\n%s\r\n", http_method, server_url, host_name ? "HTTP/1.1" : "HTTP/1.0", user_agent);
 
   /* tell HTTP/1.1 servers not to keep the connection alive */
   xasprintf (&buf, "%sConnection: close\r\n", buf);
@@ -1153,9 +1192,12 @@ check_http (void)
 
   /* find status line and null-terminate it */
   status_line = page;
-  page += (size_t) strcspn (page, "\r\n");
+  page = strstr(page, "\r\n");
+  page += 2;
+/*  page += (size_t) strcspn (page, "\r\n"); */
+/*  page += (size_t) strspn (page, "\r\n"); */
   pos = page;
-  page += (size_t) strspn (page, "\r\n");
+
   status_line[strcspn(status_line, "\r\n")] = 0;
   strip (status_line);
   if (verbose)
@@ -1163,7 +1205,8 @@ check_http (void)
 
   /* find header info and null-terminate it */
   header = page;
-  while (strcspn (page, "\r\n") > 0) {
+/*  while (strcspn (page, "\r\n") > 0) { */
+  while (page[0] != '\r' || page[1] != '\n') {
     page += (size_t) strcspn (page, "\r\n");
     pos = page;
     if ((strspn (page, "\r") == 1 && strspn (page, "\r\n") >= 2) ||
@@ -1604,9 +1647,10 @@ print_help (void)
   printf (UT_IPv46);
 
 #ifdef HAVE_SSL
-  printf (" %s\n", "-S, --ssl=VERSION");
+  printf (" %s\n", "-S, --ssl=VERSION[+]");
   printf ("    %s\n", _("Connect via SSL. Port defaults to 443. VERSION is optional, and prevents"));
-  printf ("    %s\n", _("auto-negotiation (1 = TLSv1, 2 = SSLv2, 3 = SSLv3)."));
+  printf ("    %s\n", _("auto-negotiation (2 = SSLv2, 3 = SSLv3, 1 = TLSv1, 1.1 = TLSv1.1,"));
+  printf ("    %s\n", _("1.2 = TLSv1.2). With a '+' suffix, newer versions are also accepted."));
   printf (" %s\n", "--sni");
   printf ("    %s\n", _("Enable SSL/TLS hostname extension support (SNI)"));
   printf (" %s\n", "-C, --certificate=INTEGER[,INTEGER]");
@@ -1633,7 +1677,7 @@ print_help (void)
   printf ("    %s\n", _("URL to GET or POST (default: /)"));
   printf (" %s\n", "-P, --post=STRING");
   printf ("    %s\n", _("URL encoded http POST data"));
-  printf (" %s\n", "-j, --method=STRING  (for example: HEAD, OPTIONS, TRACE, PUT, DELETE)");
+  printf (" %s\n", "-j, --method=STRING  (for example: HEAD, OPTIONS, TRACE, PUT, DELETE, CONNECT)");
   printf ("    %s\n", _("Set HTTP method."));
   printf (" %s\n", "-N, --no-body");
   printf ("    %s\n", _("Don't wait for document body: stop reading after headers."));
@@ -1707,13 +1751,20 @@ print_help (void)
   printf (" %s\n", _("When the certificate of 'www.verisign.com' is valid for more than 14 days,"));
   printf (" %s\n", _("a STATE_OK is returned. When the certificate is still valid, but for less than"));
   printf (" %s\n", _("14 days, a STATE_WARNING is returned. A STATE_CRITICAL will be returned when"));
-  printf (" %s\n", _("the certificate is expired."));
+  printf (" %s\n\n", _("the certificate is expired."));
   printf ("\n");
   printf (" %s\n\n", "CHECK CERTIFICATE: check_http -H www.verisign.com -C 30,14");
   printf (" %s\n", _("When the certificate of 'www.verisign.com' is valid for more than 30 days,"));
   printf (" %s\n", _("a STATE_OK is returned. When the certificate is still valid, but for less than"));
   printf (" %s\n", _("30 days, but more than 14 days, a STATE_WARNING is returned."));
   printf (" %s\n", _("A STATE_CRITICAL will be returned when certificate expires in less than 14 days"));
+
+  printf (" %s\n\n", "CHECK SSL WEBSERVER CONTENT VIA PROXY USING HTTP 1.1 CONNECT: ");
+  printf (" %s\n", _("check_http -I 192.168.100.35 -p 80 -u https://www.verisign.com/ -S -j CONNECT -H www.verisign.com "));
+  printf (" %s\n", _("all these options are needed: -I <proxy> -p <proxy-port> -u <check-url> -S(sl) -j CONNECT -H <webserver>"));
+  printf (" %s\n", _("a STATE_OK will be returned. When the server returns its content but exceeds"));
+  printf (" %s\n", _("the 5-second threshold, a STATE_WARNING will be returned. When an error occurs,"));
+  printf (" %s\n", _("a STATE_CRITICAL will be returned."));
 
 #endif
 
