@@ -1,5 +1,22 @@
 This file documents the major additions and syntax changes between releases.
 
+2.x.x 2016-xx-xx
+	SECURITY FIXES
+
+	ENHANCEMENTS
+	SNI support in check_tcp (ddbilik)
+
+	FIXES
+	check_tcp.c: tools/build_perl_modules hardcodes the perl used
+	check_game.c: reports ping as number of players (Jason Rivers)
+	fix some gcc5 warnings (Mario Trangoni)
+	check_cluster.c: Update wording in comments (Troy Lea)
+	check_nagios.c: could not locate a running nagios process
+	check_swap.c: does not accept threshold of zero
+	check_swap.c: uses inconsistent checks on negative thresholds
+	check_disk_smb.pl: add support for -k for kerberos authentication
+
+
 2.1.2 2016-08-01
 	SECURITY FIXES
 
