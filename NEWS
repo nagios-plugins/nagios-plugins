@@ -15,6 +15,7 @@ This file documents the major additions and syntax changes between releases.
 	check_swap.c: does not accept threshold of zero
 	check_swap.c: uses inconsistent checks on negative thresholds
 	check_disk_smb.pl: add support for -k for kerberos authentication
+	check_snmp.c: --offset does not appear to do anything (Troy Lea)
 
 
 2.1.2 2016-08-01
