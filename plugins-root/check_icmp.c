@@ -42,6 +42,10 @@ char *progname;
 const char *copyright = "2005-2008";
 const char *email = "devel@nagios-plugins.org";
 
+#ifdef __sun
+#define _XPG4_2
+#endif
+
 /** nagios plugins basic includes */
 #include "common.h"
 #include "netutils.h"
@@ -962,8 +966,10 @@ recvfrom_wto(int sock, void *buf, unsigned int len, struct sockaddr *saddr,
 	hdr.msg_namelen = slen;
 	hdr.msg_iov = &iov;
 	hdr.msg_iovlen = 1;
+#ifdef HAVE_MSGHDR_MSG_CONTROL
 	hdr.msg_control = ans_data;
 	hdr.msg_controllen = sizeof(ans_data);
+#endif
 
 	ret = recvmsg(sock, &hdr, 0);
 #ifdef SO_TIMESTAMP

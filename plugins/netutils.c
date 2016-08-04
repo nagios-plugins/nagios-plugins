@@ -209,7 +209,10 @@ np_net_connect (const char *host_name, int port, int *sd, int proto)
 		result = getaddrinfo (host, port_str, &hints, &res);
 
 		if (result != 0) {
-			printf ("%s\n", gai_strerror (result));
+			if (result == EAI_NONAME)
+				usage_va(_("Invalid hostname/address - %s"), host);
+			else
+				printf ("%s\n", gai_strerror (result));
 			return STATE_UNKNOWN;
 		}
 

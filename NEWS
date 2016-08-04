@@ -1,6 +1,24 @@
 This file documents the major additions and syntax changes between releases.
 
-2.1.x xxxx-xx-xx
+2.x.x 2016-xx-xx
+	SECURITY FIXES
+
+	ENHANCEMENTS
+	SNI support in check_tcp (ddbilik)
+
+	FIXES
+	check_tcp.c: tools/build_perl_modules hardcodes the perl used
+	check_game.c: reports ping as number of players (Jason Rivers)
+	fix some gcc5 warnings (Mario Trangoni)
+	check_cluster.c: Update wording in comments (Troy Lea)
+	check_nagios.c: could not locate a running nagios process
+	check_swap.c: does not accept threshold of zero
+	check_swap.c: uses inconsistent checks on negative thresholds
+	check_disk_smb.pl: add support for -k for kerberos authentication
+	check_snmp.c: --offset does not appear to do anything (Troy Lea)
+
+
+2.1.2 2016-08-01
 	SECURITY FIXES
 
 	ENHANCEMENTS
@@ -70,6 +88,10 @@ This file documents the major additions and syntax changes between releases.
 	utils_cmd.c, utils_base.c: Multiple resource leaks
 	check_http.c: Increase MAX_RE_SIZE from 256 to 2048
 	check_procs.c: Changed the ps command args from axwo to axwwo allowing for longer output
+	check_http.c: Allow a server to reply using only 'HTTP/1.x 200 OK' and a
+		body, with no headers
+	check_nt.c: check_nt does not correctly report a DNS entry it cannot resolve
+	check_dhcp.c: check_dhcp broken on BSD
 
 	TESTS
 	check_procs.t: Add delay after forking in test to avoid race condition

@@ -49,7 +49,7 @@ int np_net_ssl_init_with_hostname_and_version(int sd, char *host_name, int versi
 
 int np_net_ssl_init_with_hostname_version_and_cert(int sd, char *host_name, int version, char *cert, char *privkey) {
 	const SSL_METHOD *method = NULL;
-	long options = 0;
+	long options = 0;	/*SSL_OP_ALL | SSL_OP_SINGLE_DH_USE;*/
 
 	switch (version) {
 	case MP_SSLv2: /* SSLv2 protocol */
@@ -75,6 +75,7 @@ int np_net_ssl_init_with_hostname_version_and_cert(int sd, char *host_name, int 
 		return STATE_UNKNOWN;
 #else
 		method = TLSv1_client_method();
+/*		options = SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3; */
 		break;
 #endif
 	case MP_TLSv1_1: /* TLSv1.1 protocol */
@@ -156,6 +157,7 @@ int np_net_ssl_init_with_hostname_version_and_cert(int sd, char *host_name, int 
 #endif
 		SSL_set_fd(s, sd);
 		if (SSL_connect(s) == 1) {
+printf("SSL Version: %s\n", SSL_get_version(s));
 			return OK;
 		} else {
 			printf("%s\n", _("CRITICAL - Cannot make SSL connection."));

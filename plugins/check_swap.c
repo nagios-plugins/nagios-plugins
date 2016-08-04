@@ -57,6 +57,8 @@ int validate_arguments (void);
 void print_usage (void);
 void print_help (void);
 
+int have_warn = 0;
+int have_crit = 0;
 int warn_percent = 0;
 int crit_percent = 0;
 float warn_size_bytes = 0;
@@ -423,16 +425,19 @@ process_arguments (int argc, char **argv)
 		case 'w':									/* warning size threshold */
 			if (is_intnonneg (optarg)) {
 				warn_size_bytes = (float) atoi (optarg);
+				have_warn = TRUE;
 				break;
 			}
 			else if (strstr (optarg, ",") &&
 							 strstr (optarg, "%") &&
 							 sscanf (optarg, "%f,%d%%", &warn_size_bytes, &warn_percent) == 2) {
 				warn_size_bytes = floorf(warn_size_bytes);
+				have_warn = TRUE;
 				break;
 			}
 			else if (strstr (optarg, "%") &&
 							 sscanf (optarg, "%d%%", &warn_percent) == 1) {
+				have_warn = TRUE;
 				break;
 			}
 			else {
@@ -441,16 +446,19 @@ process_arguments (int argc, char **argv)
 		case 'c':									/* critical size threshold */
 			if (is_intnonneg (optarg)) {
 				crit_size_bytes = (float) atoi (optarg);
+				have_crit = TRUE;
 				break;
 			}
 			else if (strstr (optarg, ",") &&
 							 strstr (optarg, "%") &&
 							 sscanf (optarg, "%f,%d%%", &crit_size_bytes, &crit_percent) == 2) {
 				crit_size_bytes = floorf(crit_size_bytes);
+				have_crit = TRUE;
 				break;
 			}
 			else if (strstr (optarg, "%") &&
 							 sscanf (optarg, "%d%%", &crit_percent) == 1) {
+				have_crit = TRUE;
 				break;
 			}
 			else {
@@ -502,8 +510,10 @@ process_arguments (int argc, char **argv)
 int
 validate_arguments (void)
 {
-	if (warn_percent == 0 && crit_percent == 0 && warn_size_bytes == 0
-			&& crit_size_bytes == 0) {
+	if (have_crit == FALSE && have_warn == FALSE)
+		return ERROR;
+	else if (warn_percent < 0 || crit_percent < 0 || warn_size_bytes < 0
+			|| crit_size_bytes < 0) {
 		return ERROR;
 	}
 	else if (warn_percent < crit_percent) {

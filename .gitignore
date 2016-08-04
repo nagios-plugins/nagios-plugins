@@ -89,6 +89,7 @@ NP-VERSION-FILE
 /gl/stdio.h
 /gl/stdlib.h
 /gl/string.h
+/gl/strings.h
 /gl/sys_socket.h
 /gl/sys_stat.h
 /gl/sys
@@ -263,3 +264,5 @@ NP-VERSION-FILE
 /po/quot.sed
 /po/POTFILES
 /po/stamp-po
+
+/tools/build_perl_modules

@@ -1192,9 +1192,12 @@ check_http (void)
 
   /* find status line and null-terminate it */
   status_line = page;
-  page += (size_t) strcspn (page, "\r\n");
+  page = strstr(page, "\r\n");
+  page += 2;
+/*  page += (size_t) strcspn (page, "\r\n"); */
+/*  page += (size_t) strspn (page, "\r\n"); */
   pos = page;
-  page += (size_t) strspn (page, "\r\n");
+
   status_line[strcspn(status_line, "\r\n")] = 0;
   strip (status_line);
   if (verbose)
@@ -1202,7 +1205,8 @@ check_http (void)
 
   /* find header info and null-terminate it */
   header = page;
-  while (strcspn (page, "\r\n") > 0) {
+/*  while (strcspn (page, "\r\n") > 0) { */
+  while (page[0] != '\r' || page[1] != '\n') {
     page += (size_t) strcspn (page, "\r\n");
     pos = page;
     if ((strspn (page, "\r") == 1 && strspn (page, "\r\n") >= 2) ||

@@ -1,9 +1,10 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.59)
-AC_INIT(nagios-plugins,2.1.1)
+AC_INIT(nagios-plugins,2.1.2)
 AC_CONFIG_SRCDIR(NPTest.pm)
-AC_CONFIG_FILES([gl/Makefile 
+AC_CONFIG_FILES([gl/Makefile
 	nagios-plugins.spec])
+AC_CONFIG_FILES([tools/build_perl_modules],[chmod +x tools/build_perl_modules])
 AC_CONFIG_AUX_DIR(build-aux)
 AM_INIT_AUTOMAKE([1.8.3])
 AM_MAINTAINER_MODE([enable])
@@ -1181,7 +1182,7 @@ AC_ARG_WITH(ping6_command,
 		[sets syntax for ICMPv6 ping]),
 	with_ping6_command=$withval,)
 
-if test x"$with_ipv6" != xno ; then
+if test x"$with_ipv6" != xno -a x"$with_ping6_command" != xno ; then
 AC_MSG_CHECKING(for ICMPv6 ping syntax)
 ac_cv_ping6_packets_first=no
 if test -n "$with_ping6_command"
@@ -1663,6 +1664,9 @@ AC_CHECK_MEMBERS([struct swapent.se_nblks],,,[
                  #include <sys/stat.h>
                  #include <sys/swap.h>
                  ])
+AC_CHECK_MEMBERS([struct msghdr.msg_control, struct msghdr.msg_controllen],
+		AC_DEFINE([HAVE_MSGHDR_MSG_CONTROL],1,
+		          [Define if struct msghdr has msg_control and msg_controllen]))
 
 if test "$ac_cv_have_decl_swapctl" = "yes";
 then
@@ -1920,3 +1924,4 @@ ACX_FEATURE([with],[cgiurl])
 ACX_FEATURE([with],[trusted-path])
 ACX_FEATURE([enable],[libtap])
 
+AC_OUTPUT()

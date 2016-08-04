@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!@PERL@
 # SYNTAX:
 #	build_perl_modules -d dest_dir [-c] [-m] [-t] [-i] [-s <section>] tarball_dir
 #
@@ -221,11 +221,11 @@ foreach my $tarball (@tarballs) {
 
             my $command;
             if ( -f "Build.PL" && $have_module_build ) {
-                open( CMD, "|-", "perl Build.PL $mb_destdir --install_base=$prefix --install_path lib=$prefix/lib  --install_path arch=$prefix/lib/$Config{archname} --install_path bin=$prefix/bin --install_path script=$prefix/bin --install_path bindoc=$prefix/man/man1 --install_path libdoc=$prefix/man/man3" ) || die "Can't run perl Build.PL";
+                open( CMD, "|-", "@PERL@ Build.PL $mb_destdir --install_base=$prefix --install_path lib=$prefix/lib  --install_path arch=$prefix/lib/$Config{archname} --install_path bin=$prefix/bin --install_path script=$prefix/bin --install_path bindoc=$prefix/man/man1 --install_path libdoc=$prefix/man/man3" ) || die "Can't run perl Build.PL";
                 $command = "./Build";
             }
             elsif ( -f 'Makefile.PL' ) {
-                open( CMD, "|-", "perl Makefile.PL $mm_destdir INSTALL_BASE=$prefix INSTALLDIRS=site INSTALLSITELIB=$prefix/lib INSTALLSITEARCH=$prefix/lib/$Config{archname} $extra_args" ) || die "Can't run perl Makefile.PL";
+                open( CMD, "|-", "@PERL@ Makefile.PL $mm_destdir INSTALL_BASE=$prefix INSTALLDIRS=site INSTALLSITELIB=$prefix/lib INSTALLSITEARCH=$prefix/lib/$Config{archname} $extra_args" ) || die "Can't run perl Makefile.PL";
                 $command = "make";
             }
             else {
