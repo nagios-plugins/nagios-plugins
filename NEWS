@@ -20,6 +20,8 @@ This file documents the major additions and syntax changes between releases.
 	sslutils.c: output has first line of "SSL Version: xxxxxx"
 	  effects anything using sslutils including check_http, check_dhcp
 	  and others
+	utils_cmd.c: when using ssh (or check-by-ssh) with ControlMaster/ControlPersist,
+	  nagios times out the first time and one gets zombie processes (Gordon Messmer)
 
 
 2.1.2 2016-08-01
