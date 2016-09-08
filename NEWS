@@ -5,6 +5,8 @@ This file documents the major additions and syntax changes between releases.
 
 	ENHANCEMENTS
 	SNI support in check_tcp (ddbilik)
+	check_disk_smb.pl: add support for -k for kerberos authentication
+	check_file_age.c: allow wildcard matching
 
 	FIXES
 	check_tcp.c: tools/build_perl_modules hardcodes the perl used
@@ -14,8 +16,12 @@ This file documents the major additions and syntax changes between releases.
 	check_nagios.c: could not locate a running nagios process
 	check_swap.c: does not accept threshold of zero
 	check_swap.c: uses inconsistent checks on negative thresholds
-	check_disk_smb.pl: add support for -k for kerberos authentication
 	check_snmp.c: --offset does not appear to do anything (Troy Lea)
+	sslutils.c: output has first line of "SSL Version: xxxxxx"
+	  effects anything using sslutils including check_http, check_dhcp
+	  and others
+	utils_cmd.c: when using ssh (or check-by-ssh) with ControlMaster/ControlPersist,
+	  nagios times out the first time and one gets zombie processes (Gordon Messmer)
 
 
 2.1.2 2016-08-01

@@ -140,7 +140,7 @@ _cmd_open (char *const *argv, int *pfd, int *pfderr)
 	struct rlimit limit;
 #endif
 
-	int i = 0;
+	int flags, i = 0;
 
 	/* if no command was passed, return with no error */
 	if (argv == NULL)
@@ -188,6 +188,11 @@ _cmd_open (char *const *argv, int *pfd, int *pfderr)
 	/* close childs descriptors in our address space */
 	close (pfd[1]);
 	close (pfderr[1]);
+	/* don't block on reading stderr from child, to work around
+ 	 * hang when the child has forked.  A blocking read may not
+ 	 * get EOF. */
+	flags = fcntl (pfderr[0], F_GETFL, 0);
+	fcntl (pfderr[0], F_SETFL, flags | O_NONBLOCK);
 
 	/* tag our file's entry in the pid-list and return it */
 	_cmd_pids[pfd[0]] = pid;
@@ -238,7 +243,7 @@ _cmd_fetch_output (int fd, output * op, int flags)
 		i++;
 	}
 
-	if (ret < 0) {
+	if (ret < 0 && (errno != EAGAIN && errno != EWOULDBLOCK)) {
 		printf ("read() returned %d: %s\n", ret, strerror (errno));
 		return ret;
 	}
