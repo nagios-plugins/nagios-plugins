@@ -182,15 +182,16 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %files -f %{name}.lang
-%config(missingok,noreplace) %{_sysconfdir}/command.cfg
 %doc CODING COPYING FAQ INSTALL LEGAL README REQUIREMENTS SUPPORT THANKS
-%doc ChangeLog command.cfg
+%doc ChangeLog
 %if ! %{isaix}
 %{_datadir}/locale/de/LC_MESSAGES/nagios-plugins.mo
 %{_datadir}/locale/fr/LC_MESSAGES/nagios-plugins.mo
 %endif
 
 %changelog
+* Thu Aug 18 2016 John Frickson jfrickson<@>nagios.com
+- Removed references to the 'command.cfg' file, which no longer exists
 * Mon May 23 2005 Sean Finney <seanius@seanius.net> - cvs head
 - just include the nagios plugins directory, which will automatically include
   all generated plugins (which keeps the build from failing on systems that

@@ -264,3 +264,5 @@ NP-VERSION-FILE
 /po/quot.sed
 /po/POTFILES
 /po/stamp-po
+
+/tools/build_perl_modules

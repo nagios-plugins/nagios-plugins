@@ -35,7 +35,7 @@ sub print_help ();
 sub print_usage ();
 
 my ($opt_c, $opt_f, $opt_w, $opt_C, $opt_W, $opt_h, $opt_V, $opt_i);
-my ($result, $message, $age, $size, $st, $perfdata);
+my ($result, $message, $age, $size, $st, $perfdata, $output, @filelist, $filename);
 
 $PROGNAME="check_file_age";
 
@@ -77,35 +77,44 @@ if (! $opt_f) {
 	exit $ERRORS{'UNKNOWN'};
 }
 
-# Check that file exists (can be directory or link)
-unless (-e $opt_f) {
-	if ($opt_i) {
-		$result = 'OK';
-		print "FILE_AGE $result: $opt_f doesn't exist, but ignore-missing was set\n";
-		exit $ERRORS{$result};
+# Check that file(s) exists (can be directory or link)
+$perfdata = "";
+$output = "";
+@filelist = glob($opt_f);
 
-	} else {
-		print "FILE_AGE CRITICAL: File not found - $opt_f\n";
-		exit $ERRORS{'CRITICAL'};
+foreach $filename (@filelist) {
+	unless (-e $filename) {
+		if ($opt_i) {
+			$result = 'OK';
+			print "FILE_AGE $result: $filename doesn't exist, but ignore-missing was set\n";
+			exit $ERRORS{$result};
+
+		} else {
+			print "FILE_AGE CRITICAL: File not found - $filename\n";
+			exit $ERRORS{'CRITICAL'};
+		}
 	}
+
+	$st = File::stat::stat($filename);
+	$age = time - $st->mtime;
+	$size = $st->size;
+	$perfdata = $perfdata . "age=${age}s;${opt_w};${opt_c} size=${size}B;${opt_W};${opt_C};0 ";
+
+	$result = 'OK';
+
+	if (($opt_c and $age > $opt_c) or ($opt_C and $size < $opt_C)) {
+		$result = 'CRITICAL';
+	}
+	elsif (($opt_w and $age > $opt_w) or ($opt_W and $size < $opt_W)) {
+		$result = 'WARNING';
+	}
+
+	$output = $output . "FILE_AGE $result: $filename is $age seconds old and $size bytes ";
+
 }
 
-$st = File::stat::stat($opt_f);
-$age = time - $st->mtime;
-$size = $st->size;
-$perfdata = "age=${age}s;${opt_w};${opt_c} size=${size}B;${opt_W};${opt_C};0";
+print "$output | $perfdata\n";
 
-
-$result = 'OK';
-
-if (($opt_c and $age > $opt_c) or ($opt_C and $size < $opt_C)) {
-	$result = 'CRITICAL';
-}
-elsif (($opt_w and $age > $opt_w) or ($opt_W and $size < $opt_W)) {
-	$result = 'WARNING';
-}
-
-print "FILE_AGE $result: $opt_f is $age seconds old and $size bytes | $perfdata\n";
 exit $ERRORS{$result};
 
 sub print_usage () {

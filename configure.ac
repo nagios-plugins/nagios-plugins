@@ -1,9 +1,10 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.59)
-AC_INIT(nagios-plugins,2.1.2)
+AC_INIT(nagios-plugins,2.1.3)
 AC_CONFIG_SRCDIR(NPTest.pm)
-AC_CONFIG_FILES([gl/Makefile 
+AC_CONFIG_FILES([gl/Makefile
 	nagios-plugins.spec])
+AC_CONFIG_FILES([tools/build_perl_modules],[chmod +x tools/build_perl_modules])
 AC_CONFIG_AUX_DIR(build-aux)
 AM_INIT_AUTOMAKE([1.8.3])
 AM_MAINTAINER_MODE([enable])
@@ -1923,3 +1924,4 @@ ACX_FEATURE([with],[cgiurl])
 ACX_FEATURE([with],[trusted-path])
 ACX_FEATURE([enable],[libtap])
 
+AC_OUTPUT()

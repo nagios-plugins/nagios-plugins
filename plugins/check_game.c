@@ -280,7 +280,7 @@ validate_arguments (void)
     qstat_map_field = 3;
 
   if (qstat_ping_field < 0)
-    qstat_ping_field = 5;
+    qstat_ping_field = 6;
 
   return OK;
 }

@@ -22,7 +22,7 @@ require 5.004;
 use POSIX;
 use strict;
 use Getopt::Long;
-use vars qw($opt_P $opt_V $opt_h $opt_H $opt_s $opt_W $opt_u $opt_p $opt_w $opt_c $opt_a $verbose);
+use vars qw($opt_P $opt_V $opt_h $opt_H $opt_k $opt_s $opt_W $opt_u $opt_p $opt_w $opt_c $opt_a $verbose);
 use vars qw($PROGNAME);
 use FindBin;
 use lib "$FindBin::Bin";
@@ -44,6 +44,7 @@ GetOptions
 	 "P=s" => \$opt_P, "port=s"     => \$opt_P,
 	 "V"   => \$opt_V, "version"    => \$opt_V,
 	 "h"   => \$opt_h, "help"       => \$opt_h,
+	 "k"   => \$opt_k, "kerberos"   => \$opt_k,
 	 "w=s" => \$opt_w, "warning=s"  => \$opt_w,
 	 "c=s" => \$opt_c, "critical=s" => \$opt_c,
 	 "p=s" => \$opt_p, "password=s" => \$opt_p,
@@ -189,6 +190,7 @@ my @cmd = (
 	defined($workgroup) ? ("-W", $workgroup) : (),
 	defined($address) ? ("-I", $address) : (),
 	defined($opt_P) ? ("-p", $opt_P) : (),
+	defined($opt_k) ? ("-k") : (),
 	"-c", "du"
 );
 

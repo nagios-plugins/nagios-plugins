@@ -1,6 +1,6 @@
 /*****************************************************************************
 * 
-* check_cluster.c - Host and Service Cluster Plugin for Nagios 2.x
+* check_cluster.c - Host and Service Cluster Plugin for Nagios Core
 * 
 * License: GPL
 * Copyright (c) 2000-2004 Ethan Galstad (nagios@nagios.org)

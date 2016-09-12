@@ -157,7 +157,6 @@ int np_net_ssl_init_with_hostname_version_and_cert(int sd, char *host_name, int 
 #endif
 		SSL_set_fd(s, sd);
 		if (SSL_connect(s) == 1) {
-printf("SSL Version: %s\n", SSL_get_version(s));
 			return OK;
 		} else {
 			printf("%s\n", _("CRITICAL - Cannot make SSL connection."));
