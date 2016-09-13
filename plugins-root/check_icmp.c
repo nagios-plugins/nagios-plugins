@@ -654,7 +654,7 @@ main(int argc, char **argv)
 	}
 
 	host = list;
-	table = malloc(sizeof(struct rta_host **) * targets);
+	table = malloc(sizeof(struct rta_host *) * targets);
 	i = 0;
 	while(host) {
 		host->id = i*packets;

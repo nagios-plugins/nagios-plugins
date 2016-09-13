@@ -489,13 +489,13 @@ process_arguments (int argc, char **argv)
     case 'a': /* expected address */
       if (strlen (optarg) >= ADDRESS_LENGTH)
         die (STATE_UNKNOWN, "%s\n", _("Input buffer overflow"));
-      expected_address = (char **)realloc(expected_address, (expected_address_cnt+1) * sizeof(char**));
+      expected_address = (char **)realloc(expected_address, (expected_address_cnt+1) * sizeof(char*));
       expected_address[expected_address_cnt] = strdup(optarg);
       expected_address_cnt++;
       break;
     case 'q': /* querytype -- A or AAAA or ANY or SRV or TXT, etc. */
       if (strlen (optarg) < 1 || strlen (optarg) > 5)
-	die (STATE_UNKNOWN, "%s\n", _("Missing valid querytype parameter.  Try using 'A' or 'AAAA' or 'SRV'"));
+        die (STATE_UNKNOWN, "%s\n", _("Missing valid querytype parameter.  Try using 'A' or 'AAAA' or 'SRV'"));
       strntoupper(optarg, strlen(optarg));
       strcpy(query_type, "-querytype=");
       strcat(query_type, optarg);
