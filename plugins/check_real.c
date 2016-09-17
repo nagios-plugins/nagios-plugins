@@ -95,22 +95,24 @@ main (int argc, char **argv)
 
 	/* send the OPTIONS request */
 	sprintf (buffer, "OPTIONS rtsp://%s:%d RTSP/1.0\r\n", host_name, server_port);
-	result = send (sd, buffer, strlen (buffer), 0);
+	if (send (sd, buffer, strlen (buffer), 0) == -1)
+		die (STATE_CRITICAL, _("Can not send data to %s\n"), host_name);
 
 	/* send the header sync */
 	sprintf (buffer, "CSeq: 1\r\n");
-	result = send (sd, buffer, strlen (buffer), 0);
+	if (send (sd, buffer, strlen (buffer), 0) == -1)
+		die (STATE_CRITICAL, _("Can not send data to %s\n"), host_name);
 
 	/* send a newline so the server knows we're done with the request */
 	sprintf (buffer, "\r\n");
-	result = send (sd, buffer, strlen (buffer), 0);
+	if (send (sd, buffer, strlen (buffer), 0) == -1)
+		die (STATE_CRITICAL, _("Can not send data to %s\n"), host_name);
 
 	/* watch for the REAL connection string */
-	result = recv (sd, buffer, MAX_INPUT_BUFFER - 1, 0);
-
-	/* return a CRITICAL status if we couldn't read any data */
-	if (result == -1)
+	if (recv (sd, buffer, MAX_INPUT_BUFFER - 1, 0) == -1) {
+		/* return a CRITICAL status if we couldn't read any data */
 		die (STATE_CRITICAL, _("No data received from %s\n"), host_name);
+	}
 
 	/* make sure we find the response we are looking for */
 	if (!strstr (buffer, server_expect)) {
@@ -124,8 +126,6 @@ main (int argc, char **argv)
 		/* else we got the REAL string, so check the return code */
 
 		time (&end_time);
-
-		result = STATE_OK;
 
 		status_line = (char *) strtok (buffer, "\n");
 
@@ -159,22 +159,25 @@ main (int argc, char **argv)
 	}
 
 	/* Part II - Check stream exists and is ok */
-	if ((result == STATE_OK )&& (server_url != NULL) ) {
+	if ((result == STATE_OK ) && (server_url != NULL) ) {
 
 		/* Part I - Server Check */
 
 		/* send the DESCRIBE request */
 		sprintf (buffer, "DESCRIBE rtsp://%s:%d%s RTSP/1.0\r\n", host_name,
 						 server_port, server_url);
-		result = send (sd, buffer, strlen (buffer), 0);
+		if (send (sd, buffer, strlen (buffer), 0) == -1)
+			die (STATE_CRITICAL, _("Can not send data to %s\n"), host_name);
 
 		/* send the header sync */
 		sprintf (buffer, "CSeq: 2\r\n");
-		result = send (sd, buffer, strlen (buffer), 0);
+		if (send (sd, buffer, strlen (buffer), 0) == -1)
+			die (STATE_CRITICAL, _("Can not send data to %s\n"), host_name);
 
 		/* send a newline so the server knows we're done with the request */
 		sprintf (buffer, "\r\n");
-		result = send (sd, buffer, strlen (buffer), 0);
+		if (send (sd, buffer, strlen (buffer), 0) == -1)
+			die (STATE_CRITICAL, _("Can not send data to %s\n"), host_name);
 
 		/* watch for the REAL connection string */
 		result = recv (sd, buffer, MAX_INPUT_BUFFER - 1, 0);
@@ -199,8 +202,6 @@ main (int argc, char **argv)
 				/* else we got the REAL string, so check the return code */
 
 				time (&end_time);
-
-				result = STATE_OK;
 
 				status_line = (char *) strtok (buffer, "\n");
 
