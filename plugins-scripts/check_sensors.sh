@@ -1,7 +1,7 @@
 #!/bin/sh
 
-PROGNAME=`basename $0`
-PROGPATH=`echo $0 | sed -e 's,[\\/][^\\/][^\\/]*$,,'`
+PROGNAME=$(basename $0)
+PROGPATH=$(echo $0 | sed -e 's,[\\/][^\\/][^\\/]*$,,')
 REVISION="@NP_VERSION@"
 PATH="@TRUSTED_PATH@"
 
@@ -42,7 +42,7 @@ case "$1" in
 		exit $STATE_OK
 		;;
 	*)
-		sensordata=`sensors 2>&1`
+		sensordata=$(sensors 2>&1)
 		status=$?
 		if test ${status} -eq 127; then
 			text="SENSORS UNKNOWN - command not found (did you install lmsensors?)"
