@@ -430,6 +430,7 @@ double offset_request(const char *host, int *status){
 				if(verbose) printf("sending request to peer %d\n", i);
 				setup_request(&req[i]);
 				write(socklist[i], &req[i], sizeof(ntp_message));
+				if(servers[i].waiting == 0) now_time++;
 				servers[i].waiting=now_time;
 				one_written=1;
 				break;
@@ -461,7 +462,6 @@ double offset_request(const char *host, int *status){
 				servers[i].stratum=req[i].stratum;
 				servers[i].rtdisp=NTP32asDOUBLE(req[i].rtdisp);
 				servers[i].rtdelay=NTP32asDOUBLE(req[i].rtdelay);
-				servers[i].waiting=0;
 				servers[i].flags=req[i].flags;
 				servers_readable--;
 				one_read = 1;
