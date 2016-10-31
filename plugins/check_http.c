@@ -110,8 +110,9 @@ thresholds *thlds;
 char user_auth[MAX_INPUT_BUFFER] = "";
 char proxy_auth[MAX_INPUT_BUFFER] = "";
 int display_html = FALSE;
-char **http_opt_headers;
+char **http_opt_headers = NULL;
 int http_opt_headers_count = 0;
+int have_accept = FALSE;
 int onredirect = STATE_OK;
 int followsticky = STICKY_NONE;
 int use_ssl = FALSE;
@@ -286,12 +287,13 @@ process_arguments (int argc, char **argv)
       xasprintf (&user_agent, "User-Agent: %s", optarg);
       break;
     case 'k': /* Additional headers */
-      if (http_opt_headers_count == 0)
+/*      if (http_opt_headers_count == 0)
         http_opt_headers = malloc (sizeof (char *) * (++http_opt_headers_count));
-      else
-        http_opt_headers = realloc (http_opt_headers, sizeof (char *) * (++http_opt_headers_count));
+      else */
+      http_opt_headers = realloc (http_opt_headers, sizeof(char *) * (++http_opt_headers_count));
       http_opt_headers[http_opt_headers_count - 1] = optarg;
-      /* xasprintf (&http_opt_headers, "%s", optarg); */
+      if (!strncmp(optarg, "Accept:", 7))
+        have_accept = TRUE;
       break;
     case 'L': /* show html link */
       display_html = TRUE;
@@ -1076,7 +1078,8 @@ check_http (void)
    * TODO: Take an arguement to determine what type(s) to accept,
    * so that we can alert if a response is of an invalid type.
   */
-  xasprintf(&buf, "%sAccept: */*\r\n", buf);
+  if (!have_accept)
+    xasprintf(&buf, "%sAccept: */*\r\n", buf);
 
   /* optionally send any other header tag */
   if (http_opt_headers_count) {
