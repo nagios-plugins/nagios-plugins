@@ -150,7 +150,7 @@ int
 main (int argc, char **argv)
 {
   int result = STATE_UNKNOWN;
-
+sleep(10);
   setlocale (LC_ALL, "");
   bindtextdomain (PACKAGE, LOCALEDIR);
   textdomain (PACKAGE);
@@ -686,53 +686,45 @@ expected_statuscode (const char *reply, const char *statuscodes)
   return result;
 }
 
+int chunk_header(char **buf)
+{
+  int lth = strtol(*buf, buf, 16);
+
+  if (lth <= 0)
+	 return lth;
+
+  while (**buf != '\r' && **buf != '\n')
+    ++*buf;
+
+  // soak up the leading CRLF
+  if (**buf && **buf == '\r' && *(++*buf) && **buf == '\n')
+    ++*buf;
+  else
+    die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, invalid format\n"));
+
+  return lth;
+}
+
 char *
 decode_chunked_page (const char *raw, char *dst)
 {
-  unsigned long int chunksize;
-  char *raw_pos = (char *)raw;
-  char *dst_pos = (char *)dst;
-  const char *raw_end = raw + strlen(raw);
+  int  chunksize;
+  char *raw_pos = (char*)raw;
+  char *dst_pos = (char*)dst;
 
-  while (chunksize = strtoul(raw_pos, NULL, 16)) {
-    if (chunksize <= 0) {
+  for (;;) {
+    if ((chunksize = chunk_header(&raw_pos)) == 0)
+      break;
+    if (chunksize < 0)
       die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, invalid chunk size\n"));
-    }
 
-    // soak up the optional chunk params (which we will ignore)
-    while (*raw_pos && *raw_pos != '\r' && *raw_pos != '\n') raw_pos++;
-
-    // soak up the leading CRLF
-    if (*raw_pos && *raw_pos == '\r' && *(++raw_pos) && *raw_pos == '\n') {
-      raw_pos++;
-    }
-    else {
-      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, invalid format\n"));
-    }
-
-    // move chunk from raw into dst, only if we can fit within the buffer
-    if (*raw_pos && *dst_pos && (raw_pos + chunksize) < raw_end ) {
-      strncpy(dst_pos, raw_pos, chunksize);
-    }
-    else {
-      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, too large for destination\n"));
-    }
-
+    memmove(dst_pos, raw_pos, chunksize);
     raw_pos += chunksize;
     dst_pos += chunksize;
+    *dst_pos = '\0';
 
-    // soak up the ending CRLF
-    if (*raw_pos && *raw_pos == '\r' && *(++raw_pos) && *raw_pos == '\n') {
+    if (*raw_pos && *raw_pos == '\r' && *(++raw_pos) && *raw_pos == '\n')
       raw_pos++;
-    }
-    else {
-      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, invalid format\n"));
-    }
-  }
-
-  if (*dst_pos) *dst_pos = '\0';
-  else {
-    die (STATE_UNKNOWN, _("HTTP UNKNOWN - Memory allocation error\n"));
   }
 
   return dst;
