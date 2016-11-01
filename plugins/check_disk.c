@@ -109,6 +109,8 @@ static struct parameter_list *path_select_list = NULL;
 /* Linked list of mounted filesystems. */
 static struct mount_entry *mount_list;
 
+static const char *always_exclude = { "iso9600", "fuse.gvfsd-fuse", NULL };
+
 /* For long options that have no equivalent short option, use a
    non-character as a pseudo short option, starting with CHAR_MAX + 1.  */
 enum
@@ -436,7 +438,7 @@ double calculate_percent(uintmax_t value, uintmax_t total) {
 int
 process_arguments (int argc, char **argv)
 {
-  int c, err;
+  int c, err, i;
   struct parameter_list *se;
   struct parameter_list *temp_list = NULL, *previous = NULL;
   struct parameter_list *temp_path_select_list = NULL;
@@ -492,7 +494,8 @@ process_arguments (int argc, char **argv)
   if (argc < 2)
     return ERROR;
 
-  np_add_name(&fs_exclude_list, "iso9660");
+	for (i = 0; always_exclude[i]; ++i)
+		np_add_name(&fs_exclude_list, always_exclude[i]);
 
   for (c = 1; c < argc; c++)
     if (strcmp ("-to", argv[c]) == 0)
