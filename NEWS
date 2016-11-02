@@ -7,6 +7,7 @@ This file documents the major additions and syntax changes between releases.
 	check_http - Fixed non-text chunked-encoded decoding
 	check_http - segmentation fault (FreeBSD)
 	check_dns - Update IF_RECORD to not erase query_found
+	check_http - SSL Certificate check returns 12:00:00AM <local timezone>
 
 
 2.1.3 2016-09-12
