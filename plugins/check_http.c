@@ -214,6 +214,7 @@ process_arguments (int argc, char **argv)
     {"method", required_argument, 0, 'j'},
     {"IP-address", required_argument, 0, 'I'},
     {"url", required_argument, 0, 'u'},
+    {"uri", required_argument, 0, 'u'},
     {"port", required_argument, 0, 'p'},
     {"authorization", required_argument, 0, 'a'},
     {"proxy-authorization", required_argument, 0, 'b'},
@@ -1668,8 +1669,10 @@ print_help (void)
   printf ("    %s\n", _("String to expect in the response headers"));
   printf (" %s\n", "-s, --string=STRING");
   printf ("    %s\n", _("String to expect in the content"));
-  printf (" %s\n", "-u, --url=PATH");
-  printf ("    %s\n", _("URL to GET or POST (default: /)"));
+  printf (" %s\n", "-u, --uri=PATH");
+  printf ("    %s\n", _("URI to GET or POST (default: /)"));
+  printf (" %s\n", "--url=PATH");
+  printf ("    %s\n", _("(deprecated) URL to GET or POST (default: /)"));
   printf (" %s\n", "-P, --post=STRING");
   printf ("    %s\n", _("URL encoded http POST data"));
   printf (" %s\n", "-j, --method=STRING  (for example: HEAD, OPTIONS, TRACE, PUT, DELETE, CONNECT)");

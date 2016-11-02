@@ -1409,8 +1409,12 @@ msgid "String to expect in the content"
 msgstr "Chaîne de caractère attendue dans le contenu"
 
 #: plugins/check_http.c:1355
-msgid "URL to GET or POST (default: /)"
-msgstr "URL pour le GET ou le POST (défaut: /)"
+msgid "(deprecated) URL to GET or POST (default: /)"
+msgstr "(obsolète) URL pour le GET ou le POST (défaut: /)"
+
+#: plugins/check_http.c:1355
+msgid "URI to GET or POST (default: /)"
+msgstr "URI pour le GET ou le POST (défaut: /)"
 
 #: plugins/check_http.c:1357
 msgid "URL encoded http POST data"
