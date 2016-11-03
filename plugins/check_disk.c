@@ -109,7 +109,7 @@ static struct parameter_list *path_select_list = NULL;
 /* Linked list of mounted filesystems. */
 static struct mount_entry *mount_list;
 
-static const char *always_exclude = { "iso9600", "fuse.gvfsd-fuse", NULL };
+static const char *always_exclude[] = { "iso9600", "fuse.gvfsd-fuse", NULL };
 
 /* For long options that have no equivalent short option, use a
    non-character as a pseudo short option, starting with CHAR_MAX + 1.  */
