@@ -150,7 +150,7 @@ int
 main (int argc, char **argv)
 {
   int result = STATE_UNKNOWN;
-sleep(10);
+
   setlocale (LC_ALL, "");
   bindtextdomain (PACKAGE, LOCALEDIR);
   textdomain (PACKAGE);
