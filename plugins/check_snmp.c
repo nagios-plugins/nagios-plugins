@@ -594,6 +594,11 @@ main (int argc, char **argv)
 			len = sizeof(perfstr)-strlen(perfstr)-1;
 			strncat(perfstr, show, len>ptr-show ? ptr-show : len);
 
+			if (nunits > (size_t)0 && (size_t)i < nunits && unitv[i] != NULL) {
+				xasprintf (&temp_string, "%s", unitv[i]);
+				strncat(perfstr, temp_string, sizeof(perfstr)-strlen(perfstr)-1);
+				}
+
 			if (warning_thresholds) {
 				strncat(perfstr, ";", sizeof(perfstr)-strlen(perfstr)-1);
 				strncat(perfstr, warning_thresholds, sizeof(perfstr)-strlen(perfstr)-1);
@@ -607,11 +612,6 @@ main (int argc, char **argv)
 
 			if (type)
 				strncat(perfstr, type, sizeof(perfstr)-strlen(perfstr)-1);
-			if (nunits > (size_t)0 && (size_t)i < nunits && unitv[i] != NULL) {
-				xasprintf (&temp_string, "%s", unitv[i]);
-				strncat(perfstr, temp_string, sizeof(perfstr)-strlen(perfstr)-1);
-				}
-
 
 			if (thlds[i]->warning || thlds[i]->critical) {
 				strncat(perfstr, ";", sizeof(perfstr)-strlen(perfstr)-1);
