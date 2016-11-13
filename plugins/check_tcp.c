@@ -248,8 +248,8 @@ main (int argc, char **argv)
 		}
 	}
 	if(result != STATE_OK){
-		np_net_ssl_cleanup();
 		if(sd) close(sd);
+		np_net_ssl_cleanup();
 		return result;
 	}
 #endif /* HAVE_SSL */
@@ -322,10 +322,10 @@ main (int argc, char **argv)
 	if (server_quit != NULL) {
 		my_send(server_quit, strlen(server_quit));
 	}
+	if (sd) close (sd);
 #ifdef HAVE_SSL
 	np_net_ssl_cleanup();
 #endif
-	if (sd) close (sd);
 
 	microsec = deltime (tv);
 	elapsed_time = (double)microsec / 1.0e6;

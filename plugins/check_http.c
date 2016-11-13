@@ -1025,8 +1025,8 @@ check_http (void)
     elapsed_time_ssl = (double)microsec_ssl / 1.0e6;
     if (check_cert == TRUE) {
       result = np_net_ssl_check_cert(days_till_exp_warn, days_till_exp_crit);
-      np_net_ssl_cleanup();
       if (sd) close(sd);
+      np_net_ssl_cleanup();
       return result;
     }
   }
@@ -1171,10 +1171,10 @@ check_http (void)
     die (STATE_CRITICAL, _("HTTP CRITICAL - No data received from host\n"));
 
   /* close the connection */
+  if (sd) close(sd);
 #ifdef HAVE_SSL
   np_net_ssl_cleanup();
 #endif
-  if (sd) close(sd);
 
   /* Save check time */
   microsec = deltime (tv);
