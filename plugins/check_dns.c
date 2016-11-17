@@ -137,7 +137,7 @@ main (int argc, char **argv)
 
   /* run the command */
   if((np_runcmd(command_line, &chld_out, &chld_err, 0)) != 0) {
-    msg = (char *)_("nslookup returned an error status");
+    msg = strdup(_("nslookup returned an error status"));
     result = STATE_WARNING;
   }
 
@@ -223,7 +223,7 @@ main (int argc, char **argv)
       if ((temp_buffer = strstr(chld_out.line[i], "name = ")))
         addresses[n_addresses++] = strdup(temp_buffer);
       else {
-        msg = (char *)_("Warning plugin error");
+        xasprintf(&msg, "%s %s %s %s", _("Warning plugin error"));
         result = STATE_WARNING;
       }
     }
@@ -238,7 +238,10 @@ main (int argc, char **argv)
         ? tmp : result;
     if (result != STATE_OK) {
       msg = strchr (chld_out.line[i], ':');
-      if(msg) msg++;
+      if(msg)
+			  msg++;
+			else
+			 msg = chld_out.line[i];
       break;
     }
   }
@@ -250,8 +253,11 @@ main (int argc, char **argv)
 
     if (error_scan (chld_err.line[i]) != STATE_OK) {
       result = max_state (result, error_scan (chld_err.line[i]));
-      msg = strchr(input_buffer, ':');
-      if(msg) msg++;
+      msg = strchr(chld_err.line[i], ':');
+      if(msg)
+			  msg++;
+			else
+			  msg = chld_err.line[i];
     }
   }
 
