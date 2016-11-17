@@ -982,6 +982,7 @@ check_http (void)
   int page_len = 0;
   int result = STATE_OK;
   char *force_host_header = NULL;
+	int bad_response = FALSE;
 
   /* try to connect to the host at the given port number */
   gettimeofday (&tv_temp, NULL);
@@ -1235,58 +1236,62 @@ check_http (void)
       xasprintf (&msg,
                 _("Invalid HTTP response received from host on port %d: %s\n"),
                 server_port, status_line);
-    die (STATE_CRITICAL, "HTTP CRITICAL - %s", msg);
+    bad_response = TRUE;
   }
 
   /* Bypass normal status line check if server_expect was set by user and not default */
   /* NOTE: After this if/else block msg *MUST* be an asprintf-allocated string */
-  if ( server_expect_yn  )  {
-    xasprintf (&msg,
-              _("Status line output matched \"%s\" - "), server_expect);
-    if (verbose)
-      printf ("%s\n",msg);
+  if ( !bad_response ) {
+    if ( server_expect_yn  )  {
+      xasprintf (&msg,
+                _("Status line output matched \"%s\" - "), server_expect);
+      if (verbose)
+        printf ("%s\n",msg);
+    } else
+      xasprintf (&msg, "");
   }
-  else {
-    /* Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF */
-    /* HTTP-Version   = "HTTP" "/" 1*DIGIT "." 1*DIGIT */
-    /* Status-Code = 3 DIGITS */
 
-    status_code = strchr (status_line, ' ') + sizeof (char);
-    if (strspn (status_code, "1234567890") != 3)
-      die (STATE_CRITICAL, _("HTTP CRITICAL: Invalid Status Line (%s)\n"), status_line);
+  /* Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF */
+  /* HTTP-Version   = "HTTP" "/" 1*DIGIT "." 1*DIGIT */
+  /* Status-Code = 3 DIGITS */
 
-    http_status = atoi (status_code);
+  status_code = strchr (status_line, ' ') + sizeof (char);
+  if (strspn (status_code, "1234567890") != 3)
+    die (STATE_CRITICAL, _("HTTP CRITICAL: Invalid Status Line (%s)\n"), status_line);
 
-    /* check the return code */
+  http_status = atoi (status_code);
 
-    if (http_status >= 600 || http_status < 100) {
-      die (STATE_CRITICAL, _("HTTP CRITICAL: Invalid Status (%s)\n"), status_line);
-    }
-    /* server errors result in a critical state */
-    else if (http_status >= 500) {
-      xasprintf (&msg, _("%s - "), status_line);
-      result = STATE_CRITICAL;
-    }
-    /* client errors result in a warning state */
-    else if (http_status >= 400) {
-      xasprintf (&msg, _("%s - "), status_line);
-      result = max_state_alt(STATE_WARNING, result);
-    }
-    /* check redirected page if specified */
-    else if (http_status >= 300) {
+  /* check the return code */
 
-      if (onredirect == STATE_DEPENDENT)
-        redir (header, status_line);
-      else
-        result = max_state_alt(onredirect, result);
-      xasprintf (&msg, _("%s - "), status_line);
-    } /* end if (http_status >= 300) */
-    else {
-      /* Print OK status anyway */
-      xasprintf (&msg, _("%s - "), status_line);
-    }
+  if (http_status >= 600 || http_status < 100) {
+    die (STATE_CRITICAL, _("HTTP CRITICAL: Invalid Status (%s)\n"), status_line);
+  }
+  /* server errors result in a critical state */
+  else if (http_status >= 500) {
+    xasprintf (&msg, _("%s%s - "), msg, status_line);
+    result = STATE_CRITICAL;
+  }
+  /* client errors result in a warning state */
+  else if (http_status >= 400) {
+    xasprintf (&msg, _("%s%s - "), msg, status_line);
+    result = max_state_alt(STATE_WARNING, result);
+  }
+  /* check redirected page if specified */
+  else if (http_status >= 300) {
 
-  } /* end else (server_expect_yn)  */
+    if (onredirect == STATE_DEPENDENT)
+      redir (header, status_line);
+    else
+      result = max_state_alt(onredirect, result);
+    xasprintf (&msg, _("%s%s - "), msg, status_line);
+  } /* end if (http_status >= 300) */
+  else if (!bad_response) {
+    /* Print OK status anyway */
+    xasprintf (&msg, _("%s%s - "), msg, status_line);
+  }
+
+  if (bad_response) 
+    die (STATE_CRITICAL, "HTTP CRITICAL - %s", msg);
 
   /* reset the alarm - must be called *after* redir or we'll never die on redirects! */
   alarm (0);
