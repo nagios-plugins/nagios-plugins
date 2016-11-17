@@ -1381,6 +1381,9 @@ print_help(void)
   printf (" %s\n", "-n");
   printf ("    %s", _("number of packets to send (currently "));
   printf ("%u)\n",packets);
+  printf (" %s\n", "-p");
+  printf ("    %s", _("number of packets to send (currently "));
+  printf ("%u)\n",packets);
   printf (" %s\n", "-i");
   printf ("    %s", _("max packet interval (currently "));
   printf ("%0.3fms)\n",(float)pkt_interval / 1000);
