@@ -110,8 +110,9 @@ thresholds *thlds;
 char user_auth[MAX_INPUT_BUFFER] = "";
 char proxy_auth[MAX_INPUT_BUFFER] = "";
 int display_html = FALSE;
-char **http_opt_headers;
+char **http_opt_headers = NULL;
 int http_opt_headers_count = 0;
+int have_accept = FALSE;
 int onredirect = STATE_OK;
 int followsticky = STICKY_NONE;
 int use_ssl = FALSE;
@@ -213,6 +214,7 @@ process_arguments (int argc, char **argv)
     {"method", required_argument, 0, 'j'},
     {"IP-address", required_argument, 0, 'I'},
     {"url", required_argument, 0, 'u'},
+    {"uri", required_argument, 0, 'u'},
     {"port", required_argument, 0, 'p'},
     {"authorization", required_argument, 0, 'a'},
     {"proxy-authorization", required_argument, 0, 'b'},
@@ -286,12 +288,13 @@ process_arguments (int argc, char **argv)
       xasprintf (&user_agent, "User-Agent: %s", optarg);
       break;
     case 'k': /* Additional headers */
-      if (http_opt_headers_count == 0)
+/*      if (http_opt_headers_count == 0)
         http_opt_headers = malloc (sizeof (char *) * (++http_opt_headers_count));
-      else
-        http_opt_headers = realloc (http_opt_headers, sizeof (char *) * (++http_opt_headers_count));
+      else */
+      http_opt_headers = realloc (http_opt_headers, sizeof(char *) * (++http_opt_headers_count));
       http_opt_headers[http_opt_headers_count - 1] = optarg;
-      /* xasprintf (&http_opt_headers, "%s", optarg); */
+      if (!strncmp(optarg, "Accept:", 7))
+        have_accept = TRUE;
       break;
     case 'L': /* show html link */
       display_html = TRUE;
@@ -684,53 +687,45 @@ expected_statuscode (const char *reply, const char *statuscodes)
   return result;
 }
 
+int chunk_header(char **buf)
+{
+  int lth = strtol(*buf, buf, 16);
+
+  if (lth <= 0)
+	 return lth;
+
+  while (**buf != '\r' && **buf != '\n')
+    ++*buf;
+
+  // soak up the leading CRLF
+  if (**buf && **buf == '\r' && *(++*buf) && **buf == '\n')
+    ++*buf;
+  else
+    die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, invalid format\n"));
+
+  return lth;
+}
+
 char *
 decode_chunked_page (const char *raw, char *dst)
 {
-  unsigned long int chunksize;
-  char *raw_pos = (char *)raw;
-  char *dst_pos = (char *)dst;
-  const char *raw_end = raw + strlen(raw);
+  int  chunksize;
+  char *raw_pos = (char*)raw;
+  char *dst_pos = (char*)dst;
 
-  while (chunksize = strtoul(raw_pos, NULL, 16)) {
-    if (chunksize <= 0) {
+  for (;;) {
+    if ((chunksize = chunk_header(&raw_pos)) == 0)
+      break;
+    if (chunksize < 0)
       die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, invalid chunk size\n"));
-    }
 
-    // soak up the optional chunk params (which we will ignore)
-    while (*raw_pos && *raw_pos != '\r' && *raw_pos != '\n') raw_pos++;
-
-    // soak up the leading CRLF
-    if (*raw_pos && *raw_pos == '\r' && *(++raw_pos) && *raw_pos == '\n') {
-      raw_pos++;
-    }
-    else {
-      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, invalid format\n"));
-    }
-
-    // move chunk from raw into dst, only if we can fit within the buffer
-    if (*raw_pos && *dst_pos && (raw_pos + chunksize) < raw_end ) {
-      strncpy(dst_pos, raw_pos, chunksize);
-    }
-    else {
-      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, too large for destination\n"));
-    }
-
+    memmove(dst_pos, raw_pos, chunksize);
     raw_pos += chunksize;
     dst_pos += chunksize;
+    *dst_pos = '\0';
 
-    // soak up the ending CRLF
-    if (*raw_pos && *raw_pos == '\r' && *(++raw_pos) && *raw_pos == '\n') {
+    if (*raw_pos && *raw_pos == '\r' && *(++raw_pos) && *raw_pos == '\n')
       raw_pos++;
-    }
-    else {
-      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, invalid format\n"));
-    }
-  }
-
-  if (*dst_pos) *dst_pos = '\0';
-  else {
-    die (STATE_UNKNOWN, _("HTTP UNKNOWN - Memory allocation error\n"));
   }
 
   return dst;
@@ -1076,7 +1071,8 @@ check_http (void)
    * TODO: Take an arguement to determine what type(s) to accept,
    * so that we can alert if a response is of an invalid type.
   */
-  xasprintf(&buf, "%sAccept: */*\r\n", buf);
+  if (!have_accept)
+    xasprintf(&buf, "%sAccept: */*\r\n", buf);
 
   /* optionally send any other header tag */
   if (http_opt_headers_count) {
@@ -1673,8 +1669,10 @@ print_help (void)
   printf ("    %s\n", _("String to expect in the response headers"));
   printf (" %s\n", "-s, --string=STRING");
   printf ("    %s\n", _("String to expect in the content"));
-  printf (" %s\n", "-u, --url=PATH");
-  printf ("    %s\n", _("URL to GET or POST (default: /)"));
+  printf (" %s\n", "-u, --uri=PATH");
+  printf ("    %s\n", _("URI to GET or POST (default: /)"));
+  printf (" %s\n", "--url=PATH");
+  printf ("    %s\n", _("(deprecated) URL to GET or POST (default: /)"));
   printf (" %s\n", "-P, --post=STRING");
   printf ("    %s\n", _("URL encoded http POST data"));
   printf (" %s\n", "-j, --method=STRING  (for example: HEAD, OPTIONS, TRACE, PUT, DELETE, CONNECT)");

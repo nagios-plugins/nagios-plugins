@@ -96,29 +96,17 @@ int parse_timeout_string (char *timeout_str);
 #define max(a,b) (((a)>(b))?(a):(b))
 #define min(a,b) (((a)<(b))?(a):(b))
 
-char *perfdata (const char *,
- long int,
- const char *,
- int,
- long int,
- int,
- long int,
- int,
- long int,
- int,
- long int);
+char *perfdata (const char *, long int, const char *, int, long int,
+                int, long int, int, long int, int, long int);
 
-char *fperfdata (const char *,
- double,
- const char *,
- int,
- double,
- int,
- double,
- int,
- double,
- int,
- double);
+char *fperfdata (const char *, double, const char *, int, double,
+                 int, double, int, double, int, double);
+
+char *sperfdata (const char *, double, const char *, char *, char *,
+                 int, double, int, double);
+
+char *sperfdata_int (const char *, int, const char *, char *, char *,
+                     int, int, int, int);
 
 /* string case changes */
 void strntoupper (char * test_char, int size);
