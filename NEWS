@@ -4,6 +4,7 @@ This file documents the major additions and syntax changes between releases.
 	FIXES
 	check_http: -e breaks -f
 	check_mrtg: Add state to status output
+	check_ping: ping runs 30 times when host is down
 
 
 2.1.4 2016-11-17
