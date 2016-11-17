@@ -3,6 +3,8 @@ This file documents the major additions and syntax changes between releases.
 2.x.x xxxx-xx-xx
 	FIXES
 	check_http: -e breaks -f
+	check_mrtg: Add state to status output
+
 
 2.1.4 2016-11-17
 	FIXES
