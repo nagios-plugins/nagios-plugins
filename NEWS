@@ -7,6 +7,8 @@ This file documents the major additions and syntax changes between releases.
 	check_ping: ping runs 30 times when host is down
 	check_icmp: does not have the -p argument in the help
 	check_dns: Segfaulting with timeout > 26 sec
+	check_disk: missing -lrt on Solaris
+	check_http: segmentation fault
 
 
 2.1.4 2016-11-17

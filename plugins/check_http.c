@@ -983,6 +983,7 @@ check_http (void)
   int result = STATE_OK;
   char *force_host_header = NULL;
 	int bad_response = FALSE;
+	char save_char;
 
   /* try to connect to the host at the given port number */
   gettimeofday (&tv_temp, NULL);
@@ -1180,7 +1181,7 @@ check_http (void)
   elapsed_time = (double)microsec / 1.0e6;
 
   /* leave full_page untouched so we can free it later */
-  page = full_page;
+  pos = page = full_page;
 
   if (verbose)
     printf ("%s://%s:%d%s is %d characters\n",
@@ -1188,36 +1189,29 @@ check_http (void)
       server_port, server_url, (int)pagesize);
 
   /* find status line and null-terminate it */
-  status_line = page;
-  page = strstr(page, "\r\n");
-  page += 2;
-/*  page += (size_t) strcspn (page, "\r\n"); */
-/*  page += (size_t) strspn (page, "\r\n"); */
+  page += (size_t) strcspn (page, "\r\n");
+	save_char = *page;
+	*page = '\0';
+	status_line = strdup(pos);
+	*page = save_char;
   pos = page;
 
-  status_line[strcspn(status_line, "\r\n")] = 0;
   strip (status_line);
   if (verbose)
     printf ("STATUS: %s\n", status_line);
 
   /* find header info and null-terminate it */
   header = page;
-/*  while (strcspn (page, "\r\n") > 0) { */
-  while (page[0] != '\r' || page[1] != '\n') {
+	for (;;) {
+		if (!strncmp(page, "\r\n\r\n", 4) || !strncmp(page, "\n\n", 2))
+		 break;
+		while (*page == '\r' || *page == '\n') { ++page; }
     page += (size_t) strcspn (page, "\r\n");
     pos = page;
-    if ((strspn (page, "\r") == 1 && strspn (page, "\r\n") >= 2) ||
-        (strspn (page, "\n") == 1 && strspn (page, "\r\n") >= 2)) {
-      page += (size_t) 2;
-      pos += (size_t) 2;
-    }
-    else {
-      page += (size_t) 1;
-      pos += (size_t) 1;
-    }
   }
   page += (size_t) strspn (page, "\r\n");
   header[pos - header] = 0;
+	while (*header == '\r' || *header == '\n') { ++header; }
 
   if (chunked_transfer_encoding(header) && *page)
     page = decode_chunked_page(page, page);
@@ -1289,6 +1283,8 @@ check_http (void)
     /* Print OK status anyway */
     xasprintf (&msg, _("%s%s - "), msg, status_line);
   }
+
+	free(status_line);
 
   if (bad_response) 
     die (STATE_CRITICAL, "HTTP CRITICAL - %s", msg);
