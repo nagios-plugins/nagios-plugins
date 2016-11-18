@@ -1728,6 +1728,7 @@ print_help (void)
   printf (" %s\n", _("messages from the host result in STATE_WARNING return values.  If you are"));
   printf (" %s\n", _("checking a virtual server that uses 'host headers' you must supply the FQDN"));
   printf (" %s\n", _("(fully qualified domain name) as the [host_name] argument."));
+  printf (" %s\n", _("You may also need to give a FQDN or IP address using -I (or --IP-Address)."));
 
 #ifdef HAVE_SSL
   printf ("\n");

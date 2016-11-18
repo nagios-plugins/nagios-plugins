@@ -12,6 +12,7 @@ This file documents the major additions and syntax changes between releases.
 	check_dns: Segfaulting with timeout > 26 sec
 	check_disk: missing -lrt on Solaris
 	check_http: segmentation fault
+	check_http: help text update for virtual hosts
 
 
 2.1.4 2016-11-17
