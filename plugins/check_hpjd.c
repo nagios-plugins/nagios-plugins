@@ -66,9 +66,8 @@ void print_usage (void);
 
 char *community = NULL;
 char *address = NULL;
-char *port = NULL;
-char flawcorrection =0; // There are devices which report offline when that is not the case. Correct that.
 int port = 0;
+char flawcorrection =0; // There are devices which report offline when that is not the case. Correct that.
 
 int
 main (int argc, char **argv)
