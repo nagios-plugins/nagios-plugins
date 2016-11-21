@@ -13,6 +13,7 @@ This file documents the major additions and syntax changes between releases.
 	check_disk: missing -lrt on Solaris
 	check_http: segmentation fault
 	check_http: help text update for virtual hosts
+	check_snmp: Thresholds were being shown twice
 
 
 2.1.4 2016-11-17
