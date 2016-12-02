@@ -147,7 +147,8 @@ main (int argc, char **argv)
 
 		line++;
 
-		temp_buffer = strtok (input_buffer, "=");
+		/* We want the string after the "=" */
+		(void)strtok (input_buffer, "=");
 		temp_buffer = strtok (NULL, "=");
 
 		if (temp_buffer == NULL && line < 13) {

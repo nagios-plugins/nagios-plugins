@@ -160,8 +160,6 @@ process_request (const char *server_address, int server_port, int proto,
 	int result;
 	int sd;
 
-	result = STATE_OK;
-
 	result = np_net_connect (server_address, server_port, &sd, proto);
 	if (result != STATE_OK)
 		return STATE_CRITICAL;
