@@ -148,7 +148,7 @@ main (int argc, char **argv)
 	else if (rate > value_warning_threshold)
 		result = STATE_WARNING;
 
-	printf("%s. %s = %lu %s|%s\n",
+	printf("%s - %s. %s = %lu %s|%s\n", state_text(result),
 	       (use_average == TRUE) ? _("Avg") : _("Max"),
 	       label, rate, units,
 	       perfdata(label, (long) rate, units,

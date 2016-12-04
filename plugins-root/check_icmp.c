@@ -654,7 +654,7 @@ main(int argc, char **argv)
 	}
 
 	host = list;
-	table = malloc(sizeof(struct rta_host **) * targets);
+	table = malloc(sizeof(struct rta_host *) * targets);
 	i = 0;
 	while(host) {
 		host->id = i*packets;
@@ -692,9 +692,9 @@ run_checks()
 
 			/* we're still in the game, so send next packet */
 			(void)send_icmp_ping(icmp_sock, table[t]);
-			result = wait_for_reply(icmp_sock, target_interval);
+			(void)wait_for_reply(icmp_sock, target_interval);
 		}
-		result = wait_for_reply(icmp_sock, pkt_interval * targets);
+		(void)wait_for_reply(icmp_sock, pkt_interval * targets);
 	}
 
 	if(icmp_pkts_en_route && targets_alive) {
@@ -714,7 +714,7 @@ run_checks()
 		 * haven't yet */
 		if(debug) printf("Waiting for %u micro-seconds (%0.3f msecs)\n",
 						 final_wait, (float)final_wait / 1000);
-		result = wait_for_reply(icmp_sock, final_wait);
+		(void)wait_for_reply(icmp_sock, final_wait);
 	}
 }
 
@@ -1082,7 +1082,6 @@ finish(int sig)
 
 	/* iterate once more for pretty perfparse output */
 	printf("|");
-	i = 0;
 	host = list;
 	while(host) {
 		if(debug) write(STDOUT_FILENO, "\n", 1);
@@ -1273,7 +1272,7 @@ get_timevar(const char *str)
 
 	/* unit might be given as ms|m (millisec),
 	 * us|u (microsec) or just plain s, for seconds */
-	u = p = '\0';
+	p = '\0';
 	u = str[len - 1];
 	if(len >= 2 && !isdigit((int)str[len - 2])) p = str[len - 2];
 	if(p && u == 's') u = p;
@@ -1379,6 +1378,9 @@ print_help(void)
   printf (" %s\n", "-s");
   printf ("    %s\n", _("specify a source IP address or device name"));
   printf (" %s\n", "-n");
+  printf ("    %s", _("number of packets to send (currently "));
+  printf ("%u)\n",packets);
+  printf (" %s\n", "-p");
   printf ("    %s", _("number of packets to send (currently "));
   printf ("%u)\n",packets);
   printf (" %s\n", "-i");

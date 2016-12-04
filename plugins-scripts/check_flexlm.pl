@@ -70,9 +70,12 @@ unless (defined $opt_t) {
 if ($opt_h) {print_help(); exit $ERRORS{'OK'};}
 
 unless (defined $opt_F) {
-	print "Missing license.dat file\n";
-	print_usage();
-	exit $ERRORS{'UNKNOWN'};
+	$opt_F = $ENV{'LM_LICENSE_FILE'};
+	unless (defined $opt_F) {
+		print "Missing license.dat file\n";
+		print_usage();
+		exit $ERRORS{'UNKNOWN'};
+	}
 }
 # Just in case of problems, let's not hang Nagios
 $SIG{'ALRM'} = sub {
@@ -227,7 +230,7 @@ Check available flexlm license managers
 	print_usage();
 	print "
 -F, --filename=FILE
-   Name of license file (usually \"license.dat\")
+   Name of license file (like \"/usr/local/flexlm/licenses/license.dat\")
 -v, --verbose
    Print some extra debugging information (not advised for normal operation)
 -t, --timeout

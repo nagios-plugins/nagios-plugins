@@ -67,6 +67,7 @@ void print_usage (void);
 char *community = NULL;
 char *address = NULL;
 int port = 0;
+char flawcorrection =0; // There are devices which report offline when that is not the case. Correct that.
 
 int
 main (int argc, char **argv)
@@ -146,7 +147,8 @@ main (int argc, char **argv)
 
 		line++;
 
-		temp_buffer = strtok (input_buffer, "=");
+		/* We want the string after the "=" */
+		(void)strtok (input_buffer, "=");
 		temp_buffer = strtok (NULL, "=");
 
 		if (temp_buffer == NULL && line < 13) {
@@ -155,7 +157,6 @@ main (int argc, char **argv)
 				strcpy (errmsg, input_buffer);
 
 		} else {
-
 			switch (line) {
 
 			case 1:										/* 1st line should contain the line status */
@@ -193,6 +194,16 @@ main (int argc, char **argv)
 				break;
 			case 12:										/* display panel message */
 				strcpy (display_message, temp_buffer + 1);
+				if (
+                                    (flawcorrection)                   &&
+                                    (!strcmp(display_message,"READY")) &&
+                                    (!paper_status)                    &&
+                                    (!intervention_required)           &&
+                                    (!peripheral_error)                &&
+                                    (!paper_jam)                       &&
+                                    (!paper_out)
+                                   ) 
+                                   line_status = 0;    
 				break;
 			default:										/* fold multiline message */
 				strncat (display_message, input_buffer,
@@ -315,6 +326,7 @@ process_arguments (int argc, char **argv)
 /*  		{"critical",       required_argument,0,'c'}, */
 /*  		{"warning",        required_argument,0,'w'}, */
   		{"port", required_argument,0,'p'}, 
+		{"flawcorrection", no_argument, 0, 'N'},
 		{"version", no_argument, 0, 'V'},
 		{"help", no_argument, 0, 'h'},
 		{0, 0, 0, 0}
@@ -325,7 +337,7 @@ process_arguments (int argc, char **argv)
 
 
 	while (1) {
-		c = getopt_long (argc, argv, "+hVH:C:p:", longopts, &option);
+		c = getopt_long (argc, argv, "+hVNH:C:p:", longopts, &option);
 
 		if (c == -1 || c == EOF || c == 1)
 			break;
@@ -348,6 +360,9 @@ process_arguments (int argc, char **argv)
 			else
 				port = atoi(optarg);
 			break;
+                case 'N':                                                                       /* flaw correction */
+                        flawcorrection=1;
+                        break;
 		case 'V':									/* version */
 			print_revision (progname, NP_VERSION);
 			exit (STATE_OK);
@@ -420,6 +435,10 @@ print_help (void)
 	printf ("    %s", _("Specify the port to check "));
 	printf (_("(default=%s)"), DEFAULT_PORT);
 	printf ("\n");
+        printf (" %s\n", "-N, --flawcorrection");
+	printf ("    %s", _("Correct false offline status reports "));
+	printf (_("(default=%s)"), "false");
+	printf ("\n");
 
 	printf (UT_SUPPORT);
 }
@@ -430,5 +449,5 @@ void
 print_usage (void)
 {
   printf ("%s\n", _("Usage:"));
-	printf ("%s -H host [-C community] [-p port]\n", progname);
+	printf ("%s -H host [-C community] [-p port][-N]\n", progname);
 }

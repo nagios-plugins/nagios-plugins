@@ -1,8 +1,41 @@
 This file documents the major additions and syntax changes between releases.
 
-2.x.x 2016-xx-xx
-	SECURITY FIXES
+2.x.x xxxx-xx-xx
+	ENHANCEMENTS
+	check_flexlm: if `-F <license file>` is not specified, will use `LM_LICENSE_FILE` environment var
 
+	FIXES
+	check_http: -e breaks -f
+	check_mrtg: Add state to status output
+	check_ping: ping runs 30 times when host is down
+	check_icmp: does not have the -p argument in the help
+	check_dns: Segfaulting with timeout > 26 sec
+	check_disk: missing -lrt on Solaris
+	check_http: segmentation fault
+	check_http: help text update for virtual hosts
+	check_snmp: Thresholds were being shown twice
+	check_load: Added per cpu load average message
+	check_hpjd: some jd 610 cards have a false flag that printer is offline
+	check_http: Handle reference redirect like //www.site.org/test
+	check_smtp: add -L flag to support LMTP (LHLO instead of HELO/EHLO)
+
+
+2.1.4 2016-11-17
+	FIXES
+	check_http: Don't include default Accept header if one is provided
+	check_disk: added "fuse.gvfsd-fuse" to list of fs types to ignore
+	check_http: Fixed non-text chunked-encoded decoding
+	check_http: segmentation fault (FreeBSD)
+	check_dns: Update IF_RECORD to not erase query_found
+	check_http: SSL Certificate check returns 12:00:00AM <local timezone>
+	check_http: -u is misleading. Changed help text
+	check_file_age: does not handle filenames with space
+	check_snmp: units label option outputs the label in the incorrect location
+	plugins-root/check_dhcp.c: fix a potential segfault
+    check_users: not correctly detecting thresholds
+
+
+2.1.3 2016-09-12
 	ENHANCEMENTS
 	SNI support in check_tcp (ddbilik)
 	check_disk_smb.pl: add support for -k for kerberos authentication

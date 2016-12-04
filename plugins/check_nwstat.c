@@ -513,10 +513,6 @@ main(int argc, char **argv) {
 		result=send_tcp_request(sd,send_buffer,recv_buffer,sizeof(recv_buffer));
 		if (result!=STATE_OK)
 			return result;
-		if (atoi(recv_buffer)==1)
-			result=STATE_OK;
-		else
-			result=STATE_WARNING;
 
 		close(sd);
 		my_tcp_connect (server_address, server_port, &sd);
@@ -796,7 +792,6 @@ main(int argc, char **argv) {
 				result=STATE_CRITICAL;
 			else if (check_warning_value==TRUE && percent_non_purgeable_space >= warning_value)
 				result=STATE_WARNING;
-			purgeable_disk_space/=1024;
 			xasprintf (&output_message,_("%lu MB (%lu%%) not yet purgeable on volume %s"),non_purgeable_disk_space,percent_non_purgeable_space,volume_name);
 		}
 

@@ -109,6 +109,8 @@ static struct parameter_list *path_select_list = NULL;
 /* Linked list of mounted filesystems. */
 static struct mount_entry *mount_list;
 
+static const char *always_exclude[] = { "iso9600", "fuse.gvfsd-fuse", NULL };
+
 /* For long options that have no equivalent short option, use a
    non-character as a pseudo short option, starting with CHAR_MAX + 1.  */
 enum
@@ -361,7 +363,7 @@ main (int argc, char **argv)
       else {
 	      xasprintf(&flag_header, "");
       }
-      xasprintf (&output, "%s %s %.0f %s (%.0f%%",
+      xasprintf (&output, "%s %s %.0f %s (%.2f%%",
                 output,
                 (!strcmp(me->me_mountdir, "none") || display_mntp) ? me->me_devname : me->me_mountdir,
                 path->dfree_units,
@@ -412,17 +414,17 @@ double calculate_percent(uintmax_t value, uintmax_t total) {
   double pct = -1;
   /* I don't understand the below, but it is taken from coreutils' df */
   /* Seems to be calculating pct, in the best possible way */
-  if (value <= TYPE_MAXIMUM(uintmax_t) / 100
+  if (value <= TYPE_MAXIMUM(uintmax_t) / 10000
     && total != 0) {
-    uintmax_t u100 = value * 100;
-    pct = u100 / total + (u100 % total != 0);
+    uintmax_t u100 = value * 10000;
+    pct = (u100 / total + (u100 % total != 0)) / 100.0;
   } else {
     /* Possible rounding errors - see coreutils' df for more explanation */
     double u = value;
     double t = total;
     if (t) {
-      long int lipct = pct = u * 100 / t;
-      double ipct = lipct;
+      long int lipct = pct = u * 10000 / t;
+      double ipct = lipct / 100.0;
 
       /* Like 'pct = ceil (dpct);', but without ceil - from coreutils again */
       if (ipct - 1 < pct && pct <= ipct + 1)
@@ -436,7 +438,7 @@ double calculate_percent(uintmax_t value, uintmax_t total) {
 int
 process_arguments (int argc, char **argv)
 {
-  int c, err;
+  int c, err, i;
   struct parameter_list *se;
   struct parameter_list *temp_list = NULL, *previous = NULL;
   struct parameter_list *temp_path_select_list = NULL;
@@ -492,7 +494,8 @@ process_arguments (int argc, char **argv)
   if (argc < 2)
     return ERROR;
 
-  np_add_name(&fs_exclude_list, "iso9660");
+	for (i = 0; always_exclude[i]; ++i)
+		np_add_name(&fs_exclude_list, always_exclude[i]);
 
   for (c = 1; c < argc; c++)
     if (strcmp ("-to", argv[c]) == 0)

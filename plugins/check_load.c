@@ -194,7 +194,12 @@ main (int argc, char **argv)
 
 	/* we got this far, so assume OK until we've measured */
 	result = STATE_OK;
+	
+	if (take_into_account_cpus == 1 && (numcpus = GET_NUMBER_OF_CPUS()) > 1){
 
+	xasprintf(&status_line, _("load average per CPU: %.2f, %.2f, %.2f"), la1, la5, la15);
+	}
+	else
 	xasprintf(&status_line, _("load average: %.2f, %.2f, %.2f"), la1, la5, la15);
 
 	for(i = 0; i < 3; i++) {

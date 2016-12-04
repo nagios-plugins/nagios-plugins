@@ -112,7 +112,7 @@ char **np_extra_opts(int *argc, char **argv, const char *plugin_name){
 	}
 
 	/* done processing arguments. now create a new argv array... */
-	argv_new=(char**)malloc((ea_num+1)*sizeof(char**));
+	argv_new=(char**)malloc((ea_num+1)*sizeof(char*));
 	if(argv_new==NULL) die(STATE_UNKNOWN, _("malloc() failed!\n"));
 
 	/* starting with program name */

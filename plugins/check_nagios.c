@@ -160,7 +160,7 @@ main (int argc, char **argv)
 
 	/* If we get anything on stderr, at least set warning */
 	if(chld_err.buflen)
-		result = max_state (result, STATE_WARNING);
+		(void)max_state (result, STATE_WARNING);
 
 	/* reset the alarm handler */
 	alarm (0);

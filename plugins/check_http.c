@@ -110,8 +110,9 @@ thresholds *thlds;
 char user_auth[MAX_INPUT_BUFFER] = "";
 char proxy_auth[MAX_INPUT_BUFFER] = "";
 int display_html = FALSE;
-char **http_opt_headers;
+char **http_opt_headers = NULL;
 int http_opt_headers_count = 0;
+int have_accept = FALSE;
 int onredirect = STATE_OK;
 int followsticky = STICKY_NONE;
 int use_ssl = FALSE;
@@ -213,6 +214,7 @@ process_arguments (int argc, char **argv)
     {"method", required_argument, 0, 'j'},
     {"IP-address", required_argument, 0, 'I'},
     {"url", required_argument, 0, 'u'},
+    {"uri", required_argument, 0, 'u'},
     {"port", required_argument, 0, 'p'},
     {"authorization", required_argument, 0, 'a'},
     {"proxy-authorization", required_argument, 0, 'b'},
@@ -286,12 +288,13 @@ process_arguments (int argc, char **argv)
       xasprintf (&user_agent, "User-Agent: %s", optarg);
       break;
     case 'k': /* Additional headers */
-      if (http_opt_headers_count == 0)
+/*      if (http_opt_headers_count == 0)
         http_opt_headers = malloc (sizeof (char *) * (++http_opt_headers_count));
-      else
-        http_opt_headers = realloc (http_opt_headers, sizeof (char *) * (++http_opt_headers_count));
+      else */
+      http_opt_headers = realloc (http_opt_headers, sizeof(char *) * (++http_opt_headers_count));
       http_opt_headers[http_opt_headers_count - 1] = optarg;
-      /* xasprintf (&http_opt_headers, "%s", optarg); */
+      if (!strncmp(optarg, "Accept:", 7))
+        have_accept = TRUE;
       break;
     case 'L': /* show html link */
       display_html = TRUE;
@@ -684,53 +687,45 @@ expected_statuscode (const char *reply, const char *statuscodes)
   return result;
 }
 
+int chunk_header(char **buf)
+{
+  int lth = strtol(*buf, buf, 16);
+
+  if (lth <= 0)
+	 return lth;
+
+  while (**buf != '\r' && **buf != '\n')
+    ++*buf;
+
+  // soak up the leading CRLF
+  if (**buf && **buf == '\r' && *(++*buf) && **buf == '\n')
+    ++*buf;
+  else
+    die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, invalid format\n"));
+
+  return lth;
+}
+
 char *
 decode_chunked_page (const char *raw, char *dst)
 {
-  unsigned long int chunksize;
-  char *raw_pos = (char *)raw;
-  char *dst_pos = (char *)dst;
-  const char *raw_end = raw + strlen(raw);
+  int  chunksize;
+  char *raw_pos = (char*)raw;
+  char *dst_pos = (char*)dst;
 
-  while (chunksize = strtoul(raw_pos, NULL, 16)) {
-    if (chunksize <= 0) {
+  for (;;) {
+    if ((chunksize = chunk_header(&raw_pos)) == 0)
+      break;
+    if (chunksize < 0)
       die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, invalid chunk size\n"));
-    }
 
-    // soak up the optional chunk params (which we will ignore)
-    while (*raw_pos && *raw_pos != '\r' && *raw_pos != '\n') raw_pos++;
-
-    // soak up the leading CRLF
-    if (*raw_pos && *raw_pos == '\r' && *(++raw_pos) && *raw_pos == '\n') {
-      raw_pos++;
-    }
-    else {
-      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, invalid format\n"));
-    }
-
-    // move chunk from raw into dst, only if we can fit within the buffer
-    if (*raw_pos && *dst_pos && (raw_pos + chunksize) < raw_end ) {
-      strncpy(dst_pos, raw_pos, chunksize);
-    }
-    else {
-      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, too large for destination\n"));
-    }
-
+    memmove(dst_pos, raw_pos, chunksize);
     raw_pos += chunksize;
     dst_pos += chunksize;
+    *dst_pos = '\0';
 
-    // soak up the ending CRLF
-    if (*raw_pos && *raw_pos == '\r' && *(++raw_pos) && *raw_pos == '\n') {
+    if (*raw_pos && *raw_pos == '\r' && *(++raw_pos) && *raw_pos == '\n')
       raw_pos++;
-    }
-    else {
-      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, invalid format\n"));
-    }
-  }
-
-  if (*dst_pos) *dst_pos = '\0';
-  else {
-    die (STATE_UNKNOWN, _("HTTP UNKNOWN - Memory allocation error\n"));
   }
 
   return dst;
@@ -987,6 +982,8 @@ check_http (void)
   int page_len = 0;
   int result = STATE_OK;
   char *force_host_header = NULL;
+	int bad_response = FALSE;
+	char save_char;
 
   /* try to connect to the host at the given port number */
   gettimeofday (&tv_temp, NULL);
@@ -1076,7 +1073,8 @@ check_http (void)
    * TODO: Take an arguement to determine what type(s) to accept,
    * so that we can alert if a response is of an invalid type.
   */
-  xasprintf(&buf, "%sAccept: */*\r\n", buf);
+  if (!have_accept)
+    xasprintf(&buf, "%sAccept: */*\r\n", buf);
 
   /* optionally send any other header tag */
   if (http_opt_headers_count) {
@@ -1183,7 +1181,7 @@ check_http (void)
   elapsed_time = (double)microsec / 1.0e6;
 
   /* leave full_page untouched so we can free it later */
-  page = full_page;
+  pos = page = full_page;
 
   if (verbose)
     printf ("%s://%s:%d%s is %d characters\n",
@@ -1191,36 +1189,29 @@ check_http (void)
       server_port, server_url, (int)pagesize);
 
   /* find status line and null-terminate it */
-  status_line = page;
-  page = strstr(page, "\r\n");
-  page += 2;
-/*  page += (size_t) strcspn (page, "\r\n"); */
-/*  page += (size_t) strspn (page, "\r\n"); */
+  page += (size_t) strcspn (page, "\r\n");
+	save_char = *page;
+	*page = '\0';
+	status_line = strdup(pos);
+	*page = save_char;
   pos = page;
 
-  status_line[strcspn(status_line, "\r\n")] = 0;
   strip (status_line);
   if (verbose)
     printf ("STATUS: %s\n", status_line);
 
   /* find header info and null-terminate it */
   header = page;
-/*  while (strcspn (page, "\r\n") > 0) { */
-  while (page[0] != '\r' || page[1] != '\n') {
+	for (;;) {
+		if (!strncmp(page, "\r\n\r\n", 4) || !strncmp(page, "\n\n", 2))
+		 break;
+		while (*page == '\r' || *page == '\n') { ++page; }
     page += (size_t) strcspn (page, "\r\n");
     pos = page;
-    if ((strspn (page, "\r") == 1 && strspn (page, "\r\n") >= 2) ||
-        (strspn (page, "\n") == 1 && strspn (page, "\r\n") >= 2)) {
-      page += (size_t) 2;
-      pos += (size_t) 2;
-    }
-    else {
-      page += (size_t) 1;
-      pos += (size_t) 1;
-    }
   }
   page += (size_t) strspn (page, "\r\n");
   header[pos - header] = 0;
+	while (*header == '\r' || *header == '\n') { ++header; }
 
   if (chunked_transfer_encoding(header) && *page)
     page = decode_chunked_page(page, page);
@@ -1239,58 +1230,64 @@ check_http (void)
       xasprintf (&msg,
                 _("Invalid HTTP response received from host on port %d: %s\n"),
                 server_port, status_line);
-    die (STATE_CRITICAL, "HTTP CRITICAL - %s", msg);
+    bad_response = TRUE;
   }
 
   /* Bypass normal status line check if server_expect was set by user and not default */
   /* NOTE: After this if/else block msg *MUST* be an asprintf-allocated string */
-  if ( server_expect_yn  )  {
-    xasprintf (&msg,
-              _("Status line output matched \"%s\" - "), server_expect);
-    if (verbose)
-      printf ("%s\n",msg);
+  if ( !bad_response ) {
+    if ( server_expect_yn  )  {
+      xasprintf (&msg,
+                _("Status line output matched \"%s\" - "), server_expect);
+      if (verbose)
+        printf ("%s\n",msg);
+    } else
+      xasprintf (&msg, "");
   }
-  else {
-    /* Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF */
-    /* HTTP-Version   = "HTTP" "/" 1*DIGIT "." 1*DIGIT */
-    /* Status-Code = 3 DIGITS */
 
-    status_code = strchr (status_line, ' ') + sizeof (char);
-    if (strspn (status_code, "1234567890") != 3)
-      die (STATE_CRITICAL, _("HTTP CRITICAL: Invalid Status Line (%s)\n"), status_line);
+  /* Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF */
+  /* HTTP-Version   = "HTTP" "/" 1*DIGIT "." 1*DIGIT */
+  /* Status-Code = 3 DIGITS */
 
-    http_status = atoi (status_code);
+  status_code = strchr (status_line, ' ') + sizeof (char);
+  if (strspn (status_code, "1234567890") != 3)
+    die (STATE_CRITICAL, _("HTTP CRITICAL: Invalid Status Line (%s)\n"), status_line);
 
-    /* check the return code */
+  http_status = atoi (status_code);
 
-    if (http_status >= 600 || http_status < 100) {
-      die (STATE_CRITICAL, _("HTTP CRITICAL: Invalid Status (%s)\n"), status_line);
-    }
-    /* server errors result in a critical state */
-    else if (http_status >= 500) {
-      xasprintf (&msg, _("%s - "), status_line);
-      result = STATE_CRITICAL;
-    }
-    /* client errors result in a warning state */
-    else if (http_status >= 400) {
-      xasprintf (&msg, _("%s - "), status_line);
-      result = max_state_alt(STATE_WARNING, result);
-    }
-    /* check redirected page if specified */
-    else if (http_status >= 300) {
+  /* check the return code */
 
-      if (onredirect == STATE_DEPENDENT)
-        redir (header, status_line);
-      else
-        result = max_state_alt(onredirect, result);
-      xasprintf (&msg, _("%s - "), status_line);
-    } /* end if (http_status >= 300) */
-    else {
-      /* Print OK status anyway */
-      xasprintf (&msg, _("%s - "), status_line);
-    }
+  if (http_status >= 600 || http_status < 100) {
+    die (STATE_CRITICAL, _("HTTP CRITICAL: Invalid Status (%s)\n"), status_line);
+  }
+  /* server errors result in a critical state */
+  else if (http_status >= 500) {
+    xasprintf (&msg, _("%s%s - "), msg, status_line);
+    result = STATE_CRITICAL;
+  }
+  /* client errors result in a warning state */
+  else if (http_status >= 400) {
+    xasprintf (&msg, _("%s%s - "), msg, status_line);
+    result = max_state_alt(STATE_WARNING, result);
+  }
+  /* check redirected page if specified */
+  else if (http_status >= 300) {
 
-  } /* end else (server_expect_yn)  */
+    if (onredirect == STATE_DEPENDENT)
+      redir (header, status_line);
+    else
+      result = max_state_alt(onredirect, result);
+    xasprintf (&msg, _("%s%s - "), msg, status_line);
+  } /* end if (http_status >= 300) */
+  else if (!bad_response) {
+    /* Print OK status anyway */
+    xasprintf (&msg, _("%s%s - "), msg, status_line);
+  }
+
+	free(status_line);
+
+  if (bad_response) 
+    die (STATE_CRITICAL, "HTTP CRITICAL - %s", msg);
 
   /* reset the alarm - must be called *after* redir or we'll never die on redirects! */
   alarm (0);
@@ -1407,7 +1404,9 @@ check_http (void)
 #define HD2 URI_HTTP "://" URI_HOST "/" URI_PATH
 #define HD3 URI_HTTP "://" URI_HOST ":" URI_PORT
 #define HD4 URI_HTTP "://" URI_HOST
-#define HD5 URI_PATH
+/* HD5 - relative reference redirect like //www.site.org/test https://tools.ietf.org/html/rfc3986 */
+#define HD5 URI_HTTP "//" URI_HOST "/" URI_PATH
+#define HD6 URI_PATH
 
 void
 redir (char *pos, char *status_line)
@@ -1485,8 +1484,19 @@ redir (char *pos, char *status_line)
       i = server_port_check (use_ssl);
     }
 
+    /* URI_HTTP, URI_HOST, URI_PATH */
+    else if (sscanf (pos, HD5, addr, url) == 2) {
+      if(use_ssl)
+        strcpy (type,"https");
+      else
+        strcpy (type,"server_type");
+      xasprintf(&url, "/%s", url);
+      use_ssl = server_type_check (type);
+      i = server_port_check (use_ssl);
+    }
+
     /* URI_PATH */
-    else if (sscanf (pos, HD5, url) == 1) {
+    else if (sscanf (pos, HD6, url) == 1) {
       /* relative url */
       if ((url[0] != '/')) {
         if ((x = strrchr(server_url, '/')))
@@ -1673,8 +1683,10 @@ print_help (void)
   printf ("    %s\n", _("String to expect in the response headers"));
   printf (" %s\n", "-s, --string=STRING");
   printf ("    %s\n", _("String to expect in the content"));
-  printf (" %s\n", "-u, --url=PATH");
-  printf ("    %s\n", _("URL to GET or POST (default: /)"));
+  printf (" %s\n", "-u, --uri=PATH");
+  printf ("    %s\n", _("URI to GET or POST (default: /)"));
+  printf (" %s\n", "--url=PATH");
+  printf ("    %s\n", _("(deprecated) URL to GET or POST (default: /)"));
   printf (" %s\n", "-P, --post=STRING");
   printf ("    %s\n", _("URL encoded http POST data"));
   printf (" %s\n", "-j, --method=STRING  (for example: HEAD, OPTIONS, TRACE, PUT, DELETE, CONNECT)");
@@ -1729,6 +1741,7 @@ print_help (void)
   printf (" %s\n", _("messages from the host result in STATE_WARNING return values.  If you are"));
   printf (" %s\n", _("checking a virtual server that uses 'host headers' you must supply the FQDN"));
   printf (" %s\n", _("(fully qualified domain name) as the [host_name] argument."));
+  printf (" %s\n", _("You may also need to give a FQDN or IP address using -I (or --IP-Address)."));
 
 #ifdef HAVE_SSL
   printf ("\n");

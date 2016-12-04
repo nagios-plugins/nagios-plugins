@@ -32,8 +32,8 @@
       if (verbose) printf(verb_str); \
       temp_buffer = rindex (chld_out.line[i], ' '); \
       addresses[n_addresses++] = check_new_address(temp_buffer); \
-      strncpy(query_found, querytype, sizeof(query_found)); \
-      memset(query_found, '\0', sizeof(query_found));
+      memset(query_found, '\0', sizeof(query_found)); \
+      strncpy(query_found, querytype, sizeof(query_found)); 
 
 const char *progname = "check_dns";
 const char *copyright = "2000-2014";
@@ -107,7 +107,6 @@ main (int argc, char **argv)
   double elapsed_time;
   long microsec;
   struct timeval tv;
-  int multi_address;
   int parse_address = FALSE; /* This flag scans for Address: but only after Name: */
   output chld_out, chld_err;
   size_t i;
@@ -137,7 +136,7 @@ main (int argc, char **argv)
 
   /* run the command */
   if((np_runcmd(command_line, &chld_out, &chld_err, 0)) != 0) {
-    msg = (char *)_("nslookup returned an error status");
+    msg = strdup(_("nslookup returned an error status"));
     result = STATE_WARNING;
   }
 
@@ -223,7 +222,7 @@ main (int argc, char **argv)
       if ((temp_buffer = strstr(chld_out.line[i], "name = ")))
         addresses[n_addresses++] = strdup(temp_buffer);
       else {
-        msg = (char *)_("Warning plugin error");
+        xasprintf(&msg, "%s %s %s %s", _("Warning plugin error"));
         result = STATE_WARNING;
       }
     }
@@ -238,7 +237,10 @@ main (int argc, char **argv)
         ? tmp : result;
     if (result != STATE_OK) {
       msg = strchr (chld_out.line[i], ':');
-      if(msg) msg++;
+      if(msg)
+			  msg++;
+			else
+			 msg = chld_out.line[i];
       break;
     }
   }
@@ -250,8 +252,11 @@ main (int argc, char **argv)
 
     if (error_scan (chld_err.line[i]) != STATE_OK) {
       result = max_state (result, error_scan (chld_err.line[i]));
-      msg = strchr(input_buffer, ':');
-      if(msg) msg++;
+      msg = strchr(chld_err.line[i], ':');
+      if(msg)
+			  msg++;
+			else
+			  msg = chld_err.line[i];
     }
   }
 
@@ -312,11 +317,6 @@ main (int argc, char **argv)
   elapsed_time = (double)microsec / 1.0e6;
 
   if (result == STATE_OK) {
-    if (strchr (address, ',') == NULL)
-      multi_address = FALSE;
-    else
-      multi_address = TRUE;
-
     result = get_status(elapsed_time, time_thresholds);
     if (result == STATE_OK) {
       printf ("%s %s: ", _("DNS"), _("OK"));
@@ -489,13 +489,13 @@ process_arguments (int argc, char **argv)
     case 'a': /* expected address */
       if (strlen (optarg) >= ADDRESS_LENGTH)
         die (STATE_UNKNOWN, "%s\n", _("Input buffer overflow"));
-      expected_address = (char **)realloc(expected_address, (expected_address_cnt+1) * sizeof(char**));
+      expected_address = (char **)realloc(expected_address, (expected_address_cnt+1) * sizeof(char*));
       expected_address[expected_address_cnt] = strdup(optarg);
       expected_address_cnt++;
       break;
     case 'q': /* querytype -- A or AAAA or ANY or SRV or TXT, etc. */
       if (strlen (optarg) < 1 || strlen (optarg) > 5)
-	die (STATE_UNKNOWN, "%s\n", _("Missing valid querytype parameter.  Try using 'A' or 'AAAA' or 'SRV'"));
+        die (STATE_UNKNOWN, "%s\n", _("Missing valid querytype parameter.  Try using 'A' or 'AAAA' or 'SRV'"));
       strntoupper(optarg, strlen(optarg));
       strcpy(query_type, "-querytype=");
       strcat(query_type, optarg);

@@ -160,8 +160,6 @@ process_request (const char *server_address, int server_port, int proto,
 	int result;
 	int sd;
 
-	result = STATE_OK;
-
 	result = np_net_connect (server_address, server_port, &sd, proto);
 	if (result != STATE_OK)
 		return STATE_CRITICAL;
@@ -179,7 +177,7 @@ int
 np_net_connect (const char *host_name, int port, int *sd, int proto)
 {
 	struct addrinfo hints;
-	struct addrinfo *res;
+	struct addrinfo *res, *orig_res;
 	struct sockaddr_un su;
 	char port_str[6], host[MAX_HOST_ADDRESS_LENGTH];
 	size_t len;
@@ -206,7 +204,7 @@ np_net_connect (const char *host_name, int port, int *sd, int proto)
 		memcpy (host, host_name, len);
 		host[len] = '\0';
 		snprintf (port_str, sizeof (port_str), "%d", port);
-		result = getaddrinfo (host, port_str, &hints, &res);
+		result = getaddrinfo (host, port_str, &hints, &orig_res);
 
 		if (result != 0) {
 			if (result == EAI_NONAME)
@@ -216,13 +214,14 @@ np_net_connect (const char *host_name, int port, int *sd, int proto)
 			return STATE_UNKNOWN;
 		}
 
+		res = orig_res;
 		while (res) {
 			/* attempt to create a socket */
 			*sd = socket (res->ai_family, socktype, res->ai_protocol);
 
 			if (*sd < 0) {
 				printf ("%s\n", _("Socket creation failed"));
-				freeaddrinfo (res);
+				freeaddrinfo (orig_res);
 				return STATE_UNKNOWN;
 			}
 
@@ -245,7 +244,7 @@ np_net_connect (const char *host_name, int port, int *sd, int proto)
 			close (*sd);
 			res = res->ai_next;
 		}
-		freeaddrinfo (res);
+		freeaddrinfo (orig_res);
 	}
 	/* else the hostname is interpreted as a path to a unix socket */
 	else {

@@ -180,7 +180,6 @@ static int process_arguments (int argc, char **argv) {
 			} // end case
 		} // end while
 
-	c = optind;
 	set_thresholds(&my_thresholds, warning, critical);
 	return validate_arguments ();
 
