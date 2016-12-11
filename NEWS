@@ -18,6 +18,11 @@ This file documents the major additions and syntax changes between releases.
 	check_hpjd: some jd 610 cards have a false flag that printer is offline
 	check_http: Handle reference redirect like //www.site.org/test
 	check_smtp: add -L flag to support LMTP (LHLO instead of HELO/EHLO)
+	check_disk: alerts issued too soon
+	fix: Allocator sizeof operand mismatch
+	fix: Dead assignment
+	Shellcheck: fix most of the shellcheck warnings.
+	check_ntp: touch ntp servers at most once every seconds
 
 
 2.1.4 2016-11-17
