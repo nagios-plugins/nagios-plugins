@@ -76,6 +76,9 @@ int starttls = FALSE;
 int ssl_on_connect = FALSE;
 int verbose = 0;
 
+int check_cert = FALSE;
+int days_till_exp_warn, days_till_exp_crit;
+
 /* for ldap tls */
 
 char *SERVICE = "LDAP";
@@ -183,6 +186,9 @@ main (int argc, char *argv[])
 			printf (_("Could not init TLS at port %i!\n"), ld_port);
 			return STATE_CRITICAL;
 		}
+
+		if (check_cert == TRUE)
+			return ldap_check_cert(ld);
 #else
 		printf (_("TLS not supported by the libraries!\n"));
 		return STATE_CRITICAL;
@@ -207,6 +213,9 @@ main (int argc, char *argv[])
 			printf (_("Could not init startTLS at port %i!\n"), ld_port);
 			return STATE_CRITICAL;
 		}
+
+		if (check_cert == TRUE)
+			return ldap_check_cert(ld);
 #else
 		printf (_("startTLS not supported by the library, needs LDAPv3!\n"));
 		return STATE_CRITICAL;
@@ -296,6 +305,7 @@ int
 process_arguments (int argc, char **argv)
 {
 	int c;
+	char *temp;
 
 	int option = 0;
 	/* initialize the long option struct */
@@ -315,6 +325,7 @@ process_arguments (int argc, char **argv)
 #endif
 		{"starttls", no_argument, 0, 'T'},
 		{"ssl", no_argument, 0, 'S'},
+		{"age", required_argument, 0, 'A'},
 		{"use-ipv4", no_argument, 0, '4'},
 		{"use-ipv6", no_argument, 0, '6'},
 		{"port", required_argument, 0, 'p'},
@@ -335,7 +346,7 @@ process_arguments (int argc, char **argv)
 	}
 
 	while (1) {
-		c = getopt_long (argc, argv, "hvV234TS6t:c:w:H:b:p:a:D:P:U:C:W:", longopts, &option);
+		c = getopt_long (argc, argv, "hvV234TS6t:c:w:H:b:p:a:D:P:U:C:W:A:", longopts, &option);
 
 		if (c == -1 || c == EOF)
 			break;
@@ -403,6 +414,33 @@ process_arguments (int argc, char **argv)
 			else
 				usage_va(_("%s cannot be combined with %s"), "-T/--starttls", "-S/--ssl");
 			break;
+		case 'A': /* Check SSL cert validity */
+#ifndef HAVE_SSL
+			usage4 (_("Invalid option - SSL is not available"));
+#else
+			if (starttls || ssl_on_connect || strstr(argv[0],"check_ldaps")) {
+				if ((temp=strchr(optarg,','))!=NULL) {
+					*temp = '\0';
+					if (!is_intnonneg (temp))
+						usage2 (_("Invalid certificate expiration period"), optarg);
+					days_till_exp_warn = atoi(optarg);
+					*temp = ',';
+					temp++;
+					if (!is_intnonneg (temp))
+						usage2 (_("Invalid certificate expiration period"), temp);
+						days_till_exp_crit = atoi (temp);
+				} else {
+					days_till_exp_crit = 0;
+					if (!is_intnonneg (optarg))
+						usage2 (_("Invalid certificate expiration period"), optarg);
+					days_till_exp_warn = atoi (optarg);
+				}
+				check_cert = TRUE;
+			} else {
+				usage_va(_("%s requires either %s or %s"), "-A/--age", "-S/--ssl", "-T/--starttls");
+			}
+			break;
+#endif
 		case 'S':
 			if (! starttls) {
 				ssl_on_connect = TRUE;
@@ -489,6 +527,8 @@ print_help (void)
   printf ("    %s\n", _("use starttls mechanism introduced in protocol version 3"));
   printf (" %s\n", "-S, --ssl");
   printf ("    %s %i\n", _("use ldaps (ldap v2 ssl method). this also sets the default port to"), LDAPS_PORT);
+  printf (" %s\n", "-A, --age=INTEGER[,INTEGER]");
+  printf ("    %s\n", _("Minimum number of days a certificate has to be valid"));
 
 #ifdef HAVE_LDAP_SET_OPTION
 	printf (" %s\n", "-2, --ver2");
@@ -526,11 +566,24 @@ print_usage (void)
 {
   printf ("%s\n", _("Usage:"));
   printf (" %s (-H <host>|-U <uri>) -b <base_dn> [-p <port>] [-a <attr>] [-D <binddn>]\n", progname);
-  printf ("       [-P <password>] [-w <warn_time>] [-c <crit_time>] [-t timeout]%s\n",
+  printf ("       [-P <password>] [-w <warn_time>] [-c <crit_time>] [-t timeout] [-A <age>]%s\n",
 #ifdef HAVE_LDAP_SET_OPTION
 			"\n       [-2|-3] [-4|-6]"
 #else
 			""
 #endif
 			);
+}
+
+int ldap_check_cert (LDAP *ld)
+{
+	SSL *ssl;
+	int rc;
+
+	rc = ldap_get_option(ld, LDAP_OPT_X_TLS_SSL_CTX, &ssl);
+	if (rc == LDAP_OPT_ERROR || ssl == NULL) {
+		printf ("%s\n",_("CRITICAL - Cannot retrieve ssl session from connection."));
+		return STATE_CRITICAL;
+	}
+	return np_net_ssl_check_cert_real(ssl, days_till_exp_warn, days_till_exp_crit);
 }
