@@ -23,6 +23,7 @@ This file documents the major additions and syntax changes between releases.
 	fix: Dead assignment
 	Shellcheck: fix most of the shellcheck warnings.
 	check_ntp: touch ntp servers at most once every seconds
+	check_dns: authoritative test (-A) is broken
 
 
 2.1.4 2016-11-17
