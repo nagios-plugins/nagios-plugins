@@ -195,8 +195,14 @@ main (int argc, char **argv)
     else IF_RECORD("nameserver =", "-querytype=NS", "Found NS record\n") }
     else IF_RECORD("dname =", "-querytype=DNAME", "Found DNAME record\n") }
     else IF_RECORD("protocol =", "-querytype=WKS", "Found WKS record\n") }
-    /* TODO: needs to be changed to handle txt output and max size of txt recrods */
-    else IF_RECORD("text =", "-querytype=TXT", "Found TXT record\n") }
+    else if (strstr (chld_out.line[i], "text =") && (strncmp(query_type, "-querytype=TXT", query_size) == 0 || strncmp(query_type, "-querytype=ANY", query_size) == 0)) {
+      if (verbose) printf("Found TXT record\n");
+      temp_buffer = index(chld_out.line[i], '"');
+      --temp_buffer;
+      addresses[n_addresses++] = check_new_address(temp_buffer);
+      memset(query_found, '\0', sizeof(query_found));
+      strncpy(query_found, "-querytype=TXT", sizeof(query_found)); 
+    }
     /* only matching for origin records, if requested other fields could be included at a later date */
     else IF_RECORD("origin =", "-querytype=SOA", "Found SOA record\n") }
     /* cnames cannot use macro as we must check for accepting them separately */
