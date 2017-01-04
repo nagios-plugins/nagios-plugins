@@ -77,7 +77,7 @@ if (! $opt_f) {
 	exit $ERRORS{'UNKNOWN'};
 }
 
-$opt_f = '"' . $opt_f . '"';
+$opt_f = '"' . $opt_f . '"' if $opt_f =~ / /;
 
 # Check that file(s) exists (can be directory or link)
 $perfdata = "";

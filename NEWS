@@ -25,6 +25,7 @@ This file documents the major additions and syntax changes between releases.
 	check_ntp: touch ntp servers at most once every seconds
 	check_dns: authoritative test (-A) is broken
 	check_dns: reports TXT records incorrectly
+	check_file_age: does not handle filenames WITHOUT space!
 
 
 2.1.4 2016-11-17
