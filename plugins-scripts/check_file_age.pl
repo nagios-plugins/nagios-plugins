@@ -23,6 +23,7 @@
 
 use strict;
 use English;
+use File::Glob ':glob';
 use Getopt::Long;
 use File::stat;
 use vars qw($PROGNAME);
@@ -77,12 +78,10 @@ if (! $opt_f) {
 	exit $ERRORS{'UNKNOWN'};
 }
 
-$opt_f = '"' . $opt_f . '"';
-
 # Check that file(s) exists (can be directory or link)
 $perfdata = "";
 $output = "";
-@filelist = glob($opt_f);
+@filelist = bsd_glob($opt_f);
 
 foreach $filename (@filelist) {
 	unless (-e $filename) {
