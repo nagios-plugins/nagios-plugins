@@ -25,6 +25,7 @@ This file documents the major additions and syntax changes between releases.
 	check_dns: reports TXT records incorrectly
 	check_file_age: does not handle filenames WITHOUT space!
 	de,fr.po: fix syntax errors end-of-line within string
+	lib/parse_ini.c: fix gcc warning: implicit declaration of function ‘idpriv_temp_drop’ and ‘idpriv_temp_restore’
 
 
 2.1.4 2016-11-17

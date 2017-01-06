@@ -24,6 +24,7 @@
 #include "common.h"
 #include "utils_base.h"
 #include "parse_ini.h"
+#include "../gl/idpriv.h"
 #include <ctype.h>
 
 #include <sys/types.h>
