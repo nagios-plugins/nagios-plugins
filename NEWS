@@ -1,9 +1,6 @@
 This file documents the major additions and syntax changes between releases.
 
 2.x.x xxxx-xx-xx
-	ENHANCEMENTS
-	check_flexlm: if `-F <license file>` is not specified, will use `LM_LICENSE_FILE` environment var
-
 	FIXES
 	check_http: -e breaks -f
 	check_mrtg: Add state to status output
@@ -12,6 +9,7 @@ This file documents the major additions and syntax changes between releases.
 	check_dns: Segfaulting with timeout > 26 sec
 	check_disk: missing -lrt on Solaris
 	check_http: segmentation fault
+	check_flexlm: if `-F <license file>` is not specified, will use `LM_LICENSE_FILE` environment var
 	check_http: help text update for virtual hosts
 	check_snmp: Thresholds were being shown twice
 	check_load: Added per cpu load average message
@@ -26,6 +24,7 @@ This file documents the major additions and syntax changes between releases.
 	check_dns: authoritative test (-A) is broken
 	check_dns: reports TXT records incorrectly
 	check_file_age: does not handle filenames WITHOUT space!
+	de,fr.po: fix syntax errors end-of-line within string
 
 
 2.1.4 2016-11-17
