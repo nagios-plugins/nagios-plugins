@@ -581,7 +581,6 @@ int get_dhcp_offer(int sock){
 		bzero(&via,sizeof(via));
 		bzero(&offer_packet,sizeof(offer_packet));
 
-		result=OK;
 		result=receive_dhcp_packet(&offer_packet,sizeof(offer_packet),sock,dhcpoffer_timeout,&source);
 
 		if(result!=OK){

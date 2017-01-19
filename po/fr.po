@@ -1525,6 +1525,10 @@ msgstr ""
 msgid "(fully qualified domain name) as the [host_name] argument."
 msgstr ""
 
+#: plugins/check_http.c:1408
+msgid "You may also need to give a FQDN or IP address using -I (or --IP-Address)."
+msgstr ""
+
 #: plugins/check_http.c:1411
 msgid "This plugin can also check whether an SSL enabled web server is able to"
 msgstr ""

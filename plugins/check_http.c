@@ -982,6 +982,8 @@ check_http (void)
   int page_len = 0;
   int result = STATE_OK;
   char *force_host_header = NULL;
+	int bad_response = FALSE;
+	char save_char;
 
   /* try to connect to the host at the given port number */
   gettimeofday (&tv_temp, NULL);
@@ -1023,8 +1025,8 @@ check_http (void)
     elapsed_time_ssl = (double)microsec_ssl / 1.0e6;
     if (check_cert == TRUE) {
       result = np_net_ssl_check_cert(days_till_exp_warn, days_till_exp_crit);
-      np_net_ssl_cleanup();
       if (sd) close(sd);
+      np_net_ssl_cleanup();
       return result;
     }
   }
@@ -1169,17 +1171,17 @@ check_http (void)
     die (STATE_CRITICAL, _("HTTP CRITICAL - No data received from host\n"));
 
   /* close the connection */
+  if (sd) close(sd);
 #ifdef HAVE_SSL
   np_net_ssl_cleanup();
 #endif
-  if (sd) close(sd);
 
   /* Save check time */
   microsec = deltime (tv);
   elapsed_time = (double)microsec / 1.0e6;
 
   /* leave full_page untouched so we can free it later */
-  page = full_page;
+  pos = page = full_page;
 
   if (verbose)
     printf ("%s://%s:%d%s is %d characters\n",
@@ -1187,36 +1189,29 @@ check_http (void)
       server_port, server_url, (int)pagesize);
 
   /* find status line and null-terminate it */
-  status_line = page;
-  page = strstr(page, "\r\n");
-  page += 2;
-/*  page += (size_t) strcspn (page, "\r\n"); */
-/*  page += (size_t) strspn (page, "\r\n"); */
+  page += (size_t) strcspn (page, "\r\n");
+	save_char = *page;
+	*page = '\0';
+	status_line = strdup(pos);
+	*page = save_char;
   pos = page;
 
-  status_line[strcspn(status_line, "\r\n")] = 0;
   strip (status_line);
   if (verbose)
     printf ("STATUS: %s\n", status_line);
 
   /* find header info and null-terminate it */
   header = page;
-/*  while (strcspn (page, "\r\n") > 0) { */
-  while (page[0] != '\r' || page[1] != '\n') {
+	for (;;) {
+		if (!strncmp(page, "\r\n\r\n", 4) || !strncmp(page, "\n\n", 2))
+		 break;
+		while (*page == '\r' || *page == '\n') { ++page; }
     page += (size_t) strcspn (page, "\r\n");
     pos = page;
-    if ((strspn (page, "\r") == 1 && strspn (page, "\r\n") >= 2) ||
-        (strspn (page, "\n") == 1 && strspn (page, "\r\n") >= 2)) {
-      page += (size_t) 2;
-      pos += (size_t) 2;
-    }
-    else {
-      page += (size_t) 1;
-      pos += (size_t) 1;
-    }
   }
   page += (size_t) strspn (page, "\r\n");
   header[pos - header] = 0;
+	while (*header == '\r' || *header == '\n') { ++header; }
 
   if (chunked_transfer_encoding(header) && *page)
     page = decode_chunked_page(page, page);
@@ -1235,58 +1230,64 @@ check_http (void)
       xasprintf (&msg,
                 _("Invalid HTTP response received from host on port %d: %s\n"),
                 server_port, status_line);
-    die (STATE_CRITICAL, "HTTP CRITICAL - %s", msg);
+    bad_response = TRUE;
   }
 
   /* Bypass normal status line check if server_expect was set by user and not default */
   /* NOTE: After this if/else block msg *MUST* be an asprintf-allocated string */
-  if ( server_expect_yn  )  {
-    xasprintf (&msg,
-              _("Status line output matched \"%s\" - "), server_expect);
-    if (verbose)
-      printf ("%s\n",msg);
+  if ( !bad_response ) {
+    if ( server_expect_yn  )  {
+      xasprintf (&msg,
+                _("Status line output matched \"%s\" - "), server_expect);
+      if (verbose)
+        printf ("%s\n",msg);
+    } else
+      xasprintf (&msg, "");
   }
-  else {
-    /* Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF */
-    /* HTTP-Version   = "HTTP" "/" 1*DIGIT "." 1*DIGIT */
-    /* Status-Code = 3 DIGITS */
 
-    status_code = strchr (status_line, ' ') + sizeof (char);
-    if (strspn (status_code, "1234567890") != 3)
-      die (STATE_CRITICAL, _("HTTP CRITICAL: Invalid Status Line (%s)\n"), status_line);
+  /* Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF */
+  /* HTTP-Version   = "HTTP" "/" 1*DIGIT "." 1*DIGIT */
+  /* Status-Code = 3 DIGITS */
 
-    http_status = atoi (status_code);
+  status_code = strchr (status_line, ' ') + sizeof (char);
+  if (strspn (status_code, "1234567890") != 3)
+    die (STATE_CRITICAL, _("HTTP CRITICAL: Invalid Status Line (%s)\n"), status_line);
 
-    /* check the return code */
+  http_status = atoi (status_code);
 
-    if (http_status >= 600 || http_status < 100) {
-      die (STATE_CRITICAL, _("HTTP CRITICAL: Invalid Status (%s)\n"), status_line);
-    }
-    /* server errors result in a critical state */
-    else if (http_status >= 500) {
-      xasprintf (&msg, _("%s - "), status_line);
-      result = STATE_CRITICAL;
-    }
-    /* client errors result in a warning state */
-    else if (http_status >= 400) {
-      xasprintf (&msg, _("%s - "), status_line);
-      result = max_state_alt(STATE_WARNING, result);
-    }
-    /* check redirected page if specified */
-    else if (http_status >= 300) {
+  /* check the return code */
 
-      if (onredirect == STATE_DEPENDENT)
-        redir (header, status_line);
-      else
-        result = max_state_alt(onredirect, result);
-      xasprintf (&msg, _("%s - "), status_line);
-    } /* end if (http_status >= 300) */
-    else {
-      /* Print OK status anyway */
-      xasprintf (&msg, _("%s - "), status_line);
-    }
+  if (http_status >= 600 || http_status < 100) {
+    die (STATE_CRITICAL, _("HTTP CRITICAL: Invalid Status (%s)\n"), status_line);
+  }
+  /* server errors result in a critical state */
+  else if (http_status >= 500) {
+    xasprintf (&msg, _("%s%s - "), msg, status_line);
+    result = STATE_CRITICAL;
+  }
+  /* client errors result in a warning state */
+  else if (http_status >= 400) {
+    xasprintf (&msg, _("%s%s - "), msg, status_line);
+    result = max_state_alt(STATE_WARNING, result);
+  }
+  /* check redirected page if specified */
+  else if (http_status >= 300) {
 
-  } /* end else (server_expect_yn)  */
+    if (onredirect == STATE_DEPENDENT)
+      redir (header, status_line);
+    else
+      result = max_state_alt(onredirect, result);
+    xasprintf (&msg, _("%s%s - "), msg, status_line);
+  } /* end if (http_status >= 300) */
+  else if (!bad_response) {
+    /* Print OK status anyway */
+    xasprintf (&msg, _("%s%s - "), msg, status_line);
+  }
+
+	free(status_line);
+
+  if (bad_response) 
+    die (STATE_CRITICAL, "HTTP CRITICAL - %s", msg);
 
   /* reset the alarm - must be called *after* redir or we'll never die on redirects! */
   alarm (0);
@@ -1403,7 +1404,9 @@ check_http (void)
 #define HD2 URI_HTTP "://" URI_HOST "/" URI_PATH
 #define HD3 URI_HTTP "://" URI_HOST ":" URI_PORT
 #define HD4 URI_HTTP "://" URI_HOST
-#define HD5 URI_PATH
+/* HD5 - relative reference redirect like //www.site.org/test https://tools.ietf.org/html/rfc3986 */
+#define HD5 URI_HTTP "//" URI_HOST "/" URI_PATH
+#define HD6 URI_PATH
 
 void
 redir (char *pos, char *status_line)
@@ -1481,8 +1484,19 @@ redir (char *pos, char *status_line)
       i = server_port_check (use_ssl);
     }
 
+    /* URI_HTTP, URI_HOST, URI_PATH */
+    else if (sscanf (pos, HD5, addr, url) == 2) {
+      if(use_ssl)
+        strcpy (type,"https");
+      else
+        strcpy (type,"server_type");
+      xasprintf(&url, "/%s", url);
+      use_ssl = server_type_check (type);
+      i = server_port_check (use_ssl);
+    }
+
     /* URI_PATH */
-    else if (sscanf (pos, HD5, url) == 1) {
+    else if (sscanf (pos, HD6, url) == 1) {
       /* relative url */
       if ((url[0] != '/')) {
         if ((x = strrchr(server_url, '/')))
@@ -1727,6 +1741,7 @@ print_help (void)
   printf (" %s\n", _("messages from the host result in STATE_WARNING return values.  If you are"));
   printf (" %s\n", _("checking a virtual server that uses 'host headers' you must supply the FQDN"));
   printf (" %s\n", _("(fully qualified domain name) as the [host_name] argument."));
+  printf (" %s\n", _("You may also need to give a FQDN or IP address using -I (or --IP-Address)."));
 
 #ifdef HAVE_SSL
   printf ("\n");

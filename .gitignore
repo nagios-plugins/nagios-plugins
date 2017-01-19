@@ -2,6 +2,8 @@
 tags
 cscope.out
 nbproject/
+.kdev4/
+plugins.kdev4
 
 # In all paths
 NP-VERSION-FILE

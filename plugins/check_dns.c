@@ -102,12 +102,11 @@ main (int argc, char **argv)
   char query_found[24] = "";
   int query_size = 24;
   char *temp_buffer = NULL;
-  int non_authoritative = TRUE;
+  int non_authoritative = FALSE;
   int result = STATE_UNKNOWN;
   double elapsed_time;
   long microsec;
   struct timeval tv;
-  int multi_address;
   int parse_address = FALSE; /* This flag scans for Address: but only after Name: */
   output chld_out, chld_err;
   size_t i;
@@ -137,7 +136,7 @@ main (int argc, char **argv)
 
   /* run the command */
   if((np_runcmd(command_line, &chld_out, &chld_err, 0)) != 0) {
-    msg = (char *)_("nslookup returned an error status");
+    msg = strdup(_("nslookup returned an error status"));
     result = STATE_WARNING;
   }
 
@@ -184,10 +183,8 @@ main (int argc, char **argv)
 	}
     }
 
-    if (strstr (chld_out.line[i], "Authoritative answers can be found from:")) {
-      non_authoritative = FALSE;
+    if (strstr (chld_out.line[i], "Authoritative answers can be found from:"))
       break;
-    }
     /* the server is responding, we just got the host name...*/
     if (strstr (chld_out.line[i], "Name:"))
       parse_address = TRUE;
@@ -198,8 +195,14 @@ main (int argc, char **argv)
     else IF_RECORD("nameserver =", "-querytype=NS", "Found NS record\n") }
     else IF_RECORD("dname =", "-querytype=DNAME", "Found DNAME record\n") }
     else IF_RECORD("protocol =", "-querytype=WKS", "Found WKS record\n") }
-    /* TODO: needs to be changed to handle txt output and max size of txt recrods */
-    else IF_RECORD("text =", "-querytype=TXT", "Found TXT record\n") }
+    else if (strstr (chld_out.line[i], "text =") && (strncmp(query_type, "-querytype=TXT", query_size) == 0 || strncmp(query_type, "-querytype=ANY", query_size) == 0)) {
+      if (verbose) printf("Found TXT record\n");
+      temp_buffer = index(chld_out.line[i], '"');
+      --temp_buffer;
+      addresses[n_addresses++] = check_new_address(temp_buffer);
+      memset(query_found, '\0', sizeof(query_found));
+      strncpy(query_found, "-querytype=TXT", sizeof(query_found)); 
+    }
     /* only matching for origin records, if requested other fields could be included at a later date */
     else IF_RECORD("origin =", "-querytype=SOA", "Found SOA record\n") }
     /* cnames cannot use macro as we must check for accepting them separately */
@@ -223,7 +226,7 @@ main (int argc, char **argv)
       if ((temp_buffer = strstr(chld_out.line[i], "name = ")))
         addresses[n_addresses++] = strdup(temp_buffer);
       else {
-        msg = (char *)_("Warning plugin error");
+        xasprintf(&msg, "%s %s %s %s", _("Warning plugin error"));
         result = STATE_WARNING;
       }
     }
@@ -238,7 +241,10 @@ main (int argc, char **argv)
         ? tmp : result;
     if (result != STATE_OK) {
       msg = strchr (chld_out.line[i], ':');
-      if(msg) msg++;
+      if(msg)
+			  msg++;
+			else
+			 msg = chld_out.line[i];
       break;
     }
   }
@@ -250,8 +256,11 @@ main (int argc, char **argv)
 
     if (error_scan (chld_err.line[i]) != STATE_OK) {
       result = max_state (result, error_scan (chld_err.line[i]));
-      msg = strchr(input_buffer, ':');
-      if(msg) msg++;
+      msg = strchr(chld_err.line[i], ':');
+      if(msg)
+			  msg++;
+			else
+			  msg = chld_err.line[i];
     }
   }
 
@@ -289,7 +298,7 @@ main (int argc, char **argv)
   }
 
   /* check if authoritative */
-  if (result == STATE_OK && expect_authority && !non_authoritative) {
+  if (result == STATE_OK && expect_authority && non_authoritative) {
     result = STATE_CRITICAL;
 
     if (strncmp(dns_server, "", 1))
@@ -312,11 +321,6 @@ main (int argc, char **argv)
   elapsed_time = (double)microsec / 1.0e6;
 
   if (result == STATE_OK) {
-    if (strchr (address, ',') == NULL)
-      multi_address = FALSE;
-    else
-      multi_address = TRUE;
-
     result = get_status(elapsed_time, time_thresholds);
     if (result == STATE_OK) {
       printf ("%s %s: ", _("DNS"), _("OK"));
@@ -489,13 +493,13 @@ process_arguments (int argc, char **argv)
     case 'a': /* expected address */
       if (strlen (optarg) >= ADDRESS_LENGTH)
         die (STATE_UNKNOWN, "%s\n", _("Input buffer overflow"));
-      expected_address = (char **)realloc(expected_address, (expected_address_cnt+1) * sizeof(char**));
+      expected_address = (char **)realloc(expected_address, (expected_address_cnt+1) * sizeof(char*));
       expected_address[expected_address_cnt] = strdup(optarg);
       expected_address_cnt++;
       break;
     case 'q': /* querytype -- A or AAAA or ANY or SRV or TXT, etc. */
       if (strlen (optarg) < 1 || strlen (optarg) > 5)
-	die (STATE_UNKNOWN, "%s\n", _("Missing valid querytype parameter.  Try using 'A' or 'AAAA' or 'SRV'"));
+        die (STATE_UNKNOWN, "%s\n", _("Missing valid querytype parameter.  Try using 'A' or 'AAAA' or 'SRV'"));
       strntoupper(optarg, strlen(optarg));
       strcpy(query_type, "-querytype=");
       strcat(query_type, optarg);

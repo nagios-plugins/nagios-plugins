@@ -363,7 +363,7 @@ main (int argc, char **argv)
       else {
 	      xasprintf(&flag_header, "");
       }
-      xasprintf (&output, "%s %s %.0f %s (%.0f%%",
+      xasprintf (&output, "%s %s %.0f %s (%.2f%%",
                 output,
                 (!strcmp(me->me_mountdir, "none") || display_mntp) ? me->me_devname : me->me_mountdir,
                 path->dfree_units,
@@ -414,17 +414,17 @@ double calculate_percent(uintmax_t value, uintmax_t total) {
   double pct = -1;
   /* I don't understand the below, but it is taken from coreutils' df */
   /* Seems to be calculating pct, in the best possible way */
-  if (value <= TYPE_MAXIMUM(uintmax_t) / 100
+  if (value <= TYPE_MAXIMUM(uintmax_t) / 10000
     && total != 0) {
-    uintmax_t u100 = value * 100;
-    pct = u100 / total + (u100 % total != 0);
+    uintmax_t u100 = value * 10000;
+    pct = (u100 / total + (u100 % total != 0)) / 100.0;
   } else {
     /* Possible rounding errors - see coreutils' df for more explanation */
     double u = value;
     double t = total;
     if (t) {
-      long int lipct = pct = u * 100 / t;
-      double ipct = lipct;
+      long int lipct = pct = u * 10000 / t;
+      double ipct = lipct / 100.0;
 
       /* Like 'pct = ceil (dpct);', but without ceil - from coreutils again */
       if (ipct - 1 < pct && pct <= ipct + 1)

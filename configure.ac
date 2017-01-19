@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.59)
-AC_INIT(nagios-plugins,2.1.4)
+AC_INIT(nagios-plugins,2.2.0)
 AC_CONFIG_SRCDIR(NPTest.pm)
 AC_CONFIG_FILES([gl/Makefile
 	nagios-plugins.spec])
@@ -516,15 +516,15 @@ if ! test x"$with_openssl" = x"no"; then
 	dnl Check for crypto lib
 	_SAVEDLIBS="$LIBS"
 	LIBS="-L${with_openssl}/lib"
-	AC_CHECK_LIB(crypto,CRYPTO_lock)
-	if test "$ac_cv_lib_crypto_CRYPTO_lock" = "yes"; then
+	AC_CHECK_LIB(crypto,CRYPTO_new_ex_data)
+	if test "$ac_cv_lib_crypto_CRYPTO_new_ex_data" = "yes"; then
 		dnl Check for SSL lib
 		AC_CHECK_LIB(ssl,main, SSLLIBS="-lssl -lcrypto",,-lcrypto)
 	fi
 	LIBS="$_SAVEDLIBS"
 
 	dnl test headers and libs to decide whether check_http should use SSL
-	if test "$ac_cv_lib_crypto_CRYPTO_lock" = "yes"; then
+	if test "$ac_cv_lib_crypto_CRYPTO_new_ex_data" = "yes"; then
 		if test "$ac_cv_lib_ssl_main" = "yes"; then
 			if test "$FOUNDINCLUDE" = "yes"; then
 				FOUNDOPENSSL="yes"
@@ -1098,10 +1098,10 @@ then
 	ac_cv_ping_packets_first=yes
 	AC_MSG_RESULT([$with_ping_command])
 
-elif $PATH_TO_PING -n -U -w 10 -c 1 127.0.0.1 2>/dev/null | \
+elif $PATH_TO_PING -n -U -W 10 -c 1 127.0.0.1 2>/dev/null | \
 	egrep -i "^round-trip|^rtt" >/dev/null
 then
-	with_ping_command="$PATH_TO_PING -n -U -w %d -c %d %s"
+	with_ping_command="$PATH_TO_PING -n -U -W %d -c %d %s"
 	ac_cv_ping_packets_first=yes
 	ac_cv_ping_has_timeout=yes
 	AC_MSG_RESULT([$with_ping_command])
@@ -1214,10 +1214,10 @@ elif test "x$PATH_TO_PING6" != "x"; then
 		ac_cv_ping6_packets_first=yes
 		AC_MSG_RESULT([$with_ping6_command])
 
-	elif $PATH_TO_PING6 -n -U -w 10 -c 1 ::1 2>/dev/null | \
+	elif $PATH_TO_PING6 -n -U -W 10 -c 1 ::1 2>/dev/null | \
 		egrep -i "^round-trip|^rtt" >/dev/null
 	then
-		with_ping6_command="$PATH_TO_PING6 -n -U -w %d -c %d %s"
+		with_ping6_command="$PATH_TO_PING6 -n -U -W %d -c %d %s"
 		ac_cv_ping6_packets_first=yes
 		ac_cv_ping_has_timeout=yes
 		AC_MSG_RESULT([$with_ping6_command])
