@@ -115,7 +115,8 @@ fi
 AC_SUBST(NP_RELEASE)
 
 dnl Checks for programs.
-AC_PATH_PROG(PYTHON,python)
+#AC_PATH_PROG(PYTHON,python)
+AX_WITH_PYTHON([2.6], [missing])
 AC_PATH_PROG(SH,sh)
 AC_PATH_PROG(PERL,perl)
 AC_PATH_PROG(LIBGNUTLS_CONFIG,libgnutls-config)
@@ -1881,6 +1882,7 @@ AC_OUTPUT(
   plugins-scripts/Makefile
   plugins-scripts/utils.pm
   plugins-scripts/utils.sh
+  plugins-python/Makefile
   perlmods/Makefile
   test.pl
   pkg/solaris/pkginfo

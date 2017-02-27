@@ -252,6 +252,12 @@ NP-VERSION-FILE
 /plugins-scripts/check_wave
 /plugins-scripts/check_file_age
 
+# /plugins-python
+/plugins-python/Makefile.in
+/plugins-python/Makefile
+plugins-python/*.py
+plugins-python/check_ncpa.py
+
 # /po/
 /po/Makefile
 /po/Makefile.in
