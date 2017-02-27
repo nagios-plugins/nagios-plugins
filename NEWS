@@ -1,5 +1,10 @@
 This file documents the major additions and syntax changes between releases.
 
+x.x.x xxxx-xx-xx
+	FIXES
+	check_users: not accepting zero as the threshold
+
+
 2.2.0 2017-01-19
 	ENHANCEMENTS
 	check_flexlm: if `-F <license file>` is not specified, will use `LM_LICENSE_FILE` environment var
