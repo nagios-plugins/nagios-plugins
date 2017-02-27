@@ -1263,12 +1263,14 @@ check_http (void)
   /* server errors result in a critical state */
   else if (http_status >= 500) {
     xasprintf (&msg, _("%s%s - "), msg, status_line);
-    result = STATE_CRITICAL;
+    if (bad_response || !server_expect_yn)
+       result = STATE_CRITICAL;
   }
   /* client errors result in a warning state */
   else if (http_status >= 400) {
     xasprintf (&msg, _("%s%s - "), msg, status_line);
-    result = max_state_alt(STATE_WARNING, result);
+    if (bad_response || !server_expect_yn)
+      result = max_state_alt(STATE_WARNING, result);
   }
   /* check redirected page if specified */
   else if (http_status >= 300) {

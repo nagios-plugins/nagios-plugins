@@ -3,6 +3,7 @@ This file documents the major additions and syntax changes between releases.
 x.x.x xxxx-xx-xx
 	FIXES
 	check_users: not accepting zero as the threshold
+	check_http: reports warning where it should report ok with -e
 
 
 2.2.0 2017-01-19
