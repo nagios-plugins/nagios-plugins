@@ -750,7 +750,8 @@ header_value (const char *headers, const char *header)
 
   value_end = strchr(s, '\r');
   if (!value_end) {
-      die (STATE_UNKNOWN, _("HTTP_UNKNOWN - Failed to parse response headers\n"));
+      // Turns out there's no newline after the header... So it's at the end!
+      value_end = s + strlen(s);
   }
 
   value_size = value_end - s;
