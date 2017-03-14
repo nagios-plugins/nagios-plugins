@@ -6,6 +6,7 @@ x.x.x xxxx-xx-xx
 	check_http: reports warning where it should report ok with -e
 	check_snmp: does not work with -6 --ipv6 flags
 	check_swap: threshold calculation in bytes requires subtracting 65
+	check_uptime: fixed backward help text for thresholds
 
 
 2.2.0 2017-01-19

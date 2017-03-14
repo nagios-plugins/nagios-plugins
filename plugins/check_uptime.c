@@ -129,20 +129,20 @@ int getuptime () {
 static int process_arguments (int argc, char **argv) {
 
 	int c;
-        int escape = 0;
-        char *temp;
+	int escape = 0;
+	char *temp;
 	
-        int option = 0;
-        static struct option longopts[] = {
-                {"critical", required_argument, 0, 'c'},
-                {"warning", required_argument, 0, 'w'},
-    		{"timeout", required_argument, 0, 't'},
-                {"timeunit", required_argument, 0, 'u'},
-                {"verbose", no_argument, 0, 'v'},
-                {"version", no_argument, 0, 'V'},
-                {"help", no_argument, 0, 'h'},
-                {0, 0, 0, 0}
-        };
+	int option = 0;
+	static struct option longopts[] = {
+		{"critical", required_argument, 0, 'c'},
+		{"warning", required_argument, 0, 'w'},
+		{"timeout", required_argument, 0, 't'},
+		{"timeunit", required_argument, 0, 'u'},
+		{"verbose", no_argument, 0, 'v'},
+		{"version", no_argument, 0, 'V'},
+		{"help", no_argument, 0, 'h'},
+		{0, 0, 0, 0}
+	};
 
 	while ( 1 ) {
 
@@ -162,9 +162,9 @@ static int process_arguments (int argc, char **argv) {
 					printf("Verbose mode enabled\n");
 				}
 				break;
-    			case 'V':
-      				print_revision (progname, NP_VERSION);
-      				exit (STATE_OK);
+			case 'V':
+				print_revision (progname, NP_VERSION);
+				exit (STATE_OK);
 			case 'u':
 				timeunit = optarg;
 				break;
@@ -221,7 +221,7 @@ void print_help (void) {
 	print_revision ( progname, NP_VERSION );
 
 	printf ( COPYRIGHT, copyright, developer, email );
-	printf ( "%s\n", _("This plugin checks the system uptime and alerts if less than the threshold.") );
+	printf ( "%s\n", _("This plugin checks the system uptime and alerts if more than the threshold.") );
 	printf ( "%s\n", _("Threshold unit of measurement specified with \"-u\".") );
 	printf ( "%s\n", _("\"-u\" switch supports: seconds|minutes|hours|days.") );
 
@@ -229,13 +229,13 @@ void print_help (void) {
 	printf ( UT_HELP_VRSN );
 	printf ( UT_EXTRA_OPTS );
 
-        printf ( "%s\n", _("-t, Plugin timeout, default 10 seconds") );
-        printf ( "%s\n", _("-c, Critcal threshold") );
-	printf ( "%s\n", _("-w, Warning threshold") );
 	printf ( "%s\n", _("-u, Time unit of measurement (seconds|minutes|hours|days) (default: minutes)") );
-        printf ( "%s\n", _("-vvv, Enable verbose output") );
-        //printf ( "%s\n", _("-h, Print help and usage") );
+	printf ( "%s\n", _("-w, Warning threshold") );
+	printf ( "%s\n", _("-c, Critcal threshold") );
+	printf ( "%s\n", _("-t, Plugin timeout, default 10 seconds") );
+	printf ( "%s\n", _("-vvv, Enable verbose output") );
+	//printf ( "%s\n", _("-h, Print help and usage") );
 
-       printf ( UT_SUPPORT );
+	printf ( UT_SUPPORT );
 
 } // end print_help
