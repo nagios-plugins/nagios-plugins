@@ -1024,10 +1024,12 @@ check_http (void)
     microsec_ssl = deltime (tv_temp);
     elapsed_time_ssl = (double)microsec_ssl / 1.0e6;
     if (check_cert == TRUE) {
-      result = np_net_ssl_check_cert(days_till_exp_warn, days_till_exp_crit);
-      if (sd) close(sd);
-      np_net_ssl_cleanup();
-      return result;
+			result = np_net_ssl_check_cert(days_till_exp_warn, days_till_exp_crit);
+			if (result != STATE_OK) {
+				np_net_ssl_cleanup();
+				if (sd) close(sd);
+				return result;
+			}
     }
   }
 #endif /* HAVE_SSL */
