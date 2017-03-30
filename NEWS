@@ -8,7 +8,11 @@ x.x.x xxxx-xx-xx
 	check_swap: threshold calculation in bytes requires subtracting 65
 	check_uptime: fixed backward help text for thresholds
 	check_http: Don’t prematurely report success when checking HTTP TLS cert validity
-
+	check_mysql: Move uptime to the metric_count[]
+	check_http: fix parsing the last header
+	check_mailq: Fix for Postfix and better Sudo Checking
+	configure.ac: Fix spelling error
+	check_ntp_peer: requires newline when there is a socket timeout (fix in netutils.c)
 
 2.2.0 2017-01-19
 	ENHANCEMENTS
