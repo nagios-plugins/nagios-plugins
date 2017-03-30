@@ -1554,7 +1554,7 @@ if test -n "$PATH_TO_QMAIL_QSTAT"
 then
 	AC_DEFINE_UNQUOTED(PATH_TO_QMAIL_QSTAT,"$PATH_TO_QMAIL_QSTAT",[path to qmail-qstat])
 else
-	AC_MSG_WARN([Could not find qmail-qstat or eqivalent])
+	AC_MSG_WARN([Could not find qmail-qstat or equivalent])
 fi
 
 dnl SWAP info required is amount allocated/available and amount free
