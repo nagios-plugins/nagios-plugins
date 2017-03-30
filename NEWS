@@ -13,6 +13,8 @@ x.x.x xxxx-xx-xx
 	check_mailq: Fix for Postfix and better Sudo Checking
 	configure.ac: Fix spelling error
 	check_ntp_peer: requires newline when there is a socket timeout (fix in netutils.c)
+	check_users: segmentation fault if both thresholds are not provided
+
 
 2.2.0 2017-01-19
 	ENHANCEMENTS
