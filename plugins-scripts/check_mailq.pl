@@ -59,11 +59,13 @@ if ($status){
 }
 
 if ($opt_s) {
-	if (defined $utils::PATH_TO_SUDO && -x $utils::PATH_TO_SUDO) {
-		$sudo = $utils::PATH_TO_SUDO;
-	} else {
-		print "ERROR: Cannot execute sudo\n";
-		exit $ERRORS{'UNKNOWN'};
+	if ($utils::PATH_TO_SUDO ne "") {
+		if (-x $utils::PATH_TO_SUDO) {
+			$sudo = $utils::PATH_TO_SUDO;
+		} else {
+			print "ERROR: Cannot execute sudo\n";
+			exit $ERRORS{'UNKNOWN'};
+		}
 	}
 } else {
 	$sudo = "";
@@ -309,26 +311,31 @@ if ($mailq eq "sendmail") {
 elsif ( $mailq eq "postfix" ) {
 
      ## open mailq
-        if ( defined $utils::PATH_TO_MAILQ && -x $utils::PATH_TO_MAILQ ) {
-                if (! open (MAILQ, "$sudo $utils::PATH_TO_MAILQ | " ) ) {
-                        print "ERROR: could not open $utils::PATH_TO_MAILQ \n";
-                        exit $ERRORS{'UNKNOWN'};
-                }
-        }elsif( defined $utils::PATH_TO_MAILQ){
-                unless (-x $utils::PATH_TO_MAILQ) {
-                        print "ERROR: $utils::PATH_TO_MAILQ is not executable by (uid $>:gid($)))\n";
-                        exit $ERRORS{'UNKNOWN'};
-                }
-        } else {
-                print "ERROR: \$utils::PATH_TO_MAILQ is not defined\n";
-                exit $ERRORS{'UNKNOWN'};
-        }
+	if ( defined $utils::PATH_TO_MAILQ ) {
+		if (-x $utils::PATH_TO_MAILQ) {
+			if (! open (MAILQ, "$utils::PATH_TO_MAILQ | ")) {
+				print "ERROR: $utils::PATH_TO_MAILQ returned an error\n";
+				exit $ERRORS{'UNKNOWN'};
+			}
+		}
+		else {
+			if ( $sudo ne "" ) {
+				if (! open (MAILQ, "$sudo $utils::PATH_TO_MAILQ | " ) ) {
+					print "ERROR: $utils::PATH_TO_MAILQ is not executable with sudo by (uid $>:gid($)))\n";
+					exit $ERRORS{'UNKNOWN'};
+				}
+			} else {
+				print "ERROR: $utils::PATH_TO_MAILQ is not executable by (uid $>:gid($))) and sudo is not set in utils.pm\n";
+				exit $ERRORS{'UNKNOWN'};
+			}
+		}
+	} else {
+		print "ERROR: \$utils::PATH_TO_MAILQ is not defined in utils.pm\n";
+		exit $ERRORS{'UNKNOWN'};
+	}
 
 
-        @lines = reverse <MAILQ>;
-
-        # close qmail-qstat
-        close MAILQ;
+	@lines = reverse <MAILQ>;
 
         if ( $? ) {
 		print "CRITICAL: Error code ".($?>>8)." returned from $utils::PATH_TO_MAILQ",$/;

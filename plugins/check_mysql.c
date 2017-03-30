@@ -66,17 +66,18 @@ int verbose = 0;
 static double warning_time = 0;
 static double critical_time = 0;
 
-#define LENGTH_METRIC_UNIT 6
+#define LENGTH_METRIC_UNIT 7
 static const char *metric_unit[LENGTH_METRIC_UNIT] = {
-	"Open_files",
+	"x",
 	"Open_tables",
 	"Qcache_free_memory",
 	"Qcache_queries_in_cache",
 	"Threads_connected",
 	"Threads_running"
+	"Uptime"
 };
 
-#define LENGTH_METRIC_COUNTER 9
+#define LENGTH_METRIC_COUNTER 8
 static const char *metric_counter[LENGTH_METRIC_COUNTER] = {
 	"Connections",
 	"Qcache_hits",
@@ -86,7 +87,6 @@ static const char *metric_counter[LENGTH_METRIC_COUNTER] = {
 	"Queries",
 	"Questions",
 	"Table_locks_waited",
-	"Uptime"
 };
 
 thresholds *my_threshold = NULL;
