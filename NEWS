@@ -14,6 +14,7 @@ x.x.x xxxx-xx-xx
 	configure.ac: Fix spelling error
 	check_ntp_peer: requires newline when there is a socket timeout (fix in netutils.c)
 	check_users: segmentation fault if both thresholds are not provided
+	check_dns: DNS CRITICAL - expected ‘{hostname}.’ but got 'name = {hostname}.'
 
 
 2.2.0 2017-01-19

@@ -28,9 +28,9 @@
 * 
 * 
 *****************************************************************************/
-#define IF_RECORD(label, querytype, verb_str) if (strstr (chld_out.line[i], label) && (strncmp(query_type, querytype, query_size) == 0 || strncmp(query_type, "-querytype=ANY", query_size) == 0)) { \
+#define IF_RECORD(label, querytype, verb_str, comp_str) if (strstr (chld_out.line[i], label) && (strncmp(query_type, querytype, query_size) == 0 || strncmp(query_type, "-querytype=ANY", query_size) == 0)) { \
       if (verbose) printf(verb_str); \
-      temp_buffer = rindex (chld_out.line[i], ' '); \
+      temp_buffer = rindex (chld_out.line[i], comp_str); \
       addresses[n_addresses++] = check_new_address(temp_buffer); \
       memset(query_found, '\0', sizeof(query_found)); \
       strncpy(query_found, querytype, sizeof(query_found)); 
@@ -189,12 +189,12 @@ main (int argc, char **argv)
     if (strstr (chld_out.line[i], "Name:"))
       parse_address = TRUE;
     /* begin handling types of records */
-    IF_RECORD("AAAA address", "-querytype=AAAA", "Found AAAA record\n") }
-    else IF_RECORD("exchanger =", "-querytype=MX", "Found MX record\n") }
-    else IF_RECORD("service =", "-querytype=SRV", "Found SRV record\n") }
-    else IF_RECORD("nameserver =", "-querytype=NS", "Found NS record\n") }
-    else IF_RECORD("dname =", "-querytype=DNAME", "Found DNAME record\n") }
-    else IF_RECORD("protocol =", "-querytype=WKS", "Found WKS record\n") }
+    IF_RECORD("AAAA address", "-querytype=AAAA", "Found AAAA record\n", ' ') }
+    else IF_RECORD("exchanger =", "-querytype=MX", "Found MX record\n", '=') }
+    else IF_RECORD("service =", "-querytype=SRV", "Found SRV record\n", ' ') }
+    else IF_RECORD("nameserver =", "-querytype=NS", "Found NS record\n", ' ') }
+    else IF_RECORD("dname =", "-querytype=DNAME", "Found DNAME record\n", ' ') }
+    else IF_RECORD("protocol =", "-querytype=WKS", "Found WKS record\n", ' ') }
     else if (strstr (chld_out.line[i], "text =") && (strncmp(query_type, "-querytype=TXT", query_size) == 0 || strncmp(query_type, "-querytype=ANY", query_size) == 0)) {
       if (verbose) printf("Found TXT record\n");
       temp_buffer = index(chld_out.line[i], '"');
@@ -203,8 +203,9 @@ main (int argc, char **argv)
       memset(query_found, '\0', sizeof(query_found));
       strncpy(query_found, "-querytype=TXT", sizeof(query_found)); 
     }
+
     /* only matching for origin records, if requested other fields could be included at a later date */
-    else IF_RECORD("origin =", "-querytype=SOA", "Found SOA record\n") }
+    else IF_RECORD("origin =", "-querytype=SOA", "Found SOA record\n", ' ') }
     /* cnames cannot use macro as we must check for accepting them separately */
     else if (accept_cname && strstr (chld_out.line[i], "canonical name =") && (strncmp(query_type, "-querytype=CNAME", query_size) == 0 || strncmp(query_type, "-querytype=ANY", query_size) == 0)) {
       if (verbose) printf("Found CNAME record\n");
@@ -220,7 +221,7 @@ main (int argc, char **argv)
       strncpy(query_found, "-querytype=A", sizeof(query_found));
     }
     /* must be after other records with "name" as an identifier, as ptr does not spefify */
-    else IF_RECORD("name =", "-querytype=PTR", "Found PTR record\n") }
+    else IF_RECORD("name =", "-querytype=PTR", "Found PTR record\n", ' ') }
     /* needed for non-query ptr\reverse lookup checks */
     else if (strstr(chld_out.line[i], ".in-addr.arpa") && !query_set) {
       if ((temp_buffer = strstr(chld_out.line[i], "name = ")))
