@@ -1,5 +1,10 @@
 This file documents the major additions and syntax changes between releases.
 
+x.x.x xxxx-xx-xx
+	ENHANCEMENTS
+	Added directory plugins-python containing three Python plugins
+	check_http: New parameter `--verify-host` will check if -H hostname matches the SSL certificate
+
 2.2.1 2017-04-19
 	FIXES
 	check_users: not accepting zero as the threshold
