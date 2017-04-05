@@ -146,9 +146,6 @@ char *perfd_size (int page_len);
 void print_help (void);
 void print_usage (void);
 
-extern int check_hostname;
-
-
 int
 main (int argc, char **argv)
 {
@@ -203,8 +200,7 @@ process_arguments (int argc, char **argv)
 
   enum {
     INVERT_REGEX = CHAR_MAX + 1,
-    SNI_OPTION,
-		VERIFY_HOST
+    SNI_OPTION
   };
 
   int option = 0;
@@ -214,7 +210,6 @@ process_arguments (int argc, char **argv)
     {"nohtml", no_argument, 0, 'n'},
     {"ssl", optional_argument, 0, 'S'},
     {"sni", no_argument, 0, SNI_OPTION},
-		{"verify-host", no_argument, 0, VERIFY_HOST},
     {"post", required_argument, 0, 'P'},
     {"method", required_argument, 0, 'j'},
     {"IP-address", required_argument, 0, 'I'},
@@ -373,9 +368,6 @@ process_arguments (int argc, char **argv)
     case SNI_OPTION:
       use_sni = TRUE;
       break;
-		case VERIFY_HOST:
-			check_hostname = 1;
-			break;
     case 'f': /* onredirect */
       if (!strcmp (optarg, "stickyport"))
         onredirect = STATE_DEPENDENT, followsticky = STICKY_HOST|STICKY_PORT;
@@ -1676,10 +1668,6 @@ print_help (void)
   printf ("    %s\n", _("1.2 = TLSv1.2). With a '+' suffix, newer versions are also accepted."));
   printf (" %s\n", "--sni");
   printf ("    %s\n", _("Enable SSL/TLS hostname extension support (SNI)"));
-#if OPENSSL_VERSION_NUMBER >= 0x10002000L
-	printf (" %s\n", "--verify-host");
-  printf ("    %s\n", _("Verify SSL certificate is for the -H hostname (with --sni and -S)"));
-#endif
   printf (" %s\n", "-C, --certificate=INTEGER[,INTEGER]");
   printf ("    %s\n", _("Minimum number of days a certificate has to be valid. Port defaults to 443"));
   printf ("    %s\n", _("(when this option is used the URL is not checked.)"));
@@ -1814,11 +1802,6 @@ print_usage (void)
   printf ("       [-b proxy_auth] [-f <ok|warning|critcal|follow|sticky|stickyport>]\n");
   printf ("       [-e <expect>] [-d string] [-s string] [-l] [-r <regex> | -R <case-insensitive regex>]\n");
   printf ("       [-P string] [-m <min_pg_size>:<max_pg_size>] [-4|-6] [-N] [-M <age>]\n");
-#if OPENSSL_VERSION_NUMBER >= 0x10002000L
-	printf ("       [-A string] [-k string] [-S <version>] [--sni] [--verify-host]\n");
-	printf ("       [-C <warn_age>[,<crit_age>]] [-T <content-type>] [-j method]\n");
-#else
-	printf ("       [-A string] [-k string] [-S <version>] [--sni] [-C <warn_age>[,<crit_age>]]\n");
-	printf ("       [-T <content-type>] [-j method]\n");
-#endif
+  printf ("       [-A string] [-k string] [-S <version>] [--sni] [-C <warn_age>[,<crit_age>]]\n");
+  printf ("       [-T <content-type>] [-j method]\n");
 }

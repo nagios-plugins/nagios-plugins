@@ -146,9 +146,6 @@
 #    include <rsa.h>
 #    include <crypto.h>
 #    include <x509.h>
-#    if OPENSSL_VERSION_NUMBER >= 0x10002000L
-#      include <x509v3.h>
-#    endif
 #    include <pem.h>
 #    include <ssl.h>
 #    include <err.h>
@@ -157,9 +154,6 @@
 #      include <openssl/rsa.h>
 #      include <openssl/crypto.h>
 #      include <openssl/x509.h>
-#      if OPENSSL_VERSION_NUMBER >= 0x10002000L
-#        include <openssl/x509v3.h>
-#      endif
 #      include <openssl/pem.h>
 #      include <openssl/ssl.h>
 #      include <openssl/err.h>
