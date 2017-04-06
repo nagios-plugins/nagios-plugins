@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.59)
-AC_INIT(nagios-plugins,2.2.0)
+AC_INIT(nagios-plugins,2.2.1)
 AC_CONFIG_SRCDIR(NPTest.pm)
 AC_CONFIG_FILES([gl/Makefile
 	nagios-plugins.spec])
@@ -1882,12 +1882,12 @@ AC_OUTPUT(
   plugins-scripts/Makefile
   plugins-scripts/utils.pm
   plugins-scripts/utils.sh
-  plugins-python/Makefile
   perlmods/Makefile
   test.pl
   pkg/solaris/pkginfo
   po/Makefile.in
 )
+#  plugins-python/Makefile
 
 
 dnl the ones below that are commented out need to be cleaned up
