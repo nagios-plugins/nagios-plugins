@@ -4,6 +4,7 @@ This file documents the major additions and syntax changes between releases.
 	FIXES
 	check_disk: autofs being mounted despite '-l'. Fixed, and also excluded some system "fake" mountpoints
 	check_ntp_time: Periodically returns "Socket timeout" when one of several ntp server doesn't respond
+	check_ntp_time calls `write` on a UDP socket without a successful call to `connect`
 
 
 2.2.1 2017-04-19
