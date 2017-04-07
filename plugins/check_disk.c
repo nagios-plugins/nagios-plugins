@@ -180,7 +180,7 @@ main (int argc, char **argv)
   double critical_high_tide;
   int temp_result;
 
-  struct mount_entry *me;
+  struct mount_entry *me, *last_me = NULL;
   struct fs_usage fsp, tmpfsp;
   struct parameter_list *temp_list, *path;
 
@@ -211,6 +211,27 @@ main (int argc, char **argv)
    */
   if (path_selected == FALSE) {
     for (me = mount_list; me; me = me->me_next) {
+			if (strcmp(me->me_type, "autofs") == 0 && show_local_fs) {
+				if (last_me == NULL)
+					mount_list = me;
+				else
+					last_me->me_next = me->me_next;
+				free_mount_entry (me);
+				continue;
+			}
+			if (strcmp(me->me_type, "sysfs") == 0 || strcmp(me->me_type, "proc") == 0
+			|| strcmp(me->me_type, "debugfs") == 0 || strcmp(me->me_type, "tracefs") == 0
+			|| strcmp(me->me_type, "fusectl") == 0 || strcmp(me->me_type, "fuse.gvfsd-fuse") == 0
+			|| strcmp(me->me_type, "cgroup") == 0 || strstr(me->me_type, "tmpfs") != NULL)
+			{
+				if (last_me == NULL)
+					mount_list = me->me_next;
+				else
+					last_me->me_next = me->me_next;
+				free_mount_entry (me);
+				continue;
+			}
+
       if (! (path = np_find_parameter(path_select_list, me->me_mountdir))) {
         path = np_add_parameter(&path_select_list, me->me_mountdir);
       }
@@ -989,7 +1010,7 @@ stat_path (struct parameter_list *p)
 {
   /* Stat entry to check that dir exists and is accessible */
   if (verbose >= 3)
-    printf("calling stat on %s\n", p->name);
+    printf("calling stat on %s (%s %s)\n", p->name, p->best_match->me_devname, p->best_match->me_type);
   if (stat (p->name, &stat_buf[0])) {
     if (verbose >= 3)
       printf("stat failed on %s\n", p->name);
