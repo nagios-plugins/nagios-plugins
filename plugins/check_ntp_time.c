@@ -413,6 +413,9 @@ double offset_request(const char *host, int *status){
 			}
 		}
 		/* lather, rinse, repeat. */
+		/* break if we have one response but other ntp servers doesn't response */
+		/* greater than timeout_interval/2 */
+		if (servers_completed && now_time-start_ts > timeout_interval/2) break;
 	}
 
 	if (one_read == 0) {
