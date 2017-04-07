@@ -3,6 +3,7 @@ This file documents the major additions and syntax changes between releases.
 2.2.2 xxxx-xx-xx
 	FIXES
 	check_disk: autofs being mounted despite '-l'. Fixed, and also excluded some system "fake" mountpoints
+	check_ntp_time: Periodically returns "Socket timeout" when one of several ntp server doesn't respond
 
 
 2.2.1 xxxx-xx-xx
