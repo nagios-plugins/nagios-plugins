@@ -6,7 +6,6 @@ This file documents the major additions and syntax changes between releases.
 	check_ntp_time: Periodically returns "Socket timeout" when one of several ntp server doesn't respond
 
 
-2.2.1 xxxx-xx-xx
 2.2.1 2017-04-19
 	FIXES
 	check_users: not accepting zero as the threshold
