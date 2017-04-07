@@ -4,6 +4,7 @@ cscope.out
 nbproject/
 .kdev4/
 plugins.kdev4
+plugins.project
 
 # In all paths
 NP-VERSION-FILE
