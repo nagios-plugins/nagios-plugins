@@ -698,7 +698,7 @@ int chunk_header(char **buf)
     ++*buf;
 
   // soak up the leading CRLF
-  while (**buff != '\0' && (**buf == '\r' || **buf == '\n'))
+  while (**buf != '\0' && (**buf == '\r' || **buf == '\n'))
     ++*buf;
 
   return lth;
@@ -722,7 +722,7 @@ decode_chunked_page (const char *raw, char *dst)
     dst_pos += chunksize;
     *dst_pos = '\0';
 
-		while (*raw_pos && (*raw_pos == '\r' || **raw_pos == '\n')
+		while (*raw_pos && (*raw_pos == '\r' || *raw_pos == '\n'))
       raw_pos++;
   }
 
