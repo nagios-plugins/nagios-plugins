@@ -3,6 +3,7 @@ This file documents the major additions and syntax changes between releases.
 2.3.0 xxxx-xx-xx
 	ENHANCEMENTS
 	check_ping: plugin output will now include hostname and IP address
+	check_disk_smb: Add configfile feature
 
 
 2.2.2 xxxx-xx-xx
