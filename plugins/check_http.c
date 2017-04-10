@@ -694,14 +694,12 @@ int chunk_header(char **buf)
   if (lth <= 0)
 	 return lth;
 
-  while (**buf != '\r' && **buf != '\n')
+  while (**buf !='\0' && **buf != '\r' && **buf != '\n')
     ++*buf;
 
   // soak up the leading CRLF
-  if (**buf && **buf == '\r' && *(++*buf) && **buf == '\n')
+  while (**buff != '\0' && (**buf == '\r' || **buf == '\n'))
     ++*buf;
-  else
-    die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, invalid format\n"));
 
   return lth;
 }
@@ -724,7 +722,7 @@ decode_chunked_page (const char *raw, char *dst)
     dst_pos += chunksize;
     *dst_pos = '\0';
 
-    if (*raw_pos && *raw_pos == '\r' && *(++raw_pos) && *raw_pos == '\n')
+		while (*raw_pos && (*raw_pos == '\r' || **raw_pos == '\n')
       raw_pos++;
   }
 
@@ -749,6 +747,8 @@ header_value (const char *headers, const char *header)
   while (*s && isspace(*s)) s++;
 
   value_end = strchr(s, '\r');
+  if (!value_end)
+		value_end = strchr(s, '\n');
   if (!value_end) {
       // Turns out there's no newline after the header... So it's at the end!
       value_end = s + strlen(s);
