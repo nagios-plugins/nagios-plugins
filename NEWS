@@ -6,6 +6,7 @@ This file documents the major additions and syntax changes between releases.
 	check_ntp_time: Periodically returns "Socket timeout" when one of several ntp server doesn't respond
 	check_ntp_time calls `write` on a UDP socket without a successful call to `connect`
 	check_mysql_query & mysql_query: extra-opts causes crash
+	check_log does not check for "-O oldlog"
 
 
 2.2.1 2017-04-19
