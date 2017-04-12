@@ -73,7 +73,7 @@ static const char *metric_unit[LENGTH_METRIC_UNIT] = {
 	"Qcache_free_memory",
 	"Qcache_queries_in_cache",
 	"Threads_connected",
-	"Threads_running"
+	"Threads_running",
 	"Uptime"
 };
 
