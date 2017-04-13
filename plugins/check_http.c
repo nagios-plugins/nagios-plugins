@@ -1027,8 +1027,8 @@ check_http (void)
     if (check_cert == TRUE) {
 			result = np_net_ssl_check_cert(days_till_exp_warn, days_till_exp_crit);
 			if (result != STATE_OK) {
-				np_net_ssl_cleanup();
 				if (sd) close(sd);
+				np_net_ssl_cleanup();
 				return result;
 			}
     }
