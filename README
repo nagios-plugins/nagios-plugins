@@ -8,7 +8,7 @@ Nagios Plugins
 * For major changes between releases, read the `NEWS` file.
 
 * For information on detailed changes that have been made or plugins
-  that have been added, read the `ChangeLog` file.
+  that have been added, read the `NEWS` file.
 
 * Some plugins require that you have additional programs and/or
   libraries installed on your system before they can be used.  Plugins that
