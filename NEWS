@@ -26,6 +26,7 @@ This file documents the major additions and syntax changes between releases.
 	check_mailq: Nullmailer Regex is not working for Ubuntu 16.04
 	check_swap: Downstream Fedora patch: Prevent check_swap from returning OK, if no swap activated
 	Building RPMs on Amazon Linux - Add 'install-root' on line 165 of spec file
+	check_http: Memory allocation error
 
 
 2.2.0 2017-01-19
