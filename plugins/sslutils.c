@@ -195,6 +195,15 @@ int np_net_ssl_read(void *buf, int num) {
 
 int np_net_ssl_check_cert(int days_till_exp_warn, int days_till_exp_crit){
 #  ifdef USE_OPENSSL
+	return np_net_ssl_check_cert_real(s, days_till_exp_warn, days_till_exp_crit);
+#  else /* ifndef USE_OPENSSL */
+	printf ("%s\n", _("WARNING - Plugin does not support checking certificates."));
+	return STATE_WARNING;
+#  endif /* USE_OPENSSL */
+}
+
+int np_net_ssl_check_cert_real(SSL *ssl, int days_till_exp_warn, int days_till_exp_crit){
+#  ifdef USE_OPENSSL
 	X509 *certificate=NULL;
 	X509_NAME *subj=NULL;
 	char timestamp[50] = "";
@@ -211,7 +220,7 @@ int np_net_ssl_check_cert(int days_till_exp_warn, int days_till_exp_crit){
 	int time_remaining;
 	time_t tm_t;
 
-	certificate=SSL_get_peer_certificate(s);
+	certificate=SSL_get_peer_certificate(ssl);
 	if (!certificate) {
 		printf("%s\n",_("CRITICAL - Cannot retrieve server certificate."));
 		return STATE_CRITICAL;
