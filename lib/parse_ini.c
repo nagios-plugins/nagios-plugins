@@ -30,6 +30,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <../gl/idpriv.h>
 
 /* np_ini_info contains the result of parsing a "locator" in the format
  * [stanza_name][@config_filename] (check_foo@/etc/foo.ini, for example)
