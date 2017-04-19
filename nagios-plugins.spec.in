@@ -162,7 +162,7 @@ fi
 
 %install
 rm -rf $RPM_BUILD_ROOT
-make AM_INSTALL_PROGRAM_FLAGS="" DESTDIR=${RPM_BUILD_ROOT} install
+make AM_INSTALL_PROGRAM_FLAGS="" DESTDIR=${RPM_BUILD_ROOT} install install-root
 %find_lang %{name}
 echo "%defattr(755,%{npusr},%{npgrp})" >> %{name}.lang
 comm -13 %{npdir}/ls-plugins-before %{npdir}/ls-plugins-after | egrep -v "\.o$|^\." | gawk -v libexecdir=%{_libexecdir} '{printf( "%s/%s\n", libexecdir, $0);}' >> %{name}.lang

@@ -51,7 +51,7 @@ const char *email = "devel@nagios-plugins.org";
 # define SWAP_CONVERSION 1
 #endif
 
-int check_swap (int usp, float free_swap_mb);
+int check_swap (int usp, double free_swap_mb);
 int process_arguments (int argc, char **argv);
 int validate_arguments (void);
 void print_usage (void);
@@ -61,8 +61,8 @@ int have_warn = 0;
 int have_crit = 0;
 int warn_percent = 0;
 int crit_percent = 0;
-float warn_size_bytes = 0;
-float crit_size_bytes= 0;
+double warn_size_bytes = 0;
+double crit_size_bytes= 0;
 int verbose;
 int allswaps;
 
@@ -70,8 +70,8 @@ int
 main (int argc, char **argv)
 {
 	int percent_used, percent;
-	float total_swap_mb = 0, used_swap_mb = 0, free_swap_mb = 0;
-	float dsktotal_mb = 0, dskused_mb = 0, dskfree_mb = 0, tmp_mb = 0;
+	double total_swap_mb = 0, used_swap_mb = 0, free_swap_mb = 0;
+	double dsktotal_mb = 0, dskused_mb = 0, dskfree_mb = 0, tmp_mb = 0;
 	int result = STATE_UNKNOWN;
 	char input_buffer[MAX_INPUT_BUFFER];
 #ifdef HAVE_PROC_MEMINFO
@@ -117,7 +117,7 @@ main (int argc, char **argv)
 	}
 	fp = fopen (PROC_MEMINFO, "r");
 	while (fgets (input_buffer, MAX_INPUT_BUFFER - 1, fp)) {
-		if (sscanf (input_buffer, "%*[S]%*[w]%*[a]%*[p]%*[:] %f %f %f", &dsktotal_mb, &dskused_mb, &dskfree_mb) == 3) {
+		if (sscanf (input_buffer, "%*[S]%*[w]%*[a]%*[p]%*[:] %lf %lf %lf", &dsktotal_mb, &dskused_mb, &dskfree_mb) == 3) {
 			dsktotal_mb = dsktotal_mb / 1048576;	/* Apply conversion */
 			dskused_mb = dskused_mb / 1048576;
 			dskfree_mb = dskfree_mb / 1048576;
@@ -126,7 +126,7 @@ main (int argc, char **argv)
 			free_swap_mb += dskfree_mb;
 			if (allswaps) {
 				if (dsktotal_mb == 0)
-					percent=100.0;
+					percent=0.0;
 				else
 					percent = 100 * (((double) dskused_mb) / ((double) dsktotal_mb));
 				result = max_state (result, check_swap (percent, dskfree_mb));
@@ -134,9 +134,9 @@ main (int argc, char **argv)
 					xasprintf (&status, "%s [%.0f (%d%%)]", status, dskfree_mb, 100 - percent);
 			}
 		}
-		else if (sscanf (input_buffer, "%*[S]%*[w]%*[a]%*[p]%[TotalFre]%*[:] %f %*[k]%*[B]", str, &tmp_mb)) {
+		else if (sscanf (input_buffer, "%*[S]%*[w]%*[a]%*[p]%[TotalFre]%*[:] %lf %*[k]%*[B]", str, &tmp_mb)) {
 			if (verbose >= 3) {
-				printf("Got %s with %f\n", str, tmp_mb);
+				printf("Got %s with %lf\n", str, tmp_mb);
 			}
 			/* I think this part is always in Kb, so convert to mb */
 			if (strcmp ("Total", str) == 0) {
@@ -162,7 +162,7 @@ main (int argc, char **argv)
 #  ifdef _AIX
 	if (!allswaps) {
 		xasprintf(&swap_command, "%s", "/usr/sbin/lsps -s");
-		xasprintf(&swap_format, "%s", "%f%*s %f");
+		xasprintf(&swap_format, "%s", "%lf%*s %lf");
 		conv_factor = 1;
 	}
 #  endif
@@ -189,9 +189,9 @@ main (int argc, char **argv)
 		temp_buffer = strtok (input_buffer, " \n");
 		while (temp_buffer) {
 			if (strstr (temp_buffer, "blocks"))
-				sprintf (str, "%s %s", str, "%f");
+				sprintf (str, "%s %s", str, "%lf");
 			else if (strstr (temp_buffer, "dskfree"))
-				sprintf (str, "%s %s", str, "%f");
+				sprintf (str, "%s %s", str, "%lf");
 			else
 				sprintf (str, "%s %s", str, "%*s");
 			temp_buffer = strtok (NULL, " \n");
@@ -281,8 +281,8 @@ main (int argc, char **argv)
 	}
 
 	for(i=0;i<nswaps;i++){
-		dsktotal_mb = (float) tbl->swt_ent[i].ste_pages / SWAP_CONVERSION;
-		dskfree_mb = (float) tbl->swt_ent[i].ste_free /  SWAP_CONVERSION;
+		dsktotal_mb = (double) tbl->swt_ent[i].ste_pages / SWAP_CONVERSION;
+		dskfree_mb = (double) tbl->swt_ent[i].ste_free /  SWAP_CONVERSION;
 		dskused_mb = ( dsktotal_mb - dskfree_mb );
 
 		if (verbose >= 3)
@@ -323,8 +323,8 @@ main (int argc, char **argv)
 	}
 
 	for(i=0;i<nswaps;i++){
-		dsktotal_mb = (float) ent[i].se_nblks / conv_factor;
-		dskused_mb = (float) ent[i].se_inuse / conv_factor;
+		dsktotal_mb = (double) ent[i].se_nblks / conv_factor;
+		dskused_mb = (double) ent[i].se_inuse / conv_factor;
 		dskfree_mb = ( dsktotal_mb - dskused_mb );
 
 		if(allswaps && dsktotal_mb > 0){
@@ -376,10 +376,10 @@ main (int argc, char **argv)
 
 
 int
-check_swap (int usp, float free_swap_mb)
+check_swap (int usp, double free_swap_mb)
 {
 	int result = STATE_UNKNOWN;
-	float free_swap = free_swap_mb * (1024 * 1024);		/* Convert back to bytes as warn and crit specified in bytes */
+	double free_swap = free_swap_mb * (1024 * 1024);		/* Convert back to bytes as warn and crit specified in bytes */
 	if (usp >= 0 && crit_percent != 0 && usp >= (100.0 - crit_percent))
 		result = STATE_CRITICAL;
 	else if (crit_size_bytes > 0 && free_swap <= crit_size_bytes)
@@ -424,13 +424,13 @@ process_arguments (int argc, char **argv)
 		switch (c) {
 		case 'w':									/* warning size threshold */
 			if (is_intnonneg (optarg)) {
-				warn_size_bytes = (float) atoi (optarg);
+				warn_size_bytes = (double) atoi (optarg);
 				have_warn = TRUE;
 				break;
 			}
 			else if (strstr (optarg, ",") &&
 							 strstr (optarg, "%") &&
-							 sscanf (optarg, "%f,%d%%", &warn_size_bytes, &warn_percent) == 2) {
+							 sscanf (optarg, "%lf,%d%%", &warn_size_bytes, &warn_percent) == 2) {
 				warn_size_bytes = floorf(warn_size_bytes);
 				have_warn = TRUE;
 				break;
@@ -445,13 +445,13 @@ process_arguments (int argc, char **argv)
 			}
 		case 'c':									/* critical size threshold */
 			if (is_intnonneg (optarg)) {
-				crit_size_bytes = (float) atoi (optarg);
+				crit_size_bytes = (double) atoi (optarg);
 				have_crit = TRUE;
 				break;
 			}
 			else if (strstr (optarg, ",") &&
 							 strstr (optarg, "%") &&
-							 sscanf (optarg, "%f,%d%%", &crit_size_bytes, &crit_percent) == 2) {
+							 sscanf (optarg, "%lf,%d%%", &crit_size_bytes, &crit_percent) == 2) {
 				crit_size_bytes = floorf(crit_size_bytes);
 				have_crit = TRUE;
 				break;
@@ -495,12 +495,12 @@ process_arguments (int argc, char **argv)
 	if (c == argc)
 		return validate_arguments ();
 	if (warn_size_bytes == 0 && is_intnonneg (argv[c]))
-		warn_size_bytes = (float) atoi (argv[c++]);
+		warn_size_bytes = (double) atoi (argv[c++]);
 
 	if (c == argc)
 		return validate_arguments ();
 	if (crit_size_bytes == 0 && is_intnonneg (argv[c]))
-		crit_size_bytes = (float) atoi (argv[c++]);
+		crit_size_bytes = (double) atoi (argv[c++]);
 
 	return validate_arguments ();
 }

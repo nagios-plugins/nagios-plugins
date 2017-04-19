@@ -1,5 +1,24 @@
 This file documents the major additions and syntax changes between releases.
 
+2.2.1 2017-04-19
+	FIXES
+	check_users: not accepting zero as the threshold
+	check_http: reports warning where it should report ok with -e
+	check_snmp: does not work with -6 --ipv6 flags
+	check_swap: threshold calculation in bytes requires subtracting 65
+	check_uptime: fixed backward help text for thresholds
+	check_http: Don’t prematurely report success when checking HTTP TLS cert validity
+	check_http: fix parsing the last header
+	check_mailq: Fix for Postfix and better Sudo Checking
+	configure.ac: Fix spelling error
+	check_ntp_peer: requires newline when there is a socket timeout (fix in netutils.c)
+	check_users: segmentation fault if both thresholds are not provided
+	check_dns: DNS CRITICAL - expected ‘{hostname}.’ but got 'name = {hostname}.'
+	check_mailq: Nullmailer Regex is not working for Ubuntu 16.04
+	check_swap: Downstream Fedora patch: Prevent check_swap from returning OK, if no swap activated
+	Building RPMs on Amazon Linux - Add 'install-root' on line 165 of spec file
+
+
 2.2.0 2017-01-19
 	ENHANCEMENTS
 	check_flexlm: if `-F <license file>` is not specified, will use `LM_LICENSE_FILE` environment var

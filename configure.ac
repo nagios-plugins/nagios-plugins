@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.59)
-AC_INIT(nagios-plugins,2.2.0)
+AC_INIT(nagios-plugins,2.2.1)
 AC_CONFIG_SRCDIR(NPTest.pm)
 AC_CONFIG_FILES([gl/Makefile
 	nagios-plugins.spec])
@@ -115,7 +115,8 @@ fi
 AC_SUBST(NP_RELEASE)
 
 dnl Checks for programs.
-AC_PATH_PROG(PYTHON,python)
+#AC_PATH_PROG(PYTHON,python)
+AX_WITH_PYTHON([2.6], [missing])
 AC_PATH_PROG(SH,sh)
 AC_PATH_PROG(PERL,perl)
 AC_PATH_PROG(LIBGNUTLS_CONFIG,libgnutls-config)
@@ -1553,7 +1554,7 @@ if test -n "$PATH_TO_QMAIL_QSTAT"
 then
 	AC_DEFINE_UNQUOTED(PATH_TO_QMAIL_QSTAT,"$PATH_TO_QMAIL_QSTAT",[path to qmail-qstat])
 else
-	AC_MSG_WARN([Could not find qmail-qstat or eqivalent])
+	AC_MSG_WARN([Could not find qmail-qstat or equivalent])
 fi
 
 dnl SWAP info required is amount allocated/available and amount free
@@ -1886,6 +1887,7 @@ AC_OUTPUT(
   pkg/solaris/pkginfo
   po/Makefile.in
 )
+#  plugins-python/Makefile
 
 
 dnl the ones below that are commented out need to be cleaned up

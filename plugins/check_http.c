@@ -750,7 +750,8 @@ header_value (const char *headers, const char *header)
 
   value_end = strchr(s, '\r');
   if (!value_end) {
-      die (STATE_UNKNOWN, _("HTTP_UNKNOWN - Failed to parse response headers\n"));
+      // Turns out there's no newline after the header... So it's at the end!
+      value_end = s + strlen(s);
   }
 
   value_size = value_end - s;
@@ -1024,10 +1025,12 @@ check_http (void)
     microsec_ssl = deltime (tv_temp);
     elapsed_time_ssl = (double)microsec_ssl / 1.0e6;
     if (check_cert == TRUE) {
-      result = np_net_ssl_check_cert(days_till_exp_warn, days_till_exp_crit);
-      if (sd) close(sd);
-      np_net_ssl_cleanup();
-      return result;
+			result = np_net_ssl_check_cert(days_till_exp_warn, days_till_exp_crit);
+			if (result != STATE_OK) {
+				np_net_ssl_cleanup();
+				if (sd) close(sd);
+				return result;
+			}
     }
   }
 #endif /* HAVE_SSL */
@@ -1263,12 +1266,14 @@ check_http (void)
   /* server errors result in a critical state */
   else if (http_status >= 500) {
     xasprintf (&msg, _("%s%s - "), msg, status_line);
-    result = STATE_CRITICAL;
+    if (bad_response || !server_expect_yn)
+       result = STATE_CRITICAL;
   }
   /* client errors result in a warning state */
   else if (http_status >= 400) {
     xasprintf (&msg, _("%s%s - "), msg, status_line);
-    result = max_state_alt(STATE_WARNING, result);
+    if (bad_response || !server_expect_yn)
+      result = max_state_alt(STATE_WARNING, result);
   }
   /* check redirected page if specified */
   else if (http_status >= 300) {

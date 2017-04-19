@@ -42,8 +42,8 @@ int address_family = AF_INET;
 void
 socket_timeout_alarm_handler (int sig)
 {
-	const char msg1[] = " - Socket timeout";
-	const char msg2[] = " - Abnormal timeout";
+	const char msg1[] = " - Socket timeout\n";
+	const char msg2[] = " - Abnormal timeout\n";
 	switch(timeout_state) {
 		case STATE_OK:
 			write(STDOUT_FILENO, "OK", 2);
