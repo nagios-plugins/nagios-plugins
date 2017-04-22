@@ -81,6 +81,7 @@ $opt_f = '"' . $opt_f . '"' if $opt_f =~ / /;
 
 # Check that file(s) exists (can be directory or link)
 $perfdata = "";
+$result = 'OK';
 $output = "";
 @filelist = glob($opt_f);
 
@@ -100,19 +101,25 @@ foreach $filename (@filelist) {
 	$st = File::stat::stat($filename);
 	$age = time - $st->mtime;
 	$size = $st->size;
-	$perfdata = $perfdata . "age=${age}s;${opt_w};${opt_c} size=${size}B;${opt_W};${opt_C};0 ";
-
-	$result = 'OK';
 
 	if (($opt_c and $age > $opt_c) or ($opt_C and $size < $opt_C)) {
 		$result = 'CRITICAL';
+		$output = "FILE_AGE $result: $filename is $age seconds old and $size bytes";
+		$perfdata = "age=${age}s;${opt_w};${opt_c} size=${size}B;${opt_W};${opt_C};0";
+		last;
 	}
 	elsif (($opt_w and $age > $opt_w) or ($opt_W and $size < $opt_W)) {
 		$result = 'WARNING';
+		$output = "FILE_AGE $result: $filename is $age seconds old and $size bytes";
+		$perfdata = "age=${age}s;${opt_w};${opt_c} size=${size}B;${opt_W};${opt_C};0";
+		last;
 	}
 
-	$output = $output . "FILE_AGE $result: $filename is $age seconds old and $size bytes ";
+	$output = "FILE_AGE $result: $filename is $age seconds old and $size bytes"
+		unless length $output;
 
+	$perfdata = "age=${age}s;${opt_w};${opt_c} size=${size}B;${opt_W};${opt_C};0"
+		unless length $perfdata;
 }
 
 print "$output | $perfdata\n";
