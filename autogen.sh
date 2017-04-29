@@ -25,7 +25,9 @@ test -d debian && {
 	ln -s /usr/share/misc/config.sub .
 	ln -s /usr/share/misc/config.guess .
 }
-
+#Making Makfile.in for configure to process
+automake 
+#Process configure.in and Makfile.in
 ./configure $*
 
 exit 0
