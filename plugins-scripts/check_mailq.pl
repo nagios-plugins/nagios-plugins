@@ -28,9 +28,9 @@
 use POSIX;
 use strict;
 use Getopt::Long;
-use vars qw($opt_V $opt_h $opt_v $verbose $PROGNAME $opt_w $opt_c $opt_t $opt_s
-					$opt_M $mailq $status $state $msg $msg_q $msg_p $opt_W $opt_C $mailq @lines
-					%srcdomains %dstdomains);
+use vars qw($opt_V $opt_h $opt_v $verbose $PROGNAME $opt_w $opt_c $opt_t $opt_s $opt_d
+					$opt_M $mailq $status $state $msg $msg_q $msg_p $opt_W $opt_C $mailq $mailq_args
+					@lines %srcdomains %dstdomains);
 use FindBin;
 use lib "$FindBin::Bin";
 use lib '@libexecdir@';
@@ -49,6 +49,8 @@ $PROGNAME = "check_mailq";
 $mailq = 'sendmail';	# default
 $msg_q = 0 ;
 $msg_p = 0 ;
+# If appended, must start with a space
+$mailq_args = '' ;
 $state = $ERRORS{'UNKNOWN'};
 
 Getopt::Long::Configure('bundling');
@@ -56,6 +58,10 @@ $status = process_arguments();
 if ($status){
 	print "ERROR: processing arguments\n";
 	exit $ERRORS{"UNKNOWN"};
+}
+
+if ($opt_d) {
+	$mailq_args = $mailq_args . ' -C ' . $opt_d;
 }
 
 if ($opt_s) {
@@ -313,19 +319,19 @@ elsif ( $mailq eq "postfix" ) {
      ## open mailq
 	if ( defined $utils::PATH_TO_MAILQ ) {
 		if (-x $utils::PATH_TO_MAILQ) {
-			if (! open (MAILQ, "$utils::PATH_TO_MAILQ | ")) {
-				print "ERROR: $utils::PATH_TO_MAILQ returned an error\n";
+			if (! open (MAILQ, "$utils::PATH_TO_MAILQ$mailq_args | ")) {
+				print "ERROR: $utils::PATH_TO_MAILQ$mailq_args returned an error\n";
 				exit $ERRORS{'UNKNOWN'};
 			}
 		}
 		else {
 			if ( $sudo ne "" ) {
-				if (! open (MAILQ, "$sudo $utils::PATH_TO_MAILQ | " ) ) {
-					print "ERROR: $utils::PATH_TO_MAILQ is not executable with sudo by (uid $>:gid($)))\n";
+				if (! open (MAILQ, "$sudo $utils::PATH_TO_MAILQ$mailq_args | " ) ) {
+					print "ERROR: $utils::PATH_TO_MAILQ$mailq_args is not executable with sudo by (uid $>:gid($)))\n";
 					exit $ERRORS{'UNKNOWN'};
 				}
 			} else {
-				print "ERROR: $utils::PATH_TO_MAILQ is not executable by (uid $>:gid($))) and sudo is not set in utils.pm\n";
+				print "ERROR: $utils::PATH_TO_MAILQ$mailq_args is not executable by (uid $>:gid($))) and sudo is not set in utils.pm\n";
 				exit $ERRORS{'UNKNOWN'};
 			}
 		}
@@ -338,7 +344,7 @@ elsif ( $mailq eq "postfix" ) {
 	@lines = reverse <MAILQ>;
 
         if ( $? ) {
-		print "CRITICAL: Error code ".($?>>8)." returned from $utils::PATH_TO_MAILQ",$/;
+		print "CRITICAL: Error code ".($?>>8)." returned from $utils::PATH_TO_MAILQ$mailq_args",$/;
 		exit $ERRORS{CRITICAL};
         }
 
@@ -351,7 +357,7 @@ elsif ( $mailq eq "postfix" ) {
 	}elsif ($lines[0]=~/Mail queue is empty/) {
 		$msg_q = 0;
         }else{
-                print "Couldn't match $utils::PATH_TO_MAILQ output\n";
+                print "Couldn't match $utils::PATH_TO_MAILQ$mailq_args output\n";
                 exit   $ERRORS{'UNKNOWN'};
         }
 
@@ -576,7 +582,8 @@ sub process_arguments(){
 		 "w=i" => \$opt_w, "warning=i"  => \$opt_w,   # warning if above this number
 		 "c=i" => \$opt_c, "critical=i" => \$opt_c,	  # critical if above this number
 		 "t=i" => \$opt_t, "timeout=i"  => \$opt_t,
-		 "s"   => \$opt_s, "sudo"       => \$opt_s
+		 "s"   => \$opt_s, "sudo"       => \$opt_s,
+		 "d:s" => \$opt_d, "configdir:s" => \$opt_d
 		 );
 
 	if ($opt_V) {
@@ -657,7 +664,7 @@ sub process_arguments(){
 }
 
 sub print_usage () {
-	print "Usage: $PROGNAME -w <warn> -c <crit> [-W <warn>] [-C <crit>] [-M <MTA>] [-t <timeout>] [-s] [-v]\n";
+	print "Usage: $PROGNAME -w <warn> -c <crit> [-W <warn>] [-C <crit>] [-M <MTA>] [-t <timeout>] [-s] [-d <CONFIGDIR>] [-v]\n";
 }
 
 sub print_help () {
@@ -674,6 +681,7 @@ sub print_help () {
 	print "-C (--Critical)  = Min. number of messages for same domain in queue to generate critical alert ( W < C )\n";
 	print "-t (--timeout)   = Plugin timeout in seconds (default = $utils::TIMEOUT)\n";
 	print "-M (--mailserver) = [ sendmail | qmail | postfix | exim | nullmailer ] (default = autodetect)\n";
+	print "-d (--configdir) = Config file or directory\n";
 	print "-h (--help)\n";
 	print "-V (--version)\n";
 	print "-v (--verbose)   = debugging output\n";
