@@ -21,6 +21,7 @@ This file documents the major additions and syntax changes between releases.
 	check_log lost ability to use regexes for query (-q) in 2.1.4
 	fix configure.ac for FreeBSD SWAPFORMAT
 	Fix --no-body
+	check_wave produces lots of errors if required arguments are not provided
 
 
 2.2.1 2017-04-19
