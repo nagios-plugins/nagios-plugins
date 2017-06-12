@@ -20,6 +20,7 @@ This file documents the major additions and syntax changes between releases.
 	check_log does not check for "-O oldlog"
 	check_log lost ability to use regexes for query (-q) in 2.1.4
 	fix configure.ac for FreeBSD SWAPFORMAT
+	Fix --no-body
 
 
 2.2.1 2017-04-19
