@@ -2,6 +2,8 @@ This file documents the major additions and syntax changes between releases.
 
 2.3.0 xxxx-xx-xx
 	ENHANCEMENTS
+	Added directory plugins-python containing three Python plugins
+	check_http: New parameter `--verify-host` will check if -H hostname matches the SSL certificate
 	check_ping: plugin output will now include hostname and IP address
 	check_disk_smb: Add configfile feature
 	check_apt: Add --only-critical switch
@@ -17,11 +19,6 @@ This file documents the major additions and syntax changes between releases.
 
 
 2.2.1 2017-04-19
-x.x.x xxxx-xx-xx
-	ENHANCEMENTS
-	Added directory plugins-python containing three Python plugins
-	check_http: New parameter `--verify-host` will check if -H hostname matches the SSL certificate
-
 	FIXES
 	check_users: not accepting zero as the threshold
 	check_http: reports warning where it should report ok with -e
