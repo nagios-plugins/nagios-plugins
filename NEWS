@@ -8,6 +8,7 @@ This file documents the major additions and syntax changes between releases.
 	check_disk_smb: Add configfile feature
 	check_apt: Add --only-critical switch
 	check_mailq: Add support for opensmtpd
+	check_mailq: Add mailq -C option for config dir or config file
 
 
 2.2.2 xxxx-xx-xx
