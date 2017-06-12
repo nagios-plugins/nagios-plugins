@@ -7,6 +7,7 @@ This file documents the major additions and syntax changes between releases.
 	check_ping: plugin output will now include hostname and IP address
 	check_disk_smb: Add configfile feature
 	check_apt: Add --only-critical switch
+	check_mailq: Add support for opensmtpd
 
 
 2.2.2 xxxx-xx-xx
