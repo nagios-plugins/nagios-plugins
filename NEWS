@@ -18,6 +18,7 @@ This file documents the major additions and syntax changes between releases.
 	check_ntp_time calls `write` on a UDP socket without a successful call to `connect`
 	check_mysql_query & mysql_query: extra-opts causes crash
 	check_log does not check for "-O oldlog"
+	check_log lost ability to use regexes for query (-q) in 2.1.4
 
 
 2.2.1 2017-04-19

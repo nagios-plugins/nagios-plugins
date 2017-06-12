@@ -215,10 +215,10 @@ fi
 diff "$logfile" "$oldlog" | grep -v "^>" > "$tempdiff"
 
 # Count the number of matching log entries we have
-count=$(grep -c "$query" "$tempdiff")
+count=$(egrep -c "$query" "$tempdiff")
 
 # Get the last matching entry in the diff file
-lastentry=$(grep "$query" "$tempdiff" | tail -1)
+lastentry=$(egrep "$query" "$tempdiff" | tail -1)
 
 rm -f "$tempdiff"
 cat "$logfile" > "$oldlog"
