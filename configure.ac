@@ -1266,7 +1266,7 @@ elif test "x$PATH_TO_PING6" != "x"; then
 	then
 		with_ping6_command="$PATH_TO_PING6 -n -s 56 -c %d %s"
 		ac_cv_ping6_packets_first=yes
-		AC_MSG_RESULT([$with_ping_command])
+		AC_MSG_RESULT([$with_ping6_command])
 
 	elif $PATH_TO_PING6 -n -c 1 ::1 2>/dev/null | \
 		egrep -i "^round-trip|^rtt" >/dev/null
@@ -1329,7 +1329,7 @@ elif test "x$PATH_TO_PING" != "x"; then
 	then
 		with_ping6_command="$PATH_TO_PING -A inet6 -n -s 56 -c %d %s"
 		ac_cv_ping6_packets_first=yes
-		AC_MSG_RESULT([$with_ping_command])
+		AC_MSG_RESULT([$with_ping6_command])
 
 	elif $PATH_TO_PING -A inet6 -n -c 1 ::1 2>/dev/null | \
 		egrep -i "^round-trip|^rtt" >/dev/null
