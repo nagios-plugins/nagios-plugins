@@ -43,7 +43,7 @@ Installation Instructions
 1.  If you are using the Git tree, you will need m4, gettext, automake, and
     autoconf.  To start out, run:
 
-    	./tools/setup
+        ./tools/setup
 
     For more detail, see the developer guidelines at
     <https://www.nagios-plugins.org/doc/guidelines.html>.
@@ -51,7 +51,7 @@ Installation Instructions
 2.  Run the configure script to initialize variables and create a Makefile,
     etc.
 
-    	./configure --prefix=BASEDIRECTORY --with-cgiurl=SOMEURL
+        ./configure --prefix=BASEDIRECTORY --with-cgiurl=SOMEURL
 
     Replace `BASEDIRECTORY` with the path of the directory under which Nagios
     is installed (default is `/usr/local/nagios`), and replace `SOMEURL` with
@@ -60,12 +60,12 @@ Installation Instructions
 
 3.  Compile the plugins with the following command:
 
-    	make
+        make
 
 4.  Install the compiled plugins and plugin scripts with the following
     command:
 
-    	make install
+        make install
 
     The installation procedure will attempt to place the plugins in a
     `libexec/` subdirectory in the base directory you specified with the
@@ -75,7 +75,7 @@ Installation Instructions
     a non-root user, they will not be installed.  To install, switch to root
     and run:
 
-    	make install-root
+        make install-root
 
 That's it!  If you have any problems or questions, feel free to send an
 email to <help@nagios-plugins.org>.
@@ -87,15 +87,15 @@ Testing With libtap
 1.  The nagios-plugins source includes a perl testing suite.  the libtap 
     library and headers are included with the source.  Configure with:
 
-	./configure --enable-libtap
+        ./configure --enable-libtap
 
     Note: "--enable-extra-opts" used to be required as well, but is no 
     longer required as it is a default configure option.
 
 2.  Make and then make test:
 
-	make
-	make test
+        make
+        make test
 
 3.  Testing is pseudo intelligent and will try to autodetect which plugins
     to test.  You may need to look at the REQUIREMENTS doc as to what
@@ -104,7 +104,7 @@ Testing With libtap
     Additionally, default and user supplied (at runtime) testing parameters
     are saved in the file:
 
-	/var/tmp/NPTest.cache
+        /var/tmp/NPTest.cache
 
     If you need to change any testing parameters, edit them in this file
     or just remove the line to force the test to re-prompt you for input.
