@@ -1557,6 +1557,17 @@ else
 	AC_MSG_WARN([Could not find qmail-qstat or equivalent])
 fi
 
+AC_PATH_PROG(PATH_TO_SMTPCTL,smtpctl)
+AC_ARG_WITH(smtpctl_command,
+            ACX_HELP_STRING([--with-smtpctl-command=PATH],
+                            [sets path to smtpctl]), PATH_TO_SMTPCTL=$withval)
+if test -n "$PATH_TO_SMTPCTL"
+then
+	AC_DEFINE_UNQUOTED(PATH_TO_SMTPCTL,"$PATH_TO_SMTPCTL",[path to smtpctl])
+else
+	AC_MSG_WARN([Could not find smtpctl or equivalent])
+fi
+
 dnl SWAP info required is amount allocated/available and amount free
 dnl The plugin works through all the swap devices and adds up the total swap
 dnl available.

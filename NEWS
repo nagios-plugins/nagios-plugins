@@ -10,6 +10,7 @@ This file documents the major additions and syntax changes between releases.
 	check_mailq: Add support for opensmtpd
 	check_mailq: Add mailq -C option for config dir or config file
 	check_disk: Add -s option to show status for each path/partition
+	check_mailq.pl: Add option for opensmtpd (brigriffin)
 
 
 2.2.2 xxxx-xx-xx
