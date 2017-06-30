@@ -146,9 +146,6 @@ char *perfd_size (int page_len);
 void print_help (void);
 void print_usage (void);
 
-extern int check_hostname;
-
-
 int
 main (int argc, char **argv)
 {
@@ -203,8 +200,7 @@ process_arguments (int argc, char **argv)
 
   enum {
     INVERT_REGEX = CHAR_MAX + 1,
-    SNI_OPTION,
-		VERIFY_HOST
+    SNI_OPTION
   };
 
   int option = 0;
@@ -214,7 +210,6 @@ process_arguments (int argc, char **argv)
     {"nohtml", no_argument, 0, 'n'},
     {"ssl", optional_argument, 0, 'S'},
     {"sni", no_argument, 0, SNI_OPTION},
-		{"verify-host", no_argument, 0, VERIFY_HOST},
     {"post", required_argument, 0, 'P'},
     {"method", required_argument, 0, 'j'},
     {"IP-address", required_argument, 0, 'I'},
@@ -373,9 +368,6 @@ process_arguments (int argc, char **argv)
     case SNI_OPTION:
       use_sni = TRUE;
       break;
-		case VERIFY_HOST:
-			check_hostname = 1;
-			break;
     case 'f': /* onredirect */
       if (!strcmp (optarg, "stickyport"))
         onredirect = STATE_DEPENDENT, followsticky = STICKY_HOST|STICKY_PORT;
@@ -702,12 +694,14 @@ int chunk_header(char **buf)
   if (lth <= 0)
 	 return lth;
 
-  while (**buf !='\0' && **buf != '\r' && **buf != '\n')
+  while (**buf != '\r' && **buf != '\n')
     ++*buf;
 
   // soak up the leading CRLF
-  while (**buf != '\0' && (**buf == '\r' || **buf == '\n'))
+  if (**buf && **buf == '\r' && *(++*buf) && **buf == '\n')
     ++*buf;
+  else
+    die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, invalid format\n"));
 
   return lth;
 }
@@ -730,7 +724,7 @@ decode_chunked_page (const char *raw, char *dst)
     dst_pos += chunksize;
     *dst_pos = '\0';
 
-		while (*raw_pos && (*raw_pos == '\r' || *raw_pos == '\n'))
+    if (*raw_pos && *raw_pos == '\r' && *(++raw_pos) && *raw_pos == '\n')
       raw_pos++;
   }
 
@@ -755,11 +749,8 @@ header_value (const char *headers, const char *header)
   while (*s && isspace(*s)) s++;
 
   value_end = strchr(s, '\r');
-  if (!value_end)
-		value_end = strchr(s, '\n');
   if (!value_end) {
-      // Turns out there's no newline after the header... So it's at the end!
-      value_end = s + strlen(s);
+      die (STATE_UNKNOWN, _("HTTP_UNKNOWN - Failed to parse response headers\n"));
   }
 
   value_size = value_end - s;
@@ -1011,7 +1002,14 @@ check_http (void)
     asprintf (&buf, "%s %s:%d HTTP/1.1\r\n%s\r\n", http_method, host_name, HTTPS_PORT, user_agent);
     asprintf (&buf, "%sProxy-Connection: keep-alive\r\n", buf);
     asprintf (&buf, "%sHost: %s\r\n", buf, host_name);
-    /* we finished our request, send empty line with CRLF */
+
+/* grg:  added here to optionally send the proxy authentication info */
+  if (strlen(proxy_auth)) {
+    base64_encode_alloc (proxy_auth, strlen (proxy_auth), &auth);
+    xasprintf (&buf, "%sProxy-Authorization: Basic %s\r\n", buf, auth);
+  }
+
+     /* we finished our request, send empty line with CRLF */
     asprintf (&buf, "%s%s", buf, CRLF);
     if (verbose) printf ("%s\n", buf);
     send(sd, buf, strlen (buf), 0);
@@ -1033,12 +1031,10 @@ check_http (void)
     microsec_ssl = deltime (tv_temp);
     elapsed_time_ssl = (double)microsec_ssl / 1.0e6;
     if (check_cert == TRUE) {
-			result = np_net_ssl_check_cert(days_till_exp_warn, days_till_exp_crit);
-			if (result != STATE_OK) {
-				if (sd) close(sd);
-				np_net_ssl_cleanup();
-				return result;
-			}
+      result = np_net_ssl_check_cert(days_till_exp_warn, days_till_exp_crit);
+      if (sd) close(sd);
+      np_net_ssl_cleanup();
+      return result;
     }
   }
 #endif /* HAVE_SSL */
@@ -1142,19 +1138,15 @@ check_http (void)
       elapsed_time_firstbyte = (double)microsec_firstbyte / 1.0e6;
     }
     buffer[i] = '\0';
-    /* xasprintf (&full_page_new, "%s%s", full_page, buffer); */
-		if ((full_page_new = realloc(full_page, pagesize + i + 1)) == NULL)
-			die (STATE_UNKNOWN, _("HTTP UNKNOWN - Could not allocate memory for full_page\n"));
-
-		memmove(&full_page_new[pagesize], buffer, i);
-    /*free (full_page);*/
+    xasprintf (&full_page_new, "%s%s", full_page, buffer);
+    free (full_page);
     full_page = full_page_new;
     pagesize += i;
 
-    if (no_body && document_headers_done (full_page)) {
-      i = 0;
-      break;
-    }
+                if (no_body && document_headers_done (full_page)) {
+                  i = 0;
+                  break;
+                }
   }
   microsec_transfer = deltime (tv_temp);
   elapsed_time_transfer = (double)microsec_transfer / 1.0e6;
@@ -1218,7 +1210,7 @@ check_http (void)
   /* find header info and null-terminate it */
   header = page;
 	for (;;) {
-		if (!*page || !strncmp(page, "\r\n\r\n", 4) || !strncmp(page, "\n\n", 2))
+		if (!strncmp(page, "\r\n\r\n", 4) || !strncmp(page, "\n\n", 2))
 		 break;
 		while (*page == '\r' || *page == '\n') { ++page; }
     page += (size_t) strcspn (page, "\r\n");
@@ -1278,14 +1270,12 @@ check_http (void)
   /* server errors result in a critical state */
   else if (http_status >= 500) {
     xasprintf (&msg, _("%s%s - "), msg, status_line);
-    if (bad_response || !server_expect_yn)
-       result = STATE_CRITICAL;
+    result = STATE_CRITICAL;
   }
   /* client errors result in a warning state */
   else if (http_status >= 400) {
     xasprintf (&msg, _("%s%s - "), msg, status_line);
-    if (bad_response || !server_expect_yn)
-      result = max_state_alt(STATE_WARNING, result);
+    result = max_state_alt(STATE_WARNING, result);
   }
   /* check redirected page if specified */
   else if (http_status >= 300) {
@@ -1680,10 +1670,6 @@ print_help (void)
   printf ("    %s\n", _("1.2 = TLSv1.2). With a '+' suffix, newer versions are also accepted."));
   printf (" %s\n", "--sni");
   printf ("    %s\n", _("Enable SSL/TLS hostname extension support (SNI)"));
-#if OPENSSL_VERSION_NUMBER >= 0x10002000L
-	printf (" %s\n", "--verify-host");
-  printf ("    %s\n", _("Verify SSL certificate is for the -H hostname (with --sni and -S)"));
-#endif
   printf (" %s\n", "-C, --certificate=INTEGER[,INTEGER]");
   printf ("    %s\n", _("Minimum number of days a certificate has to be valid. Port defaults to 443"));
   printf ("    %s\n", _("(when this option is used the URL is not checked.)"));
@@ -1818,11 +1804,6 @@ print_usage (void)
   printf ("       [-b proxy_auth] [-f <ok|warning|critcal|follow|sticky|stickyport>]\n");
   printf ("       [-e <expect>] [-d string] [-s string] [-l] [-r <regex> | -R <case-insensitive regex>]\n");
   printf ("       [-P string] [-m <min_pg_size>:<max_pg_size>] [-4|-6] [-N] [-M <age>]\n");
-#if OPENSSL_VERSION_NUMBER >= 0x10002000L
-	printf ("       [-A string] [-k string] [-S <version>] [--sni] [--verify-host]\n");
-	printf ("       [-C <warn_age>[,<crit_age>]] [-T <content-type>] [-j method]\n");
-#else
-	printf ("       [-A string] [-k string] [-S <version>] [--sni] [-C <warn_age>[,<crit_age>]]\n");
-	printf ("       [-T <content-type>] [-j method]\n");
-#endif
+  printf ("       [-A string] [-k string] [-S <version>] [--sni] [-C <warn_age>[,<crit_age>]]\n");
+  printf ("       [-T <content-type>] [-j method]\n");
 }
