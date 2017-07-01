@@ -3,7 +3,7 @@
 * Nagios check_http plugin
 *
 * License: GPL
-* Copyright (c) 1999-2014 Nagios Plugins Development Team
+* Copyright (c) 1999-2017 Nagios Plugins Development Team
 *
 * Description:
 *
@@ -34,7 +34,7 @@
 /* splint -I. -I../../plugins -I../../lib/ -I/usr/kerberos/include/ ../../plugins/check_http.c */
 
 const char *progname = "check_http";
-const char *copyright = "1999-2014";
+const char *copyright = "1999-2017";
 const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"
@@ -671,20 +671,7 @@ parse_time_string (const char *string)
 static int
 expected_statuscode (const char *reply, const char *statuscodes)
 {
-  char *expected, *code;
-  int result = 0;
-
-  if ((expected = strdup (statuscodes)) == NULL)
-    die (STATE_UNKNOWN, _("HTTP UNKNOWN - Memory allocation error\n"));
-
-  for (code = strtok (expected, ","); code != NULL; code = strtok (NULL, ","))
-    if (strstr (reply, code) != NULL) {
-      result = 1;
-      break;
-    }
-
-  free (expected);
-  return result;
+  return strstr( statuscodes, reply )!= 0;
 }
 
 int chunk_header(char **buf)
@@ -980,6 +967,7 @@ check_http (void)
   long microsec_transfer = 0L;
   double elapsed_time_transfer = 0.0;
   int page_len = 0;
+  char * space_code;
   int result = STATE_OK;
   char *force_host_header = NULL;
 	int bad_response = FALSE;
@@ -1009,9 +997,9 @@ check_http (void)
 
 
     /* we finished our request, send empty line with CRLF */
-    asprintf (&buf, "%s%s", buf, CRLF);
-    if (verbose) printf ("%s\n", buf);
-    send(sd, buf, strlen (buf), 0);
+    //asprintf (&buf, "%s%s", buf, CRLF);		// grg-- supress extra CRLF for HTTP 1.1 standard compliance bug #266
+    if (verbose) printf ("%s\n", buf);			// we will continue to echo the buffer and a CRLF so the screen isn't goofy-looking
+    send(sd, buf, strlen (buf), 0);			// NOTE: TODO: we should not be using zero-terminated strings at all!! Fix soon.. 
     buf[0]='\0';
 
     if (verbose) printf ("Receive response from proxy\n");
@@ -1117,14 +1105,15 @@ check_http (void)
     }
 
     xasprintf (&buf, "%sContent-Length: %i\r\n\r\n", buf, (int)strlen (http_post_data));
-    xasprintf (&buf, "%s%s%s", buf, http_post_data, CRLF);
+    //xasprintf (&buf, "%s%s%s", buf, http_post_data, CRLF);		// grg: do not append extra CRLF, for HTTP 1.1 compliance
+    xasprintf (&buf, "%s%s", buf, http_post_data);			// NOTE: TODO: We should not be using strings at all!!  Data can be binary!!
   }
   else {
     /* or just a newline so the server knows we're done with the request */
-    xasprintf (&buf, "%s%s", buf, CRLF);
+   // xasprintf (&buf, "%s%s", buf, CRLF);				// grg: do not append extra CRLF, for HTTP 1.1 compliance
   }
 
-  if (verbose) printf ("%s\n", buf);
+  if (verbose) printf ("%s\n", buf);				// grg:  leave extra CRLF to keep sccreen readable...
   gettimeofday (&tv_temp, NULL);
   my_send (buf, strlen (buf));
   microsec_headers = deltime (tv_temp);
@@ -1140,7 +1129,6 @@ check_http (void)
       microsec_firstbyte = deltime (tv_temp);
       elapsed_time_firstbyte = (double)microsec_firstbyte / 1.0e6;
     }
-
     buffer[i] = '\0';
     xasprintf (&full_page_new, "%s%s", full_page, buffer);
     free (full_page);
@@ -1199,12 +1187,12 @@ check_http (void)
       use_ssl ? "https" : "http", server_address,
       server_port, server_url, (int)pagesize);
 
-  /* find status line and null-terminate it */
+  /* find status line ( 200 OK HTTP/1.0 ) and null-terminate it */
   page += (size_t) strcspn (page, "\r\n");
-	save_char = *page;
-	*page = '\0';
-	status_line = strdup(pos);
-	*page = save_char;
+  save_char = *page;
+  *page = '\0';
+  status_line = strdup(pos);
+  *page = save_char;
   pos = page;
 
   strip (status_line);
@@ -1243,7 +1231,8 @@ check_http (void)
                 server_port, status_line);
     bad_response = TRUE;
   }
-
+	
+	
   /* Bypass normal status line check if server_expect was set by user and not default */
   /* NOTE: After this if/else block msg *MUST* be an asprintf-allocated string */
   if ( !bad_response ) {
@@ -1260,6 +1249,7 @@ check_http (void)
   /* HTTP-Version   = "HTTP" "/" 1*DIGIT "." 1*DIGIT */
   /* Status-Code = 3 DIGITS */
 
+  space_code = strchr (status_line, ' ');
   status_code = strchr (status_line, ' ') + sizeof (char);
   if (strspn (status_code, "1234567890") != 3)
     die (STATE_CRITICAL, _("HTTP CRITICAL: Invalid Status Line (%s)\n"), status_line);
