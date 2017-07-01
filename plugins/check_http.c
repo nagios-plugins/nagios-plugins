@@ -990,15 +990,12 @@ check_http (void)
     asprintf (&buf, "%s %s:%d HTTP/1.1\r\n%s\r\n", http_method, host_name, HTTPS_PORT, user_agent);
     asprintf (&buf, "%sProxy-Connection: keep-alive\r\n", buf);
     asprintf (&buf, "%sHost: %s\r\n", buf, host_name);
+      
     /* added so this first header has the proxy info */
     if (strlen(proxy_auth)) {
       base64_encode_alloc (proxy_auth, strlen (proxy_auth), &auth);
       xasprintf (&buf, "%sProxy-Authorization: Basic %s\r\n", buf, auth);
     }
-
-
-    /* we finished our request, send empty line with CRLF */
-    /* we will continue to echo the buffer and a CRLF so the screen isn't goofy-looking */
     if (verbose) printf ("%s\n", buf);
     send(sd, buf, strlen (buf), 0);
     buf[0]='\0';
