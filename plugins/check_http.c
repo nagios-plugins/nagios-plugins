@@ -990,10 +990,17 @@ check_http (void)
     asprintf (&buf, "%s %s:%d HTTP/1.1\r\n%s\r\n", http_method, host_name, HTTPS_PORT, user_agent);
     asprintf (&buf, "%sProxy-Connection: keep-alive\r\n", buf);
     asprintf (&buf, "%sHost: %s\r\n", buf, host_name);
+    /* added so this first header has the proxy info */
+    if (strlen(proxy_auth)) {
+      base64_encode_alloc (proxy_auth, strlen (proxy_auth), &auth);
+      xasprintf (&buf, "%sProxy-Authorization: Basic %s\r\n", buf, auth);
+    }
+
+
     /* we finished our request, send empty line with CRLF */
-    //asprintf (&buf, "%s%s", buf, CRLF);		// grg-- supress extra CRLF for HTTP 1.1 standard compliance bug #266
-    if (verbose) printf ("%s\n", buf);			// we will continue to echo the buffer and a CRLF so the screen isn't goofy-looking
-    send(sd, buf, strlen (buf), 0);			// NOTE: TODO: we should not be using zero-terminated strings at all!! Fix soon.. 
+    /* we will continue to echo the buffer and a CRLF so the screen isn't goofy-looking */
+    if (verbose) printf ("%s\n", buf);
+    send(sd, buf, strlen (buf), 0);
     buf[0]='\0';
 
     if (verbose) printf ("Receive response from proxy\n");
@@ -1050,14 +1057,16 @@ check_http (void)
        * (default) port is explicitly specified in the "Host:" header line.
        */
       if ((use_ssl == FALSE && server_port == HTTP_PORT) ||
-          (use_ssl == TRUE && server_port == HTTPS_PORT))
+          (use_ssl == TRUE && server_port == HTTPS_PORT)
+	  || ( strcmp(http_method, "CONNECT") == 0 ) )		// grg-- if through a proxy, don't include the port number
         xasprintf (&buf, "%sHost: %s\r\n", buf, host_name);
       else
         xasprintf (&buf, "%sHost: %s:%d\r\n", buf, host_name, server_port);
     }
   }
 
-  /* Inform server we accept any MIME type response
+  /* Inform server we accept any MIME type response 
+ 
    * TODO: Take an arguement to determine what type(s) to accept,
    * so that we can alert if a response is of an invalid type.
   */
@@ -1112,8 +1121,10 @@ check_http (void)
   elapsed_time_headers = (double)microsec_headers / 1.0e6;
 
   /* fetch the page */
+
   full_page = strdup("");
   gettimeofday (&tv_temp, NULL);
+
   while ((i = my_recv (buffer, MAX_INPUT_BUFFER-1)) > 0) {
     if ((i >= 1) && (elapsed_time_firstbyte <= 0.000001)) {
       microsec_firstbyte = deltime (tv_temp);
