@@ -3,7 +3,7 @@
 * Nagios check_http plugin
 *
 * License: GPL
-* Copyright (c) 1999-2014 Nagios Plugins Development Team
+* Copyright (c) 1999-2017 Nagios Plugins Development Team
 *
 * Description:
 *
@@ -34,7 +34,7 @@
 /* splint -I. -I../../plugins -I../../lib/ -I/usr/kerberos/include/ ../../plugins/check_http.c */
 
 const char *progname = "check_http";
-const char *copyright = "1999-2014";
+const char *copyright = "1999-2017";
 const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"
@@ -671,20 +671,7 @@ parse_time_string (const char *string)
 static int
 expected_statuscode (const char *reply, const char *statuscodes)
 {
-  char *expected, *code;
-  int result = 0;
-
-  if ((expected = strdup (statuscodes)) == NULL)
-    die (STATE_UNKNOWN, _("HTTP UNKNOWN - Memory allocation error\n"));
-
-  for (code = strtok (expected, ","); code != NULL; code = strtok (NULL, ","))
-    if (strstr (reply, code) != NULL) {
-      result = 1;
-      break;
-    }
-
-  free (expected);
-  return result;
+  return strstr( statuscodes, reply )!= 0;
 }
 
 int chunk_header(char **buf)
@@ -980,6 +967,7 @@ check_http (void)
   long microsec_transfer = 0L;
   double elapsed_time_transfer = 0.0;
   int page_len = 0;
+  char * space_code;
   int result = STATE_OK;
   char *force_host_header = NULL;
 	int bad_response = FALSE;
@@ -1002,15 +990,12 @@ check_http (void)
     asprintf (&buf, "%s %s:%d HTTP/1.1\r\n%s\r\n", http_method, host_name, HTTPS_PORT, user_agent);
     asprintf (&buf, "%sProxy-Connection: keep-alive\r\n", buf);
     asprintf (&buf, "%sHost: %s\r\n", buf, host_name);
-
-/* grg:  added here to optionally send the proxy authentication info */
-  if (strlen(proxy_auth)) {
-    base64_encode_alloc (proxy_auth, strlen (proxy_auth), &auth);
-    xasprintf (&buf, "%sProxy-Authorization: Basic %s\r\n", buf, auth);
-  }
-
-     /* we finished our request, send empty line with CRLF */
-    asprintf (&buf, "%s%s", buf, CRLF);
+      
+    /* added so this first header has the proxy info */
+    if (strlen(proxy_auth)) {
+      base64_encode_alloc (proxy_auth, strlen (proxy_auth), &auth);
+      xasprintf (&buf, "%sProxy-Authorization: Basic %s\r\n", buf, auth);
+    }
     if (verbose) printf ("%s\n", buf);
     send(sd, buf, strlen (buf), 0);
     buf[0]='\0';
@@ -1069,14 +1054,16 @@ check_http (void)
        * (default) port is explicitly specified in the "Host:" header line.
        */
       if ((use_ssl == FALSE && server_port == HTTP_PORT) ||
-          (use_ssl == TRUE && server_port == HTTPS_PORT))
+          (use_ssl == TRUE && server_port == HTTPS_PORT)
+	  || ( strcmp(http_method, "CONNECT") == 0 ) )		// grg-- if through a proxy, don't include the port number
         xasprintf (&buf, "%sHost: %s\r\n", buf, host_name);
       else
         xasprintf (&buf, "%sHost: %s:%d\r\n", buf, host_name, server_port);
     }
   }
 
-  /* Inform server we accept any MIME type response
+  /* Inform server we accept any MIME type response 
+ 
    * TODO: Take an arguement to determine what type(s) to accept,
    * so that we can alert if a response is of an invalid type.
   */
@@ -1116,22 +1103,25 @@ check_http (void)
     }
 
     xasprintf (&buf, "%sContent-Length: %i\r\n\r\n", buf, (int)strlen (http_post_data));
-    xasprintf (&buf, "%s%s%s", buf, http_post_data, CRLF);
+    //xasprintf (&buf, "%s%s%s", buf, http_post_data, CRLF);		// grg: do not append extra CRLF, for HTTP 1.1 compliance
+    xasprintf (&buf, "%s%s", buf, http_post_data);			// NOTE: TODO: We should not be using strings at all!!  Data can be binary!!
   }
   else {
     /* or just a newline so the server knows we're done with the request */
-    xasprintf (&buf, "%s%s", buf, CRLF);
+   // xasprintf (&buf, "%s%s", buf, CRLF);				// grg: do not append extra CRLF, for HTTP 1.1 compliance
   }
 
-  if (verbose) printf ("%s\n", buf);
+  if (verbose) printf ("%s\n", buf);				// grg:  leave extra CRLF to keep sccreen readable...
   gettimeofday (&tv_temp, NULL);
   my_send (buf, strlen (buf));
   microsec_headers = deltime (tv_temp);
   elapsed_time_headers = (double)microsec_headers / 1.0e6;
 
   /* fetch the page */
+
   full_page = strdup("");
   gettimeofday (&tv_temp, NULL);
+
   while ((i = my_recv (buffer, MAX_INPUT_BUFFER-1)) > 0) {
     if ((i >= 1) && (elapsed_time_firstbyte <= 0.000001)) {
       microsec_firstbyte = deltime (tv_temp);
@@ -1195,12 +1185,12 @@ check_http (void)
       use_ssl ? "https" : "http", server_address,
       server_port, server_url, (int)pagesize);
 
-  /* find status line and null-terminate it */
+  /* find status line ( 200 OK HTTP/1.0 ) and null-terminate it */
   page += (size_t) strcspn (page, "\r\n");
-	save_char = *page;
-	*page = '\0';
-	status_line = strdup(pos);
-	*page = save_char;
+  save_char = *page;
+  *page = '\0';
+  status_line = strdup(pos);
+  *page = save_char;
   pos = page;
 
   strip (status_line);
@@ -1239,7 +1229,8 @@ check_http (void)
                 server_port, status_line);
     bad_response = TRUE;
   }
-
+	
+	
   /* Bypass normal status line check if server_expect was set by user and not default */
   /* NOTE: After this if/else block msg *MUST* be an asprintf-allocated string */
   if ( !bad_response ) {
@@ -1256,6 +1247,7 @@ check_http (void)
   /* HTTP-Version   = "HTTP" "/" 1*DIGIT "." 1*DIGIT */
   /* Status-Code = 3 DIGITS */
 
+  space_code = strchr (status_line, ' ');
   status_code = strchr (status_line, ' ') + sizeof (char);
   if (strspn (status_code, "1234567890") != 3)
     die (STATE_CRITICAL, _("HTTP CRITICAL: Invalid Status Line (%s)\n"), status_line);
