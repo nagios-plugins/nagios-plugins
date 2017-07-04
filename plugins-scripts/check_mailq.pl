@@ -520,47 +520,7 @@ elsif ( $mailq eq "exim" ) {
 		$state = $ERRORS{'CRITICAL'};
 	}
 } # end of ($mailq eq "exim")
-elsif ( $mailq eq "opensmtpd" ) {
-	## open smtpctl
-	if ( defined $utils::PATH_TO_SMTPCTL && -x $utils::PATH_TO_SMTPCTL ) {
-		if (! open (MAILQ, "$sudo $utils::PATH_TO_SMTPCTL show queue | " ) ) {
-			print "ERROR: could not open $utils::PATH_TO_SMTPCTL \n";
-			exit $ERRORS{'UNKNOWN'};
-		}
-	}elsif( defined $utils::PATH_TO_SMTPCTL){
-		unless (-x $utils::PATH_TO_SMTPCTL) {
-			print "ERROR: $utils::PATH_TO_SMTPCTL is not executable by (uid $>:gid($)))\n";
-			exit $ERRORS{'UNKNOWN'};
-		}
-	} else {
-		print "ERROR: \$utils::PATH_TO_SMTPCTL is not defined\n";
-		exit $ERRORS{'UNKNOWN'};
-	}
 
-	while (<MAILQ>) {
-
-		# 34357f5b3f589feb|inet4|mta||f.someone@domaina.org|no-reply@domainb.com|no-reply@domainb.com|1498235412|1498581012|0|25|pending|17168|Network error on destination MXs
-		if (/^.*|.*|.*|.*|.*|.*|.*|.*|.*|.*|.*|.*|.*|.*$/) {
-			$msg_q++ ;
-		}
-	}
-	close(MAILQ);
-
-	if ( $? ) {
-		print "CRITICAL: Error code ".($?>>8)." returned from $utils::PATH_TO_SMTPCTL",$/;
-		exit $ERRORS{CRITICAL};
-	}
-	if ($msg_q < $opt_w) {
-		$msg = "OK: $mailq mailq ($msg_q) is below threshold ($opt_w/$opt_c)";
-		$state = $ERRORS{'OK'};
-	}elsif ($msg_q >= $opt_w  && $msg_q < $opt_c) {
-		$msg = "WARNING: $mailq mailq is $msg_q (threshold w = $opt_w)";
-		$state = $ERRORS{'WARNING'};
-	}else {
-		$msg = "CRITICAL: $mailq mailq is $msg_q (threshold c = $opt_c)";
-		$state = $ERRORS{'CRITICAL'};
-	}
-} # end of ($mailq eq "opensmtpd")
 elsif ( $mailq eq "nullmailer" ) {
 	## open mailq
 	if ( defined $utils::PATH_TO_MAILQ && -x $utils::PATH_TO_MAILQ ) {
@@ -658,7 +618,7 @@ sub process_arguments(){
 	}
 
 	if (defined $opt_M) {
-		if ($opt_M =~ /^(sendmail|qmail|postfix|exim|nullmailer|opensmtpd)$/) {
+		if ($opt_M =~ /^(sendmail|qmail|postfix|exim|nullmailer)$/) {
 			$mailq = $opt_M ;
 		}elsif( $opt_M eq ''){
 			$mailq = 'sendmail';
@@ -688,10 +648,6 @@ sub process_arguments(){
 		{
 			$mailq = 'nullmailer';
 		}
-		elsif (defined $utils::PATH_TO_SMTPCTL && -x $utils::PATH_TO_SMTPCTL)
-		{
-			$mailq = 'opensmtpd';
-		}
 		else {
 			$mailq = 'sendmail';
 		}
@@ -717,7 +673,7 @@ sub print_help () {
 	print "-W (--Warning)   = Min. number of messages for same domain in queue to generate warning\n";
 	print "-C (--Critical)  = Min. number of messages for same domain in queue to generate critical alert ( W < C )\n";
 	print "-t (--timeout)   = Plugin timeout in seconds (default = $utils::TIMEOUT)\n";
-	print "-M (--mailserver) = [ sendmail | qmail | postfix | exim | nullmailer | opensmtpd ] (default = autodetect)\n";
+	print "-M (--mailserver) = [ sendmail | qmail | postfix | exim | nullmailer ] (default = autodetect)\n";
 	print "-h (--help)\n";
 	print "-V (--version)\n";
 	print "-v (--verbose)   = debugging output\n";
