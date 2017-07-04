@@ -483,6 +483,51 @@ main (int argc, char **argv)
 
 		iresult = STATE_DEPENDENT;
 
+		/* Process this block to convert from bps to other (Kbps, Mbps, Gbps, Tbps) */
+		/* format in the unitv needs to be (convert_from->convert_to) (e.g.: bps->Mbps) */
+		if (strstr (response, "INTEGER: ")) {
+			if (nunits > (size_t)0 && (size_t)i < nunits && unitv[i] != NULL) {
+				if (strstr(unitv[i], "bps->")) { // check if the basic criteria is met first
+					double this_show = (double)atoi(show);
+					if (strstr(unitv[i], "bps->Kbps")) {
+						this_show = (double)this_show / 1024;
+						unitv[i] = "Kbps";
+					} else if (strstr(unitv[i], "bps->Mbps")) {
+						this_show = (double)this_show / 1024 / 1024;
+						unitv[i] = "Mbps";
+					} else if (strstr(unitv[i], "Kbps->Mbps")) {
+						this_show = (double)this_show / 1024;
+						unitv[i] = "Mbps";
+					} else if (strstr(unitv[i], "bps->Gbps")) {
+						this_show = (double)this_show / 1024 / 1024 / 1024;
+						unitv[i] = "Gbps";
+					} else if (strstr(unitv[i], "Kbps->Gbps")) {
+						this_show = (double)this_show / 1024 / 1024;
+						unitv[i] = "Gbps";
+					} else if (strstr(unitv[i], "Mbps->Gbps")) {
+						this_show = (double)this_show / 1024;
+						unitv[i] = "Gbps";
+					} else if (strstr(unitv[i], "bps->Tbps")) {
+						this_show = (double)this_show / 1024 / 1024 / 1024 / 1024;
+						unitv[i] = "Tbps";
+					} else if (strstr(unitv[i], "Kbps->Tbps")) {
+						this_show = (double)this_show / 1024 / 1024 / 1024;
+						unitv[i] = "Tbps";
+					} else if (strstr(unitv[i], "Mbps->Tbps")) {
+						this_show = (double)this_show / 1024 / 1024;
+						unitv[i] = "Tbps";
+					} else if (strstr(unitv[i], "Gbps->Tbps")) {
+						this_show = (double)this_show / 1024;
+						unitv[i] = "Tbps";
+					}
+					if (verbose > 3) {
+						printf("show: %s\nthis_show: %.4f\n", show, this_show);
+					}
+					sprintf(show, "%.4f", this_show);
+				}
+			}
+		}
+		
 		/* Process this block for numeric comparisons */
 		/* Make some special values,like Timeticks numeric only if a threshold is defined */
 		if (thlds[i]->warning || thlds[i]->critical || calculate_rate || is_ticks || offset != 0.0) {
