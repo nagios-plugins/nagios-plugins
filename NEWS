@@ -24,6 +24,7 @@ This file documents the major additions and syntax changes between releases.
 	fix configure.ac for FreeBSD SWAPFORMAT
 	Fix --no-body
 	check_wave produces lots of errors if required arguments are not provided
+	check_disk_smb.pl added additional smb support
 
 
 2.2.1 2017-04-19

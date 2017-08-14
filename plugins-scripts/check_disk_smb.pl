@@ -22,7 +22,7 @@ require 5.004;
 use POSIX;
 use strict;
 use Getopt::Long;
-use vars qw($opt_P $opt_V $opt_h $opt_H $opt_k $opt_s $opt_W $opt_u $opt_p $opt_w $opt_c $opt_a $opt_C $verbose);
+use vars qw($opt_P $opt_V $opt_m $opt_h $opt_H $opt_k $opt_s $opt_W $opt_u $opt_p $opt_w $opt_c $opt_a $opt_C $verbose);
 use vars qw($PROGNAME);
 use FindBin;
 use lib "$FindBin::Bin";
@@ -45,6 +45,7 @@ GetOptions
 	 "V"   => \$opt_V, "version"    => \$opt_V,
 	 "h"   => \$opt_h, "help"       => \$opt_h,
 	 "k"   => \$opt_k, "kerberos"   => \$opt_k,
+	 "m=s" => \$opt_m, "maxprotocol=s" => \$opt_m,
 	 "w=s" => \$opt_w, "warning=s"  => \$opt_w,
 	 "c=s" => \$opt_c, "critical=s" => \$opt_c,
 	 "p=s" => \$opt_p, "password=s" => \$opt_p,
@@ -82,6 +83,9 @@ defined($user) || usage("Invalid user: $opt_u\n");
 
 defined($opt_p) || ($opt_p = shift @ARGV) || ($opt_p = "");
 my $pass = $1 if ($opt_p =~ /(.*)/);
+
+defined($opt_m) || ($opt_m = shift @ARGV) || ($opt_m = "");
+my $maxprotocol = $1 if ($opt_m =~ /(.*)/);
 
 ($opt_w) || ($opt_w = shift @ARGV) || ($opt_w = 85);
 my $warn = $1 if ($opt_w =~ /^([0-9]{1,2}\%?|100\%?|[0-9]+[kMG])$/);
@@ -192,6 +196,7 @@ my @cmd = (
 	$smbclient,
 	"//$host/$share",
 	"-U", "$user%$pass",
+	defined($maxprotocol) ? ("-m", $maxprotocol) : (),
 	defined($workgroup) ? ("-W", $workgroup) : (),
 	defined($address) ? ("-I", $address) : (),
 	defined($opt_P) ? ("-p", $opt_P) : (),
