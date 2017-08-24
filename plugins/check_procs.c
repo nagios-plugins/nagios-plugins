@@ -71,6 +71,7 @@ int options = 0; /* bitmask of filter criteria to test against */
 #define ELAPSED 512
 #define EREG_ARGS 1024
 #define CGROUP_HIERARCHY 2048
+#define EXCLUDE_PROGS 4096
 
 #define KTHREAD_PARENT "kthreadd" /* the parent process of kernel threads:
 							ppid of procs are compared to pid of this proc*/
@@ -94,6 +95,9 @@ int rss;
 float pcpu;
 char *statopts;
 char *prog;
+char *exclude_progs;
+char ** exclude_progs_arr = NULL;
+char exclude_progs_counter = 0; 
 char *cgroup_hierarchy;
 char *args;
 char *input_filename = NULL;
@@ -260,6 +264,26 @@ main (int argc, char **argv)
 				if (verbose >= 3)
 					 printf("not considering - is parent\n");
 				continue;
+			}
+
+			/* Ignore excluded processes by name */
+			if(options & EXCLUDE_PROGS) {
+			  int found = 0;
+			  int i = 0;
+			 
+			  
+			  for(i=0; i < (exclude_progs_counter); i++) {
+			    if(!strcmp(procprog, exclude_progs_arr[i])) {
+			      found = 1;
+			    }
+			  }
+			  if(found == 0) {
+			    resultsum |= EXCLUDE_PROGS;
+			  }else
+			  {
+                            if(verbose >= 3)
+			      printf("excluding - by ignorelist\n");
+                          }
 			}
 
 			/* filter kernel threads (childs of KTHREAD_PARENT)*/
@@ -438,6 +462,7 @@ process_arguments (int argc, char **argv)
 		{"no-kthreads", required_argument, 0, 'k'},
 		{"traditional-filter", no_argument, 0, 'T'},
 		{"cgroup-hierarchy", required_argument, 0, 'g'},
+		{"exclude-process", required_argument, 0, 'X'},
 		{0, 0, 0, 0}
 	};
 
@@ -446,7 +471,7 @@ process_arguments (int argc, char **argv)
 			strcpy (argv[c], "-t");
 
 	while (1) {
-		c = getopt_long (argc, argv, "Vvhkt:c:w:p:s:u:C:a:z:r:m:P:Tg:",
+		c = getopt_long (argc, argv, "Vvhkt:c:w:p:s:u:C:a:z:r:m:P:Tg:X:",
 			longopts, &option);
 
 		if (c == -1 || c == EOF)
@@ -515,6 +540,23 @@ process_arguments (int argc, char **argv)
 			xasprintf (&fmt, _("%s%scommand name '%s'"), (fmt ? fmt : ""), (options ? ", " : ""),
 			          prog);
 			options |= PROG;
+			break;
+		case 'X':
+		        if(exclude_progs)
+			  break;
+			else
+			  exclude_progs = optarg;
+			xasprintf (&fmt, _("%s%sexclude progs '%s'"), (fmt ? fmt : ""), (options ? ", " : ""),
+				   exclude_progs);
+			char *p = strtok(exclude_progs, ",");
+
+			while(p){
+			  exclude_progs_arr = realloc(exclude_progs_arr, sizeof(char*) * ++exclude_progs_counter);
+			  exclude_progs_arr[exclude_progs_counter-1] = p;
+			  p = strtok(NULL, ",");
+			}
+
+			options |= EXCLUDE_PROGS;
 			break;
 		case 'g':									/* cgroup hierarchy */
 			if (cgroup_hierarchy)
@@ -780,6 +822,8 @@ print_help (void)
   printf ("   %s\n", _("Only scan for processes with args that contain the regex STRING."));
   printf (" %s\n", "-C, --command=COMMAND");
   printf ("   %s\n", _("Only scan for exact matches of COMMAND (without path)."));
+  printf (" %s\n", "-C, --exclude-process");
+  printf ("   %s\n", _("Exclude processes which match this comma seperated list"));
   printf (" %s\n", "-k, --no-kthreads");
   printf ("   %s\n", _("Only scan for non kernel threads (works on Linux only)."));
   printf (" %s\n", "-g, --cgroup-hierarchy");
@@ -820,5 +864,5 @@ print_usage (void)
   printf ("%s\n", _("Usage:"));
 	printf ("%s -w <range> -c <range> [-m metric] [-s state] [-p ppid]\n", progname);
   printf (" [-u user] [-r rss] [-z vsz] [-P %%cpu] [-a argument-array]\n");
-  printf (" [-C command] [-k] [-t timeout] [-v]\n");
+  printf (" [-C command] [-X process_to_exclude] [-k] [-t timeout] [-v]\n");
 }
