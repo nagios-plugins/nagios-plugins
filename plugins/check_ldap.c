@@ -477,32 +477,32 @@ print_help (void)
 
 	printf (UT_IPv46);
 
-	printf (" %s\n", "-a [--attr]");
+	printf (" %s\n", "-a, --attr=ATTRIBUTE");
   printf ("    %s\n", _("ldap attribute to search (default: \"(objectclass=*)\""));
-  printf (" %s\n", "-b [--base]");
+  printf (" %s\n", "-b, --base=BASE");
   printf ("    %s\n", _("ldap base (eg. ou=my unit, o=my org, c=at"));
-  printf (" %s\n", "-D [--bind]");
+  printf (" %s\n", "-D, --bind=DN");
   printf ("    %s\n", _("ldap bind DN (if required)"));
-  printf (" %s\n", "-P [--pass]");
+  printf (" %s\n", "-P, --pass=PASSWORD");
   printf ("    %s\n", _("ldap password (if required)"));
-  printf (" %s\n", "-T [--starttls]");
+  printf (" %s\n", "-T, --starttls");
   printf ("    %s\n", _("use starttls mechanism introduced in protocol version 3"));
-  printf (" %s\n", "-S [--ssl]");
+  printf (" %s\n", "-S, --ssl");
   printf ("    %s %i\n", _("use ldaps (ldap v2 ssl method). this also sets the default port to"), LDAPS_PORT);
 
 #ifdef HAVE_LDAP_SET_OPTION
-	printf (" %s\n", "-2 [--ver2]");
+	printf (" %s\n", "-2, --ver2");
   printf ("    %s\n", _("use ldap protocol version 2"));
-  printf (" %s\n", "-3 [--ver3]");
+  printf (" %s\n", "-3, --ver3");
   printf ("    %s\n", _("use ldap protocol version 3"));
   printf ("    (%s %d)\n", _("default protocol version:"), DEFAULT_PROTOCOL);
 #endif
 
 	printf (UT_WARN_CRIT);
 
-  printf (" %s\n", "-W [--warn-entries]");
+  printf (" %s\n", "-W, --warn-entries=INTEGER");
   printf ("    %s\n", _("Number of found entries to result in warning status"));
-  printf (" %s\n", "-C [--crit-entries]");
+  printf (" %s\n", "-C, --crit-entries=INTEGER");
   printf ("    %s\n", _("Number of found entries to result in critical status"));
 
 	printf (UT_CONN_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
