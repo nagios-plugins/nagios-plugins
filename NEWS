@@ -25,6 +25,8 @@ This file documents the major additions and syntax changes between releases.
 	Fix --no-body
 	check_wave produces lots of errors if required arguments are not provided
 	check_disk_smb.pl added additional smb support
+	check_http Additional header/status checking
+	check_http When checking certificate, don't check content/status
 
 
 2.2.1 2017-04-19
