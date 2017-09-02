@@ -1245,6 +1245,9 @@ check_http (void)
     printf ("**** HEADER ****\n%s\n**** CONTENT ****\n%s\n", header,
                 (no_body ? "  [[ skipped ]]" : page));
 
+  /* NOTE: After the following blocks, msg *MUST* be an asprintf-allocated string */
+  xasprintf (&msg, "");
+
   /* make sure the status line matches the response we are looking for */
   if (!expected_statuscode (status_line, server_expect)) {
     if (server_port == HTTP_PORT)
@@ -1259,16 +1262,12 @@ check_http (void)
   }
 
   /* Bypass normal status line check if server_expect was set by user and not default */
-  /* NOTE: After this if/else block msg *MUST* be an asprintf-allocated string */
-  if ( !bad_response ) {
     if ( server_expect_yn  )  {
       xasprintf (&msg,
                 _("Status line output matched \"%s\" - "), server_expect);
       if (verbose)
         printf ("%s\n",msg);
-    } else
-      xasprintf (&msg, "");
-  }
+  } else {
 
   /* Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF */
   /* HTTP-Version   = "HTTP" "/" 1*DIGIT "." 1*DIGIT */
@@ -1310,6 +1309,7 @@ check_http (void)
     /* Print OK status anyway */
     xasprintf (&msg, _("%s%s - "), msg, status_line);
   }
+  } /* end else (server_expect_yn)  */
 
 	free(status_line);
 
