@@ -1213,7 +1213,7 @@ check_http (void)
 
     for (;;) {
 
-        if (!strncmp(page, "\r\n\r\n", 4) || !strncmp(page, "\n\n", 2))
+        if ((page == NULL) || !strncmp(page, "\r\n\r\n", 4) || !strncmp(page, "\n\n", 2))
             break;
 
         while (*page == '\r' || *page == '\n') {
