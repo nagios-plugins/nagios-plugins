@@ -1217,12 +1217,22 @@ check_http (void)
 
   /* find header info and null-terminate it */
   header = page;
-	for (;;) {
-		if (!*page || !strncmp(page, "\r\n\r\n", 4) || !strncmp(page, "\n\n", 2))
-		 break;
-		while (*page == '\r' || *page == '\n') { ++page; }
+
+  for (;;) {
+    
+    if (!strncmp(page, "\r\n\r\n", 4) || !strncmp(page, "\n\n", 2)) 
+      break;
+    
+    while (*page == '\r' || *page == '\n') { 
+      ++page; 
+    }
+
     page += (size_t) strcspn (page, "\r\n");
     pos = page;
+
+    /* Prevent Issue #283 - check_http: -N parameter causes false timeouts (version 2.2.1) */
+    if(*page == '\0') 
+      break;
   }
   page += (size_t) strspn (page, "\r\n");
   header[pos - header] = 0;
