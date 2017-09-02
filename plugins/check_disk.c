@@ -127,7 +127,6 @@ enum
 int process_arguments (int, char **);
 void print_path (const char *mypath);
 void set_all_thresholds (struct parameter_list *path);
-int validate_arguments (uintmax_t, uintmax_t, double, double, double, double, char *);
 void print_help (void);
 void print_usage (void);
 double calculate_percent(uintmax_t, uintmax_t);
@@ -147,6 +146,7 @@ int erronly = FALSE;
 int display_mntp = FALSE;
 int exact_match = FALSE;
 int freespace_ignore_reserved = FALSE;
+int show_status = FALSE;
 char *warn_freespace_units = NULL;
 char *crit_freespace_units = NULL;
 char *warn_freespace_percent = NULL;
@@ -171,16 +171,15 @@ main (int argc, char **argv)
   int result = STATE_UNKNOWN;
   int disk_result = STATE_UNKNOWN;
   char *output;
-  char *details;
+  char status_lit[4];
   char *perf;
   char *preamble;
-  char *flag_header;
   double inode_space_pct;
   double warning_high_tide;
   double critical_high_tide;
   int temp_result;
 
-  struct mount_entry *me;
+  struct mount_entry *me, *last_me = NULL;
   struct fs_usage fsp, tmpfsp;
   struct parameter_list *temp_list, *path;
 
@@ -190,7 +189,6 @@ main (int argc, char **argv)
 
   preamble = strdup (" - free space:");
   output = strdup ("");
-  details = strdup ("");
   perf = strdup ("");
   stat_buf = malloc(sizeof *stat_buf);
 
@@ -206,11 +204,37 @@ main (int argc, char **argv)
   if (process_arguments (argc, argv) == ERROR)
     usage4 (_("Could not parse arguments"));
 
+  if (show_status)
+    sprintf(status_lit, "x:");
+  else
+    status_lit[0] = '\0';
+
   /* If a list of paths has not been selected, find entire
      mount list and create list of paths
    */
   if (path_selected == FALSE) {
     for (me = mount_list; me; me = me->me_next) {
+			if (strcmp(me->me_type, "autofs") == 0 && show_local_fs) {
+				if (last_me == NULL)
+					mount_list = me;
+				else
+					last_me->me_next = me->me_next;
+				free_mount_entry (me);
+				continue;
+			}
+			if (strcmp(me->me_type, "sysfs") == 0 || strcmp(me->me_type, "proc") == 0
+			|| strcmp(me->me_type, "debugfs") == 0 || strcmp(me->me_type, "tracefs") == 0
+			|| strcmp(me->me_type, "fusectl") == 0 || strcmp(me->me_type, "fuse.gvfsd-fuse") == 0
+			|| strcmp(me->me_type, "cgroup") == 0 || strstr(me->me_type, "tmpfs") != NULL)
+			{
+				if (last_me == NULL)
+					mount_list = me->me_next;
+				else
+					last_me->me_next = me->me_next;
+				free_mount_entry (me);
+				continue;
+			}
+
       if (! (path = np_find_parameter(path_select_list, me->me_mountdir))) {
         path = np_add_parameter(&path_select_list, me->me_mountdir);
       }
@@ -321,6 +345,9 @@ main (int argc, char **argv)
       if (verbose >=3) printf("Freeinodes_percent result=%d\n", temp_result);
       disk_result = max_state( disk_result, temp_result );
 
+      if (show_status)
+        status_lit[0] = state_text(disk_result)[0];
+
       result = max_state(result, disk_result);
 
       /* What a mess of units. The output shows free space, the perf data shows used space. Yikes!
@@ -357,14 +384,10 @@ main (int argc, char **argv)
       if (disk_result==STATE_OK && erronly && !verbose)
         continue;
 
-      if (disk_result && verbose) {
-	      xasprintf(&flag_header, " %s [", state_text (disk_result));
-      }
-      else {
-	      xasprintf(&flag_header, "");
-      }
-      xasprintf (&output, "%s %s %.0f %s (%.2f%%",
+      xasprintf (&output, "%s%s%s%s %.0f %s (%.2f%%",
                 output,
+                newlines ? "" : " ",
+                status_lit,
                 (!strcmp(me->me_mountdir, "none") || display_mntp) ? me->me_devname : me->me_mountdir,
                 path->dfree_units,
                 units,
@@ -384,8 +407,6 @@ main (int argc, char **argv)
         }
       }
 
-      free(flag_header);
-
       /* TODO: Need to do a similar debug line
       xasprintf (&details, _("%s\n\
 %.0f of %.0f %s (%.0f%% inode=%.0f%%) free on %s (type %s mounted on %s) warn:%lu crit:%lu warn%%:%.0f%% crit%%:%.0f%%"),
@@ -397,9 +418,6 @@ main (int argc, char **argv)
     }
 
   }
-
-  if (verbose >= 2)
-    xasprintf (&output, "%s%s", output, details);
 
   if (newlines) {
     printf ("DISK %s%s\n%s|%s\n", state_text (result), (erronly && result==STATE_OK) ? "" : preamble, output, perf);
@@ -483,6 +501,7 @@ process_arguments (int argc, char **argv)
     {"errors-only", no_argument, 0, 'e'},
     {"exact-match", no_argument, 0, 'E'},
     {"all", no_argument, 0, 'A'},
+    {"show-status", no_argument, 0, 's'},
     {"verbose", no_argument, 0, 'v'},
     {"quiet", no_argument, 0, 'q'},
     {"clear", no_argument, 0, 'C'},
@@ -502,7 +521,7 @@ process_arguments (int argc, char **argv)
       strcpy (argv[c], "-t");
 
   while (1) {
-    c = getopt_long (argc, argv, "+?VqhvefCt:c:w:K:W:u:p:x:X:N:mklLg:R:r:i:I:MEAn", longopts, &option);
+    c = getopt_long (argc, argv, "+?VqhvefCt:c:w:K:W:u:p:x:X:N:mklLg:R:r:i:I:MEAns", longopts, &option);
 
     if (c == -1 || c == EOF)
       break;
@@ -703,6 +722,10 @@ process_arguments (int argc, char **argv)
       cflags = default_cflags;
       break;
 
+    case 's':
+      show_status = TRUE;
+			break;
+
     case 'A':
       optarg = strdup(".*");
     case 'R':
@@ -839,50 +862,6 @@ set_all_thresholds (struct parameter_list *path)
     set_thresholds(&path->freeinodes_percent, warn_freeinodes_percent, crit_freeinodes_percent);
 }
 
-/* TODO: Remove?
-
-int
-validate_arguments (uintmax_t w, uintmax_t c, double wp, double cp, double iwp, double icp, char *mypath)
-{
-  if (w < 0 && c < 0 && wp < 0.0 && cp < 0.0) {
-    printf (_("INPUT ERROR: No thresholds specified"));
-    print_path (mypath);
-    return ERROR;
-  }
-  else if ((wp >= 0.0 || cp >= 0.0) &&
-           (wp < 0.0 || cp < 0.0 || wp > 100.0 || cp > 100.0 || cp > wp)) {
-    printf (_("\
-INPUT ERROR: C_DFP (%f) should be less than W_DFP (%.1f) and both should be between zero and 100 percent, inclusive"),
-            cp, wp);
-    print_path (mypath);
-    return ERROR;
-  }
-  else if ((iwp >= 0.0 || icp >= 0.0) &&
-           (iwp < 0.0 || icp < 0.0 || iwp > 100.0 || icp > 100.0 || icp > iwp)) {
-    printf (_("\
-INPUT ERROR: C_IDFP (%f) should be less than W_IDFP (%.1f) and both should be between zero and 100 percent, inclusive"),
-            icp, iwp);
-    print_path (mypath);
-    return ERROR;
-  }
-  else if ((w > 0 || c > 0) && (w == 0 || c == 0 || c > w)) {
-    printf (_("\
-INPUT ERROR: C_DF (%lu) should be less than W_DF (%lu) and both should be greater than zero"),
-            (unsigned long)c, (unsigned long)w);
-    print_path (mypath);
-    return ERROR;
-  }
-
-  return OK;
-}
-
-*/
-
-
-
-
-
-
 
 void
 print_help (void)
@@ -949,6 +928,8 @@ print_help (void)
   printf ("    %s\n", _("Regular expression to ignore selected path/partition (case insensitive) (may be repeated)"));
   printf (" %s\n", "-i, --ignore-ereg-path=PATH, --ignore-ereg-partition=PARTITION");
   printf ("    %s\n", _("Regular expression to ignore selected path or partition (may be repeated)"));
+  printf (" %s\n", "-s, --show-status");
+  printf ("    %s\n", _("Show status for each path/partition"));
   printf (UT_PLUG_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
   printf (" %s\n", "-u, --units=STRING");
   printf ("    %s\n", _("Choose bytes, kB, MB, GB, TB (default: MB)"));
@@ -980,16 +961,20 @@ print_usage (void)
 {
   printf ("%s\n", _("Usage:"));
   printf (" %s -w limit -c limit [-W limit] [-K limit] {-p path | -x device}\n", progname);
-  printf ("[-C] [-E] [-e] [-f] [-g group ] [-k] [-l] [-M] [-m] [-R path ] [-r path ]\n");
-  printf ("[-t timeout] [-u unit] [-v] [-X type] [-N type] [-n]\n");
+  printf ("[-C] [-E] [-e] [-f] [-g group ] [-k] [-l] [-M] [-m] {-A | [-R path] [-r path]}\n");
+  printf ("[-s] [-t timeout] [-u unit] [-v] [-X type] [-N type] [-n]\n");
 }
 
 void
 stat_path (struct parameter_list *p)
 {
   /* Stat entry to check that dir exists and is accessible */
-  if (verbose >= 3)
-    printf("calling stat on %s\n", p->name);
+  if (verbose >= 3) {
+    if (p->best_match)
+      printf("calling stat on %s (%s %s)\n", p->name, p->best_match->me_devname, p->best_match->me_type);
+    else
+      printf("calling stat on %s\n", p->name);
+  }
   if (stat (p->name, &stat_buf[0])) {
     if (verbose >= 3)
       printf("stat failed on %s\n", p->name);

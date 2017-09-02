@@ -1266,7 +1266,7 @@ elif test "x$PATH_TO_PING6" != "x"; then
 	then
 		with_ping6_command="$PATH_TO_PING6 -n -s 56 -c %d %s"
 		ac_cv_ping6_packets_first=yes
-		AC_MSG_RESULT([$with_ping_command])
+		AC_MSG_RESULT([$with_ping6_command])
 
 	elif $PATH_TO_PING6 -n -c 1 ::1 2>/dev/null | \
 		egrep -i "^round-trip|^rtt" >/dev/null
@@ -1329,7 +1329,7 @@ elif test "x$PATH_TO_PING" != "x"; then
 	then
 		with_ping6_command="$PATH_TO_PING -A inet6 -n -s 56 -c %d %s"
 		ac_cv_ping6_packets_first=yes
-		AC_MSG_RESULT([$with_ping_command])
+		AC_MSG_RESULT([$with_ping6_command])
 
 	elif $PATH_TO_PING -A inet6 -n -c 1 ::1 2>/dev/null | \
 		egrep -i "^round-trip|^rtt" >/dev/null
@@ -1557,6 +1557,17 @@ else
 	AC_MSG_WARN([Could not find qmail-qstat or equivalent])
 fi
 
+AC_PATH_PROG(PATH_TO_SMTPCTL,smtpctl)
+AC_ARG_WITH(smtpctl_command,
+            ACX_HELP_STRING([--with-smtpctl-command=PATH],
+                            [sets path to smtpctl]), PATH_TO_SMTPCTL=$withval)
+if test -n "$PATH_TO_SMTPCTL"
+then
+	AC_DEFINE_UNQUOTED(PATH_TO_SMTPCTL,"$PATH_TO_SMTPCTL",[path to smtpctl])
+else
+	AC_MSG_WARN([Could not find smtpctl or equivalent])
+fi
+
 dnl SWAP info required is amount allocated/available and amount free
 dnl The plugin works through all the swap devices and adds up the total swap
 dnl available.
@@ -1602,7 +1613,7 @@ then
 
 	if [$PATH_TO_SWAPINFO -k 2>/dev/null | egrep -i "^Device +1K-blocks +Used +Avail" >/dev/null]
 	then
-		ac_cv_swap_format=["%*s %f %*d %f"]
+		ac_cv_swap_format=["%*s %lf %*d %lf"]
 		ac_cv_swap_conv=1024
 		AC_MSG_RESULT([using FreeBSD format swapinfo])
 	fi
