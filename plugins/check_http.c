@@ -1224,10 +1224,10 @@ check_http (void)
         page += (size_t) strcspn (page, "\r\n");
         pos = page;
 
-        /* Prevent Issue #283 - check_http: -N parameter causes false timeouts (version 2.2.1) */
-        if(*page == '\0')
+        if (*page == '\0')
             break;
     }
+
     page += (size_t) strspn (page, "\r\n");
     header[pos - header] = 0;
     while (*header == '\r' || *header == '\n') {
@@ -1241,8 +1241,11 @@ check_http (void)
         printf ("**** HEADER ****\n%s\n**** CONTENT ****\n%s\n", header,
                 (no_body ? "  [[ skipped ]]" : page));
 
+    xasprintf(&msg, "");
+
     /* make sure the status line matches the response we are looking for */
     if (!expected_statuscode (status_line, server_expect)) {
+
         if (server_port == HTTP_PORT)
             xasprintf (&msg,
                        _("Invalid HTTP response received from host: %s\n"),
@@ -1255,57 +1258,74 @@ check_http (void)
     }
 
     /* Bypass normal status line check if server_expect was set by user and not default */
-    /* NOTE: After this if/else block msg *MUST* be an asprintf-allocated string */
-    if ( !bad_response ) {
-        if ( server_expect_yn  )  {
-            xasprintf (&msg,
-                       _("Status line output matched \"%s\" - "), server_expect);
-            if (verbose)
-                printf ("%s\n",msg);
-        } else
-            xasprintf (&msg, "");
-    }
+    if ( server_expect_yn  )  {
 
-    /* Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF */
-    /* HTTP-Version   = "HTTP" "/" 1*DIGIT "." 1*DIGIT */
-    /* Status-Code = 3 DIGITS */
+        xasprintf (&msg,
+                   _("Status line output matched \"%s\" - "), server_expect);
 
-    status_code = strchr (status_line, ' ') + sizeof (char);
-    if (strspn (status_code, "1234567890") != 3)
-        die (STATE_CRITICAL, _("HTTP CRITICAL: Invalid Status Line (%s)\n"), status_line);
+        if (verbose)
+            printf ("%s\n",msg);
 
-    http_status = atoi (status_code);
+    } else {
 
-    /* check the return code */
+        /* Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF */
+        /* HTTP-Version   = "HTTP" "/" 1*DIGIT "." 1*DIGIT */
+        /* Status-Code = 3 DIGITS */
 
-    if (http_status >= 600 || http_status < 100) {
-        die (STATE_CRITICAL, _("HTTP CRITICAL: Invalid Status (%s)\n"), status_line);
-    }
-    /* server errors result in a critical state */
-    else if (http_status >= 500) {
-        xasprintf (&msg, _("%s%s - "), msg, status_line);
-        if (bad_response || !server_expect_yn)
-            result = STATE_CRITICAL;
-    }
-    /* client errors result in a warning state */
-    else if (http_status >= 400) {
-        xasprintf (&msg, _("%s%s - "), msg, status_line);
-        if (bad_response || !server_expect_yn)
-            result = max_state_alt(STATE_WARNING, result);
-    }
-    /* check redirected page if specified */
-    else if (http_status >= 300) {
+        if (status_line != NULL) {
 
-        if (onredirect == STATE_DEPENDENT)
-            redir (header, status_line);
-        else
-            result = max_state_alt(onredirect, result);
-        xasprintf (&msg, _("%s%s - "), msg, status_line);
-    } /* end if (http_status >= 300) */
-    else if (!bad_response) {
-        /* Print OK status anyway */
-        xasprintf (&msg, _("%s%s - "), msg, status_line);
-    }
+            status_code = strchr(status_line, ' ');
+            if (status_code != NULL) 
+                status_code += sizeof(char);
+
+            if (status_code == NULL || (strspn(status_code, "1234567890") != 3))
+                die (STATE_CRITICAL, _("HTTP CRITICAL: Invalid Status Line (%s)\n"), status_line);
+
+        } else {
+
+            die(STATE_CRITICAL, _("HTTP CRITICAL: No Status Line\n"));
+        }
+
+        http_status = atoi (status_code);
+
+        /* check the return code */
+
+        if (http_status >= 600 || http_status < 100) {
+            die (STATE_CRITICAL, _("HTTP CRITICAL: Invalid Status (%s)\n"), status_line);
+        }
+
+        /* server errors result in a critical state */
+        else if (http_status >= 500) {
+            xasprintf (&msg, _("%s%s - "), msg, status_line);
+            if (bad_response || !server_expect_yn)
+                result = STATE_CRITICAL;
+        }
+
+        /* client errors result in a warning state */
+        else if (http_status >= 400) {
+            xasprintf (&msg, _("%s%s - "), msg, status_line);
+            if (bad_response || !server_expect_yn)
+                result = max_state_alt(STATE_WARNING, result);
+        }
+
+        /* check redirected page if specified */
+        else if (http_status >= 300) {
+
+            if (onredirect == STATE_DEPENDENT)
+                redir (header, status_line);
+            else
+                result = max_state_alt(onredirect, result);
+            xasprintf (&msg, _("%s%s - "), msg, status_line);
+        } 
+
+        /* end if (http_status >= 300) */
+        else if (!bad_response) {
+
+            /* Print OK status anyway */
+            xasprintf (&msg, _("%s%s - "), msg, status_line);
+        }
+
+    } /* end else [if (server_expect_yn)] */
 
     free(status_line);
 
