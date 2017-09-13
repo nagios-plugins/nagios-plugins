@@ -13,6 +13,7 @@ This file documents the major additions and syntax changes between releases.
 	check_mailq.pl: Add option for opensmtpd (brigriffin)
 	check_procs: Add FreeBSD jail support (Mathieu Arnold)
 	check_procs: Allow process to be excluded from check_procs (Marcel Klein)
+	check_ldap: Add support for checking LDAP cert age (Guillaume Rousse)
 
 
 2.2.2 xxxx-xx-xx
