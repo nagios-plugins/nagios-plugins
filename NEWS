@@ -1,5 +1,35 @@
 This file documents the major additions and syntax changes between releases.
 
+2.3.0 xxxx-xx-xx
+	ENHANCEMENTS
+	Added directory plugins-python containing three Python plugins
+	check_http: New parameter `--verify-host` will check if -H hostname matches the SSL certificate
+	check_ping: plugin output will now include hostname and IP address
+	check_disk_smb: Add configfile feature
+	check_apt: Add --only-critical switch
+	check_mailq: Add support for opensmtpd
+	check_mailq: Add mailq -C option for config dir or config file
+	check_disk: Add -s option to show status for each path/partition
+	check_mailq.pl: Add option for opensmtpd (brigriffin)
+	check_procs: Add FreeBSD jail support (Mathieu Arnold)
+
+
+2.2.2 xxxx-xx-xx
+	FIXES
+	check_disk: autofs being mounted despite '-l'. Fixed, and also excluded some system "fake" mountpoints
+	check_ntp_time: Periodically returns "Socket timeout" when one of several ntp server doesn't respond
+	check_ntp_time calls `write` on a UDP socket without a successful call to `connect`
+	check_mysql_query & mysql_query: extra-opts causes crash
+	check_log does not check for "-O oldlog"
+	check_log lost ability to use regexes for query (-q) in 2.1.4
+	fix configure.ac for FreeBSD SWAPFORMAT
+	Fix --no-body
+	check_wave produces lots of errors if required arguments are not provided
+	check_disk_smb.pl added additional smb support
+	check_http Additional header/status checking
+	check_http When checking certificate, don't check content/status
+
+
 2.2.1 2017-04-19
 	FIXES
 	check_users: not accepting zero as the threshold
@@ -17,6 +47,7 @@ This file documents the major additions and syntax changes between releases.
 	check_mailq: Nullmailer Regex is not working for Ubuntu 16.04
 	check_swap: Downstream Fedora patch: Prevent check_swap from returning OK, if no swap activated
 	Building RPMs on Amazon Linux - Add 'install-root' on line 165 of spec file
+	check_http: Memory allocation error
 
 
 2.2.0 2017-01-19

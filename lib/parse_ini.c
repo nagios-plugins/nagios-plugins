@@ -83,6 +83,7 @@ static char* default_file_in_path(void);
  */
 static void parse_locator(const char *locator, const char *def_stanza, np_ini_info *i){
 	size_t locator_len=0, stanza_len=0;
+	char *dflt = NULL;
 
 	/* if locator is NULL we'll use default values */
 	if(locator){
@@ -102,7 +103,9 @@ static void parse_locator(const char *locator, const char *def_stanza, np_ini_in
 	}
 	/* if there is no @file part */
 	if(stanza_len==locator_len){
-		i->file=default_file();
+		dflt=default_file();
+		if (dflt)
+			i->file=strdup(dflt);
 	} else {
 		i->file=strdup(&(locator[stanza_len+1]));
 	}
