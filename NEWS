@@ -15,6 +15,7 @@ This file documents the major additions and syntax changes between releases.
 	check_procs: Allow process to be excluded from check_procs (Marcel Klein)
 	check_ldap: Add support for checking LDAP cert age (Guillaume Rousse)
 	check_icmp: Add Jitter, MOS, Score (Alessandro Ren)
+	check_radius: Add calling-station-id (cejkar)
 
 
 2.2.2 xxxx-xx-xx
