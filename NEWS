@@ -12,6 +12,7 @@ This file documents the major additions and syntax changes between releases.
 	check_disk: Add -s option to show status for each path/partition
 	check_mailq.pl: Add option for opensmtpd (brigriffin)
 	check_procs: Add FreeBSD jail support (Mathieu Arnold)
+	check_procs: Allow process to be excluded from check_procs (Marcel Klein)
 
 
 2.2.2 xxxx-xx-xx
