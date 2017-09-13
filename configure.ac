@@ -1075,6 +1075,12 @@ AC_ARG_WITH(ping_command,
 		[sets syntax for ICMP ping]),
 	with_ping_command=$withval,)
 
+dnl AS I WAS LOOKING INTO THIS... (Bryan Heden 09/2017)
+dnl Ping packets first was a bit confusing
+dnl it doesn't actually mean "packet count first"
+dnl it means packets come before specifying host
+dnl If a timeout is specified, that comes first
+
 AC_MSG_CHECKING(for ICMP ping syntax)
 ac_cv_ping_packets_first=no
 ac_cv_ping_has_timeout=no
@@ -1123,6 +1129,14 @@ then
 	with_ping_command="$PATH_TO_PING -n -U -c %d %s"
 	ac_cv_ping_packets_first=yes
 	AC_MSG_RESULT([$with_ping_command])
+
+elif $PATH_TO_PING -n -t 10 -c 1 127.0.0.1 2>/dev/null | \
+  egrep -i "^round-trip|^rtt" >/dev/null
+then
+  with_ping_command="$PATH_TO_PING -n -t %d -c %d %s"
+  ac_cv_ping_packets_first=yes
+  ac_cv_ping_has_timeout=yes
+  AC_MSG_RESULT([$with_ping_command])
 
 elif $PATH_TO_PING -n -c 1 127.0.0.1 2>/dev/null | \
 	egrep -i "^round-trip|^rtt" >/dev/null
@@ -1239,6 +1253,14 @@ elif test "x$PATH_TO_PING6" != "x"; then
 		with_ping6_command="$PATH_TO_PING6 -n -U -c %d %s"
 		ac_cv_ping6_packets_first=yes
 		AC_MSG_RESULT([$with_ping6_command])
+
+  elif $PATH_TO_PING6 -n -X 10 -c 1 ::1 2>/dev/null | \
+    egrep -i "^round-trip|^rtt" >/dev/null
+  then
+    with_ping6_command="$PATH_TO_PING6 -n -X %d -c %d %s"
+    ac_cv_ping6_packets_first=yes
+    ac_cv_ping_has_timeout=yes
+    AC_MSG_RESULT([$with_ping6_command])
 
 	elif $PATH_TO_PING6 -n -c 1 ::1 2>/dev/null | \
 		egrep -i "^round-trip|^rtt" >/dev/null
