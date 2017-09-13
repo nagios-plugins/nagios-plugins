@@ -786,6 +786,16 @@ then
 	ac_cv_ps_cols=10
 	AC_MSG_RESULT([$ac_cv_ps_command])
 
+dnl jails on FreeBSD:
+elif ps -axwo 'stat comm vsz rss user uid pid ppid jid args' 2>/dev/null | \
+	egrep -i "^ *STAT +COMMAND +VSZ +RSS +USER +UID +PID +PPID +JID +COMMAND" > /dev/null
+then
+	ac_cv_ps_varlist="procstat,&procuid,&procpid,&procppid,&procjid,&procvsz,&procrss,&procpcpu,procprog,&pos"
+	ac_cv_ps_command="$PATH_TO_PS -axwo 'stat uid pid ppid jid vsz rss pcpu comm args'"
+	ac_cv_ps_format="%s %d %d %d %d %d %d %f %s %n"
+	ac_cv_ps_cols=10
+	AC_MSG_RESULT([$ac_cv_ps_command])
+
 dnl Some gnu/linux systems (debian for one) don't like -axwwo and need axwwo.
 dnl so test for this first...
 elif ps axwwo 'stat comm vsz rss user uid pid ppid args' 2>/dev/null | \
