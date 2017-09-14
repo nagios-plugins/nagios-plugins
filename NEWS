@@ -35,6 +35,7 @@ This file documents the major additions and syntax changes between releases.
 	Fix ax_with_python not crashing on Python3 (Michael Orlitzky)
 	Fix rpmbuild errors (Josh Coughlan)
 	check_ping: FreeBSD ping working natively
+	check_sensors: Fix fault test with --ignore-fault
 
 
 2.2.1 2017-04-19
