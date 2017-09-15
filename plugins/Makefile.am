@@ -29,7 +29,7 @@ MATHLIBS = @MATHLIBS@
 libexec_PROGRAMS = check_apt check_cluster check_disk check_dummy check_http check_load \
 	check_mrtg check_mrtgtraf check_ntp check_ntp_peer check_nwstat check_overcr check_ping \
 	check_real check_smtp check_ssh check_tcp check_time check_ntp_time \
-	check_ups check_users negate \
+	check_ups check_users negate remove_perfdata \
 	urlize @EXTRAS@
 
 check_tcp_programs = check_ftp check_imap check_nntp check_pop \
@@ -113,6 +113,7 @@ check_by_ssh_LDADD = $(NETLIBS)
 check_ide_smart_LDADD = $(BASEOBJS)
 negate_LDADD = $(BASEOBJS)
 urlize_LDADD = $(BASEOBJS)
+remove_perfdata_LDADD = $(BASEOBJS)
 
 if !HAVE_UTMPX
 check_users_LDADD += popen.o
