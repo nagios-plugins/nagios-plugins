@@ -36,6 +36,7 @@ This file documents the major additions and syntax changes between releases.
 	Fix rpmbuild errors (Josh Coughlan)
 	check_ping: FreeBSD ping working natively
 	check_sensors: Fix fault test with --ignore-fault
+	check_snmp: Fix perfdata not adhering to plugin dev guidelines
 
 
 2.2.1 2017-04-19

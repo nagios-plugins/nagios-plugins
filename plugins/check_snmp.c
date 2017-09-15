@@ -615,6 +615,12 @@ main (int argc, char **argv)
 				}
 				strncat(perfstr, ";", sizeof(perfstr)-strlen(perfstr)-1);
 			}
+
+			/* remove trailing semi-colons for guideline adherence */
+			if (perfstr[strlen(perfstr) - 1] == ';') {
+				perfstr[strlen(perfstr) - 1] = '\0';
+			}
+
 			strncat(perfstr, " ", sizeof(perfstr)-strlen(perfstr)-1);
 		}
 	}
