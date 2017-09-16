@@ -258,7 +258,7 @@ main (int argc, char **argv)
 			previous_string = strdup((char *) previous_state->data);
 			while((ap = strsep(&previous_string, ":")) != NULL) {
 				if(verbose>2)
-					printf("State for %d=%s\n", i, ap);
+					printf("Previous State for %d=%s\n", i, ap);
 				while (i >= previous_size) {
 					previous_size += OID_COUNT_STEP;
 					previous_value = realloc(previous_value, previous_size * sizeof(*previous_value));
