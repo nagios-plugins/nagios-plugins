@@ -332,7 +332,7 @@ main (int argc, char **argv)
 
 	/* This is just for display purposes, so it can remain a string */
 	xasprintf(&cl_hidden_auth, "%s -Le -t %d -r %d -m %s -v %s %s %s %s:%s",
-		snmpcmd, timeout_interval, retries, strlen(miblist) ? miblist : "''", proto, "[context]", "[authpriv]",
+		snmpcmd, command_interval, retries, strlen(miblist) ? miblist : "''", proto, "[context]", "[authpriv]",
 		server_address, port);
 
 	for (i = 0; i < numoids; i++) {
@@ -486,6 +486,7 @@ main (int argc, char **argv)
 		/* Process this block for numeric comparisons */
 		/* Make some special values,like Timeticks numeric only if a threshold is defined */
 		if (thlds[i]->warning || thlds[i]->critical || calculate_rate || is_ticks || offset != 0.0) {
+
 			ptr = strpbrk (show, "-0123456789");
 			if (ptr == NULL)
 				die (STATE_UNKNOWN,_("No valid data returned (%s)\n"), show);
@@ -623,7 +624,9 @@ main (int argc, char **argv)
 
 			strncat(perfstr, " ", sizeof(perfstr)-strlen(perfstr)-1);
 		}
-	}
+
+	} 
+	/* for (line=0, i=0; line < chld_out.lines; line++, i++) */
 	total_oids=i;
 
 	/* Save state data, as all data collected now */
