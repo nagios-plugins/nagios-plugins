@@ -161,10 +161,10 @@ process_arguments(int argc, char **argv)
     while (1) {
         c = getopt_long(argc, argv, "+hVld", longopts, &option);
 
-        if(c == -1 || c == EOF)
+        if (c == -1 || c == EOF)
             break;
 
-        switch(c) {
+        switch (c) {
 
         /* help */
         case '?':
@@ -203,10 +203,11 @@ process_arguments(int argc, char **argv)
 void
 validate_arguments(char **command_line)
 {
-    if(command_line[0] == NULL)
+    if (command_line[0] == NULL)
         usage4(_("Could not parse arguments"));
 
-    if(strncmp(command_line[0],"/", 1) != 0 && strncmp(command_line[0], "./", 2) != 0)
+    if (   strncmp(command_line[0], "/", 1) != 0 
+        && strncmp(command_line[0], "./", 2) != 0)
         usage4(_("Require path to command"));
 }
 
