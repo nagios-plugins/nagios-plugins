@@ -325,7 +325,7 @@ int np_net_ssl_check_cert_real(SSL *ssl, int days_till_exp_warn, int days_till_e
 		else
 			status = STATE_CRITICAL;
 	} else {
-		printf(_("OK - Certificate '%s' will expire on %s.\n"), cn, timestamp);
+		printf(_("OK - Certificate '%s' will expire in %u days on %s.\n"), cn, days_left, timestamp);
 		status = STATE_OK;
 	}
 	X509_free(certificate);

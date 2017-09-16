@@ -4,6 +4,7 @@ This file documents the major additions and syntax changes between releases.
 	ENHANCEMENTS
 	Added directory plugins-python containing three Python plugins
 	Add plugin remove_perfdata to remove perfdata from specified plugin's output
+	Added warning_string/critical_string to struct thresholds for storing originally parsed strings
 	check_http: New parameter `--verify-host` will check if -H hostname matches the SSL certificate
 	check_ping: plugin output will now include hostname and IP address
 	check_disk_smb: Add configfile feature
@@ -17,6 +18,7 @@ This file documents the major additions and syntax changes between releases.
 	check_ldap: Add support for checking LDAP cert age (Guillaume Rousse)
 	check_icmp: Add Jitter, MOS, Score (Alessandro Ren)
 	check_radius: Add calling-station-id (cejkar)
+	ssl_utils: Added certificate expiry data in OK status (check_http, check_smtp, check_tcp) (Matt Capra)
 
 
 2.2.2 xxxx-xx-xx
@@ -38,6 +40,7 @@ This file documents the major additions and syntax changes between releases.
 	check_ping: FreeBSD ping working natively
 	check_sensors: Fix fault test with --ignore-fault
 	check_snmp: Fix perfdata not adhering to plugin dev guidelines
+	check_snmp: warning/critical perfdata is returned properly
 
 
 2.2.1 2017-04-19
