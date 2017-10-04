@@ -119,6 +119,7 @@ int use_ssl = FALSE;
 int use_sni = FALSE;
 int verbose = FALSE;
 int show_extended_perfdata = FALSE;
+int show_url = FALSE;
 int sd;
 int min_page_len = 0;
 int max_page_len = 0;
@@ -239,6 +240,7 @@ process_arguments (int argc, char **argv)
     {"use-ipv4", no_argument, 0, '4'},
     {"use-ipv6", no_argument, 0, '6'},
     {"extended-perfdata", no_argument, 0, 'E'},
+    {"show-url", no_argument, 0, 'U'},
     {0, 0, 0, 0}
   };
 
@@ -259,7 +261,7 @@ process_arguments (int argc, char **argv)
   }
 
   while (1) {
-    c = getopt_long (argc, argv, "Vvh46t:c:w:A:k:H:P:j:T:I:a:b:d:e:p:s:R:r:u:f:C:J:K:nlLS::m:M:NE", longopts, &option);
+    c = getopt_long (argc, argv, "Vvh46t:c:w:A:k:H:P:j:T:I:a:b:d:e:p:s:R:r:u:f:C:J:K:nlLS::m:M:NEU", longopts, &option);
     if (c == -1 || c == EOF)
       break;
 
@@ -523,6 +525,9 @@ process_arguments (int argc, char **argv)
                   break;
     case 'E': /* show extended perfdata */
       show_extended_perfdata = TRUE;
+      break;
+    case 'U': /* show checked url in output msg */
+      show_url = TRUE;
       break;
     }
   }
@@ -1370,6 +1375,10 @@ check_http (void)
   else
     msg[strlen(msg)-3] = '\0';
 
+  /* show checked URL */
+  if (show_url)
+    xasprintf (&msg, _("%s - %s://%s:%d%s"), msg, use_ssl ? "https" : "http", host_name ? host_name : server_address, server_port, server_url);
+	
   /* check elapsed time */
   if (show_extended_perfdata)
     xasprintf (&msg,
@@ -1724,6 +1733,8 @@ print_help (void)
   printf ("    %s\n", _("Any other tags to be sent in http header. Use multiple times for additional headers"));
   printf (" %s\n", "-E, --extended-perfdata");
   printf ("    %s\n", _("Print additional performance data"));
+  printf (" %s\n", "-U, --show-url");
+  printf ("    %s\n", _("Print URL in msg output in plain text"));
   printf (" %s\n", "-L, --link");
   printf ("    %s\n", _("Wrap output in HTML link (obsoleted by urlize)"));
   printf (" %s\n", "-f, --onredirect=<ok|warning|critical|follow|sticky|stickyport>");
@@ -1798,7 +1809,7 @@ print_usage (void)
   printf ("%s\n", _("Usage:"));
   printf (" %s -H <vhost> | -I <IP-address> [-u <uri>] [-p <port>]\n",progname);
   printf ("       [-J <client certificate file>] [-K <private key>]\n");
-  printf ("       [-w <warn time>] [-c <critical time>] [-t <timeout>] [-L] [-E] [-a auth]\n");
+  printf ("       [-w <warn time>] [-c <critical time>] [-t <timeout>] [-L] [-E] [-U] [-a auth]\n");
   printf ("       [-b proxy_auth] [-f <ok|warning|critcal|follow|sticky|stickyport>]\n");
   printf ("       [-e <expect>] [-d string] [-s string] [-l] [-r <regex> | -R <case-insensitive regex>]\n");
   printf ("       [-P string] [-m <min_pg_size>:<max_pg_size>] [-4|-6] [-N] [-M <age>]\n");
