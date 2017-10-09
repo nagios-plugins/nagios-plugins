@@ -703,8 +703,10 @@ int chunk_header(char **buf)
         ++*buf;
 
     // soak up the leading CRLF
-    while (**buf != '\0' && (**buf == '\r' || **buf == '\n'))
-        ++*buf;
+    if (**buf && **buf == '\r' && *(++*buf) && **buf == '\n')
+      ++*buf;
+    else
+      die (STATE_UNKNOWN, _("HTTP UNKNOWN - Failed to parse chunked body, invalid format\n"));
 
     return lth;
 }
