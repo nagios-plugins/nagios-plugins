@@ -1049,7 +1049,7 @@ finish(int sig)
 		if(hosts_ok >= min_hosts_alive) status = STATE_OK;
 		else if((hosts_ok + hosts_warn) >= min_hosts_alive) status = STATE_WARNING;
 	}
-	printf("%s - ", status_string[status]);
+	printf("%s (pid %lu) - ", status_string[status], pid);
 
 	host = list;
 	while(host) {
