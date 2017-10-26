@@ -33,6 +33,9 @@ const char *progname = "check_mysql_query";
 const char *copyright = "1999-2014";
 const char *email = "devel@nagios-plugins.org";
 
+/* The default port that MySQL servers listen on. */
+#define CHECK_PORT_DEFAULT 3306
+
 #include "common.h"
 #include "utils.h"
 #include "utils_base.h"
@@ -48,7 +51,7 @@ char *db_pass = NULL;
 char *db = NULL;
 char *opt_file = NULL;
 char *opt_group = NULL;
-unsigned int db_port = MYSQL_PORT;
+unsigned int db_port = CHECK_PORT_DEFAULT;
 
 int process_arguments (int, char **);
 int validate_arguments (void);
@@ -300,7 +303,7 @@ void
 print_help (void)
 {
 	char *myport;
-	xasprintf (&myport, "%d", MYSQL_PORT);
+	xasprintf (&myport, "%d", CHECK_PORT_DEFAULT);
 
 	print_revision (progname, NP_VERSION);
 
