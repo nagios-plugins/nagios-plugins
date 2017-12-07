@@ -48,7 +48,11 @@ static int verbose=0;
 static int quiet=0;
 static char *owarn="60";
 static char *ocrit="120";
-static int time_offset=0;
+static char *swarn="16";
+static char *scrit="16";
+int time_offset=0;
+
+int num_hosts;
 
 int process_arguments (int, char **);
 thresholds *offset_thresholds = NULL;
@@ -87,6 +91,9 @@ typedef struct {
 	double offset[AVG_NUM]; /* offsets from each response */
 	uint8_t flags;       /* byte with leapindicator,vers,mode. see macros */
 } ntp_server_results;
+
+/* define this globally to be able to do other checks */
+ntp_server_results *servers=NULL;
 
 /* bits 1,2 are the leap indicator */
 #define LI_MASK 0xc0
@@ -301,15 +308,16 @@ int best_offset_server(const ntp_server_results *slist, int nservers){
  * - we also "manually" handle resolving host names and connecting, because
  *   we have to do it in a way that our lazy macros don't handle currently :( */
 double offset_request(const char *host, int *status){
-	int i=0, j=0, ga_result=0, num_hosts=0, *socklist=NULL, respnum=0;
+  int i=0, j=0, ga_result=0, *socklist=NULL, respnum=0;
 	int servers_completed=0, one_read=0, servers_readable=0, best_index=-1;
 	time_t now_time=0, start_ts=0;
 	ntp_message *req=NULL;
 	double avg_offset=0.;
+	num_hosts = 0;
 	struct timeval recv_time;
 	struct addrinfo *ai=NULL, *ai_tmp=NULL, hints;
 	struct pollfd *ufds=NULL;
-	ntp_server_results *servers=NULL;
+
 
 	/* setup hints to only return results from getaddrinfo that we'd like */
 	memset(&hints, 0, sizeof(struct addrinfo));
@@ -435,7 +443,7 @@ double offset_request(const char *host, int *status){
 	for(j=0; j<num_hosts; j++){ close(socklist[j]); }
 	free(socklist);
 	free(ufds);
-	free(servers);
+
 	free(req);
 	freeaddrinfo(ai);
 
@@ -456,6 +464,8 @@ int process_arguments(int argc, char **argv){
 		{"time-offset", optional_argument, 0, 'o'},
 		{"warning", required_argument, 0, 'w'},
 		{"critical", required_argument, 0, 'c'},
+		{"stratum-warn", required_argument, 0, 'W'},
+		{"stratum-crit", required_argument, 0, 'C'},
 		{"timeout", required_argument, 0, 't'},
 		{"hostname", required_argument, 0, 'H'},
 		{"port", required_argument, 0, 'p'},
@@ -467,7 +477,7 @@ int process_arguments(int argc, char **argv){
 		usage ("\n");
 
 	while (1) {
-		c = getopt_long (argc, argv, "Vhv46qw:c:t:H:p:o:", longopts, &option);
+		c = getopt_long (argc, argv, "Vhv46qw:c:t:H:p:o:W:C:", longopts, &option);
 		if (c == -1 || c == EOF || c == 1)
 			break;
 
@@ -491,6 +501,12 @@ int process_arguments(int argc, char **argv){
 			break;
 		case 'c':
 			ocrit = optarg;
+			break;
+		case 'W':
+			swarn = optarg;
+			break;
+		case 'C':
+			scrit = optarg;
 			break;
 		case 'H':
 			if(is_host(optarg) == FALSE)
@@ -570,6 +586,36 @@ int main(int argc, char *argv[]){
 		result = get_status(fabs(offset), offset_thresholds);
 	}
 
+	int i;
+	int servers_warn_stratum=0;
+	int servers_crit_stratum=0;
+	int servers_worst_stratum=0;
+	int servers_best_stratum=16;
+
+	for (i=0; i<num_hosts; i++) {
+	  // set best stratum
+	  if (servers[i].stratum < servers_best_stratum)
+	    servers_best_stratum = servers[i].stratum;
+
+	  // set worst stratum
+	  if (servers[i].stratum > servers_worst_stratum)
+	    servers_worst_stratum = servers[i].stratum;
+
+	  if (servers[i].stratum >= atoi(scrit))
+	    servers_crit_stratum++;
+
+	  if (servers[i].stratum >= atoi(swarn))
+	    servers_warn_stratum++;
+
+	    }
+
+	// adjust result for stratum check
+	if ((result == STATE_WARNING || result == STATE_OK) && servers_crit_stratum > 0)
+	  result = STATE_CRITICAL;
+
+	if (result == STATE_OK && servers_warn_stratum > 0)
+	  result = STATE_WARNING;
+
 	switch (result) {
 		case STATE_CRITICAL :
 			xasprintf(&result_line, _("NTP CRITICAL:"));
@@ -588,10 +634,12 @@ int main(int argc, char *argv[]){
 		xasprintf(&result_line, "%s %s", result_line, _("Offset unknown"));
 		xasprintf(&perfdata_line, "");
 	} else {
-		xasprintf(&result_line, "%s %s %.10g secs", result_line, _("Offset"), offset);
-		xasprintf(&perfdata_line, "%s", perfd_offset(offset));
+	  xasprintf(&result_line, "%s %s %.10g secs, stratum best:%d worst:%d", result_line, _("Offset"), offset, servers_best_stratum, servers_worst_stratum);
+	  xasprintf(&perfdata_line, "%s, stratum_best=%d, stratum_worst=%d, num_warn_stratum=%d, num_crit_stratum=%d", perfd_offset(offset), servers_best_stratum, servers_worst_stratum, servers_warn_stratum, servers_crit_stratum);
 	}
 	printf("%s|%s\n", result_line, perfdata_line);
+
+	free(servers);
 
 	if(server_address!=NULL) free(server_address);
 	return result;
@@ -620,6 +668,11 @@ void print_help(void){
 	printf ("    %s\n", _("Offset to result in critical status (seconds)"));
 	printf (" %s\n", "-o, --time_offset=INTEGER");
 	printf ("    %s\n", _("Expected offset of the ntp server relative to local server (seconds)"));
+	printf (" %s\n", "-W, --stratum-warn=INTEGER");
+	printf ("    %s\n", _("Alert warning if stratum is worse (less) than specfied value"));
+	printf (" %s\n", "-C, --stratum-crit=INTEGER");
+	printf ("    %s\n", _("Alert critical if stratum is worse (less) than specfied value"));
+
 	printf (UT_CONN_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
 	printf (UT_VERBOSE);
 
