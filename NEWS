@@ -1,5 +1,9 @@
 This file documents the major additions and syntax changes between releases.
 
+2.2.x TBD
+	ENHANCEMENTS
+        check_ntp_time: Add support for monitoring stratum of timesources
+
 2.2.1 2017-04-19
 	FIXES
 	check_users: not accepting zero as the threshold

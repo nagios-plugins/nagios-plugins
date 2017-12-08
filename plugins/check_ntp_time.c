@@ -635,7 +635,7 @@ int main(int argc, char *argv[]){
 		xasprintf(&perfdata_line, "");
 	} else {
 	  xasprintf(&result_line, "%s %s %.10g secs, stratum best:%d worst:%d", result_line, _("Offset"), offset, servers_best_stratum, servers_worst_stratum);
-	  xasprintf(&perfdata_line, "%s, stratum_best=%d, stratum_worst=%d, num_warn_stratum=%d, num_crit_stratum=%d", perfd_offset(offset), servers_best_stratum, servers_worst_stratum, servers_warn_stratum, servers_crit_stratum);
+	  xasprintf(&perfdata_line, "%s stratum_best=%d stratum_worst=%d num_warn_stratum=%d num_crit_stratum=%d", perfd_offset(offset), servers_best_stratum, servers_worst_stratum, servers_warn_stratum, servers_crit_stratum);
 	}
 	printf("%s|%s\n", result_line, perfdata_line);
 
