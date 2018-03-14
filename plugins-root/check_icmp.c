@@ -674,7 +674,7 @@ main(int argc, char **argv)
 static void
 run_checks()
 {
-	u_int i, t, result;
+	u_int i, t;
 	u_int final_wait, time_passed;
 
 	/* this loop might actually violate the pkt_interval or target_interval
@@ -928,7 +928,6 @@ recvfrom_wto(int sock, void *buf, unsigned int len, struct sockaddr *saddr,
 	int n, ret;
 	struct timeval to, then, now;
 	fd_set rd, wr;
-	char ans_data[4096];
 	struct msghdr hdr;
 	struct iovec iov;
 #ifdef SO_TIMESTAMP
