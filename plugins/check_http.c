@@ -345,7 +345,9 @@ process_arguments (int argc, char **argv)
       if (c=='S' && optarg != NULL) {
         int got_plus = strchr(optarg, '+') != NULL;
 
-        if (!strncmp (optarg, "1.2", 3))
+        if (!strncmp (optarg, "1.3", 3))
+          ssl_version = got_plus ? MP_TLSv1_3_OR_NEWER : MP_TLSv1_3;
+        else if (!strncmp (optarg, "1.2", 3))
           ssl_version = got_plus ? MP_TLSv1_2_OR_NEWER : MP_TLSv1_2;
         else if (!strncmp (optarg, "1.1", 3))
           ssl_version = got_plus ? MP_TLSv1_1_OR_NEWER : MP_TLSv1_1;
@@ -356,7 +358,7 @@ process_arguments (int argc, char **argv)
         else if (optarg[0] == '2')
           ssl_version = got_plus ? MP_SSLv2_OR_NEWER : MP_SSLv2;
         else
-          usage4 (_("Invalid option - Valid SSL/TLS versions: 2, 3, 1, 1.1, 1.2 (with optional '+' suffix)"));
+          usage4 (_("Invalid option - Valid SSL/TLS versions: 2, 3, 1, 1.1, 1.2, 1.3 (with optional '+' suffix)"));
       }
       if (specify_port == FALSE)
         server_port = HTTPS_PORT;
