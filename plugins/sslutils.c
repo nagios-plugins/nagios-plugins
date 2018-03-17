@@ -98,7 +98,7 @@ int np_net_ssl_init_with_hostname_version_and_cert(int sd, char *host_name, int 
 #endif
 	case MP_TLSv1_3: /* TLSv1.3 protocol */
 #if !defined(SSL_OP_NO_TLSv1_3)
-	printf ("%s\n", _("Your OpenSSL version hasn't been compiled with TLS 1.$
+	printf ("%s\n", _("Your OpenSSL version hasn't been compiled with TLS 1.3."));
 	return STATE_UNKNOWN;
 #else
 	method = TLS_client_method();
