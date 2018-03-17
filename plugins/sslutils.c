@@ -96,6 +96,26 @@ int np_net_ssl_init_with_hostname_version_and_cert(int sd, char *host_name, int 
 		method = TLSv1_2_client_method();
 		break;
 #endif
+	case MP_TLSv1_3: /* TLSv1.3 protocol */
+#if !defined(SSL_OP_NO_TLSv1_3)
+	printf ("%s\n", _("Your OpenSSL version hasn't been compiled with TLS 1.$
+	return STATE_UNKNOWN;
+#else
+	method = TLS_client_method();
+	options |= SSL_OP_NO_SSLv2;
+	options |= SSL_OP_NO_SSLv3;
+	options |= SSL_OP_NO_TLSv1;
+	options |= SSL_OP_NO_TLSv1_1;
+	options |= SSL_OP_NO_TLSv1_2;
+	break;
+#endif
+	case MP_TLSv1_3_OR_NEWER:
+#if !defined(SSL_OP_NO_TLSv1_2)
+		printf("%s\n", _("UNKNOWN - Disabling TLSv1.2 is not supported by your SSL library."));
+		return STATE_UNKNOWN;
+#else
+		options |= SSL_OP_NO_TLSv1_2;
+#endif
 	case MP_TLSv1_2_OR_NEWER:
 #if !defined(SSL_OP_NO_TLSv1_1)
 		printf("%s\n", _("UNKNOWN - Disabling TLSv1.1 is not supported by your SSL library."));
