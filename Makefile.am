@@ -29,6 +29,9 @@ dist-hook:
 install-root:
 	cd plugins-root && $(MAKE) $@
 
+install-packager:
+	cd plugins-root && $(MAKE) $@
+
 test test-debug:
 	cd lib && $(MAKE) $@
 	if test "$(PERLMODS_DIR)" != ""; then cd perlmods && $(MAKE) $@; fi

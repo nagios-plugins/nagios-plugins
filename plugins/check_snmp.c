@@ -288,6 +288,7 @@ main (int argc, char **argv)
 		set_thresholds(&thlds[i],
 		               w ? strpbrk(w, NP_THRESHOLDS_CHARS) : NULL,
 		               c ? strpbrk(c, NP_THRESHOLDS_CHARS) : NULL);
+
 		if (w) {
 			th_warn=strchr(th_warn, ',');
 			if (th_warn) th_warn++;
@@ -332,7 +333,7 @@ main (int argc, char **argv)
 
 	/* This is just for display purposes, so it can remain a string */
 	xasprintf(&cl_hidden_auth, "%s -Le -t %d -r %d -m %s -v %s %s %s %s:%s",
-		snmpcmd, timeout_interval, retries, strlen(miblist) ? miblist : "''", proto, "[context]", "[authpriv]",
+		snmpcmd, command_interval, retries, strlen(miblist) ? miblist : "''", proto, "[context]", "[authpriv]",
 		server_address, port);
 
 	for (i = 0; i < numoids; i++) {
@@ -486,6 +487,7 @@ main (int argc, char **argv)
 		/* Process this block for numeric comparisons */
 		/* Make some special values,like Timeticks numeric only if a threshold is defined */
 		if (thlds[i]->warning || thlds[i]->critical || calculate_rate || is_ticks || offset != 0.0) {
+
 			ptr = strpbrk (show, "-0123456789");
 			if (ptr == NULL)
 				die (STATE_UNKNOWN,_("No valid data returned (%s)\n"), show);
@@ -574,50 +576,96 @@ main (int argc, char **argv)
 		ptr = NULL;
 		strtod(show, &ptr);
 		if (ptr > show) {
-			if (perf_labels && nlabels >= (size_t)1 && (size_t)i < nlabels && labels[i] != NULL)
-				temp_string=labels[i];
-			else
-				temp_string=oidname;
-			if (strpbrk (temp_string, " ='\"") == NULL) {
-				strncat(perfstr, temp_string, sizeof(perfstr)-strlen(perfstr)-1);
+
+			/* use either specified label or oid as label */
+			if (perf_labels 
+				&& (nlabels >= (size_t)1) 
+				&& ((size_t)i < nlabels) 
+				&& labels[i] != NULL) {
+
+					temp_string=labels[i];
+			}
+			else {
+				temp_string = oidname;
+			}
+
+			/* check the label for space, equal, singlequote or doublequote */
+			if (strpbrk(temp_string, " ='\"") == NULL) {
+
+				/* if it doesn't have any - we can just use it as the label */
+				strncat(perfstr, temp_string, sizeof(perfstr) - strlen(perfstr) - 1);
+
 			} else {
-				if (strpbrk (temp_string, "'") == NULL) {
+
+				/* if it does have one of those characters, we need
+				   to find a way to adequately quote it */
+				if (strpbrk(temp_string, "'") == NULL) {
 					quote_string="'";
 				} else {
 					quote_string="\"";
 				}
-				strncat(perfstr, quote_string, sizeof(perfstr)-strlen(perfstr)-1);
-				strncat(perfstr, temp_string, sizeof(perfstr)-strlen(perfstr)-1);
-				strncat(perfstr, quote_string, sizeof(perfstr)-strlen(perfstr)-1);
+
+				strncat(perfstr, quote_string, sizeof(perfstr) - strlen(perfstr) - 1);
+				strncat(perfstr, temp_string, sizeof(perfstr) - strlen(perfstr) - 1);
+				strncat(perfstr, quote_string, sizeof(perfstr) - strlen(perfstr) - 1);
 			}
-			strncat(perfstr, "=", sizeof(perfstr)-strlen(perfstr)-1);
-			len = sizeof(perfstr)-strlen(perfstr)-1;
-			strncat(perfstr, show, len>ptr-show ? ptr-show : len);
 
-			if (nunits > (size_t)0 && (size_t)i < nunits && unitv[i] != NULL) {
-				xasprintf (&temp_string, "%s", unitv[i]);
-				strncat(perfstr, temp_string, sizeof(perfstr)-strlen(perfstr)-1);
-				}
+			/* append the equal */
+			strncat(perfstr, "=", sizeof(perfstr) - strlen(perfstr) - 1);
+			len = sizeof(perfstr) - strlen(perfstr) - 1;
 
-			if (type)
-				strncat(perfstr, type, sizeof(perfstr)-strlen(perfstr)-1);
+			/* and then the data itself from the response */
+			strncat(perfstr, show, (len > ptr - show) ? ptr - show : len);
 
+			/* now append the unit of measurement */
+			if ((nunits > (size_t)0) 
+				&& ((size_t)i < nunits) 
+				&& (unitv[i] != NULL)) {
+
+					xasprintf(&temp_string, "%s", unitv[i]);
+					strncat(perfstr, temp_string, sizeof(perfstr) - strlen(perfstr) - 1);
+			}
+
+			/* and the type, if any */
+			if (type) {
+				strncat(perfstr, type, sizeof(perfstr) - strlen(perfstr) - 1);
+			}
+
+			/* add warn/crit to perfdata */
 			if (thlds[i]->warning || thlds[i]->critical) {
-				strncat(perfstr, ";", sizeof(perfstr)-strlen(perfstr)-1);
-				if (thlds[i]->warning) {
-					xasprintf (&temp_string, "%.0f", thlds[i]->warning->end);
-					strncat(perfstr, temp_string, sizeof(perfstr)-strlen(perfstr)-1);
+
+				strncat(perfstr, ";", sizeof(perfstr) - strlen(perfstr) - 1);
+
+				/* print the warning string if it exists */
+				if (thlds[i]->warning_string) {
+
+					xasprintf(&temp_string, "%s", thlds[i]->warning_string);
+					strncat(perfstr, temp_string, sizeof(perfstr) - strlen(perfstr) - 1);
 				}
 				strncat(perfstr, ";", sizeof(perfstr)-strlen(perfstr)-1);
-				if (thlds[i]->critical) {
-					xasprintf (&temp_string, "%.0f", thlds[i]->critical->end);
-					strncat(perfstr, temp_string, sizeof(perfstr)-strlen(perfstr)-1);
+
+				/* print the critical string if it exists */
+				if (thlds[i]->critical_string) {
+
+					xasprintf(&temp_string, "%s", thlds[i]->critical_string);
+					strncat(perfstr, temp_string, sizeof(perfstr) - strlen(perfstr) - 1);
 				}
-				strncat(perfstr, ";", sizeof(perfstr)-strlen(perfstr)-1);
+				strncat(perfstr, ";", sizeof(perfstr) - strlen(perfstr) - 1);
 			}
-			strncat(perfstr, " ", sizeof(perfstr)-strlen(perfstr)-1);
+
+			/* remove trailing semi-colons for guideline adherence */
+			len = strlen(perfstr) - 1;
+			if (perfstr[len] == ';') {
+				perfstr[len] = '\0';
+			}
+
+			/* we do not add any min/max value */
+
+			strncat(perfstr, " ", sizeof(perfstr) - strlen(perfstr) - 1);
 		}
-	}
+
+	} /* for (line=0, i=0; line < chld_out.lines; line++, i++) */
+	
 	total_oids=i;
 
 	/* Save state data, as all data collected now */
