@@ -73,7 +73,7 @@ print_usage() {
     echo "Usage: $PROGNAME -F logfile -O oldlog -q query"
     echo "Usage: $PROGNAME --help"
     echo "Usage: $PROGNAME --version"
-    echo "     Aditional parameter:"
+    echo "     Additional parameter:"
     echo "        -w (--max_warning) If used, determines the maximum matching value to return as warning, when finding more matching lines than this parameter will return as critical. If not used, will consider as default 0 (any matching will consider as critical)"
     echo "Usage: $PROGNAME -F logfile -O oldlog -q query -w <number>"
 }
