@@ -107,7 +107,7 @@ ENV *env = NULL;
 
 /******************************************************************************
 
-The (psuedo?)literate programming XML is contained within \@\@\- <XML> \-\@\@
+The (pseudo?)literate programming XML is contained within \@\@\- <XML> \-\@\@
 tags in the comments. With in the tags, the XML is assembled sequentially.
 You can define entities in tags. You also have all the #defines available as
 entities.
@@ -379,7 +379,7 @@ print_help (void)
 	printf (" %s\n", "-u, --username=STRING");
   printf ("    %s\n", _("The user to authenticate"));
   printf (" %s\n", "-p, --password=STRING");
-  printf ("    %s\n", _("Password for autentication (SECURITY RISK)"));
+  printf ("    %s\n", _("Password for authentication (SECURITY RISK)"));
   printf (" %s\n", "-n, --nas-id=STRING");
   printf ("    %s\n", _("NAS identifier"));
   printf (" %s\n", "-N, --nas-ip-address=STRING");
