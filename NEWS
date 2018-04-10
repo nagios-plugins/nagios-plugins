@@ -160,20 +160,20 @@ This file documents the major additions and syntax changes between releases.
 	check_dig honor the -4 and -6 switches
 	check_ntp_peer: do not use uninitialized results for max state
 	check_log.sh, check_oracle.sh, check_sensors.sh: Setting PATH at first
-	check_log.sh: droping path from basename while evaluating PROGNAME
+	check_log.sh: dropping path from basename while evaluating PROGNAME
 	check_tcp: Fix check_jabber to work with Openfire servers
 	check_ifstatus.pl: Fix "-n" and "-u" options to ignore if either is set, not just both
 	check_mrtgtraf: Fix perfdata to comply with perfdata UOM definition
 	check_real, check_ntp: fix null termination
 	check_apt: fix memset
-	check_ssh: change warning to critical for protocal/version errors
+	check_ssh: change warning to critical for protocol/version errors
 	utils_cmd.c: avoid a segfault, if ulimit is set to unlimited
 	utils_cmd.c: make constants from maxfd values
 	configure.ac: Added particular ps command for HP-UX
 	check_disk: Fix pthread start routine type
 	check_http: Make header_value() and chunked-encoding decoding more robust
 	check_http: fix Host header if explicitly set with -k
-	sslutils.c: Forcing furter restriction of ciphers for current security concerns
+	sslutils.c: Forcing further restriction of ciphers for current security concerns
 	check_nagios, check_procs: Enable check_proc to monitor processes in PID name-spaced environments.
 	check_dhcp.c: use /dev/urandom if available
 	check_http.c: Don't decode page if it's not there
@@ -211,7 +211,7 @@ This file documents the major additions and syntax changes between releases.
 	test.pl.in: Use "C" locale when running test suite
 	check_http.t: Adjust date strings to the now-localized output
 	check_dns.t - Fix Perl Warning. perl doesn't understand /d within "".
-	check_snmp.t: skip extented snmp tests if snmpd has no perl support
+	check_snmp.t: skip extended snmp tests if snmpd has no perl support
 	check_snmp.t: fix snmp test for included threshold
 	check_http.t: fix tests for certificates expire date with seconds
 	check_http.t: add faketime based tests for check_http
@@ -304,7 +304,7 @@ This file documents the major additions and syntax changes between releases.
 	check_nt.c - Changed 'Mb' to 'MB' in MEMUSE output for clarity (abrist)
 
 2.0.1 15th April 2014
-	ENHANCMENTS
+	ENHANCEMENTS
 	check_snmp.c - Added thresholds to performance data (jccomputing)
 	check_http.c - Added */* MIME support (Alex Gottschalk)
 	check_mailq.pl - Added autodetection for mailq implementation (evgeni)
@@ -414,10 +414,10 @@ This file documents the major additions and syntax changes between releases.
 	New check_procs -k option to ignore kernel threads (on Linux)
 	Let check_procs use /proc/<PID>/exe (if available) instead of getpid(2), unless -T is specified
 	Let check_mysql support SSL
-	Let check_mysql add perfromance metrics for all checks
+	Let check_mysql add performance metrics for all checks
 	New check_mysql -f option to specify a client options file
 	New check_mysql -g option to specify a client options group
-	New check_snmp --offset option to allow for adding/substracting an offset value to sensor data
+	New check_snmp --offset option to allow for adding/subtracting an offset value to sensor data
 	Let check_snmp support an arbitrary number of OIDs
 	Let check_ide_smart support NetBSD
 
@@ -432,7 +432,7 @@ This file documents the major additions and syntax changes between releases.
 	Fix deprecated imports of check_nmap.py (Fabio Rueda)
 
 	WARNINGS
-	check_http behaviour of -k/--header changed since it does not seperate multiple headers by semicolons anymore. Use multiple -k switches instead.
+	check_http behaviour of -k/--header changed since it does not separate multiple headers by semicolons anymore. Use multiple -k switches instead.
 	check_http's --proxy_authorization option is now called --proxy-authorization (it was always documented this way)
 	The contrib directory has been removed from this distribution
 
@@ -583,7 +583,7 @@ This file documents the major additions and syntax changes between releases.
 	check_ntp and check_ntp_peer now show proper jitter/stratum thresholds longopts in --help
 	check_dns now allow to repeat -a to match multiple possibly returned address (common with load balancers)
 	check_mysql and check_radius now try clearing password in processlist just like check_mysql_query
-	check_mysql and check_mysql_query now support sockets explicitely (-s, --socket)
+	check_mysql and check_mysql_query now support sockets explicitly (-s, --socket)
 	negate now has the ability to replace the status text as well (-s, --substitute)
 	Added performance data to check_ping (Christian Schneemann)
 	Added support for --extra-opts in all C plugins (disabled by default, see configure --help)
@@ -623,7 +623,7 @@ This file documents the major additions and syntax changes between releases.
 	New check_disk option -L: Only check local filesystems, but call stat() on remote ones, too.
 	  Thus accessibility of remote filesystems can be checked without any threshold comparison.
 	Check_disk's --help now prints some examples for the new features introduced in 1.4.8
-	New check_disk -i/-I option to ignore pathes/partitions based on regular expressions
+	New check_disk -i/-I option to ignore paths/partitions based on regular expressions
 	New check_disk -A option to select all filesystems explicitly
 	WARNING: check_disk's -E option must now be passed before -p or -r/-R arguments
 	  Passing -E after -p or -r results in UNKNOWN state, now
