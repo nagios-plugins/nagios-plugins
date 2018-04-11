@@ -204,8 +204,12 @@ fi
 
 diff "$logfile" "$oldlog" | grep -v "^>" > "$tempdiff"
 
-# Count the number of matching log entries we have
-count=$(grep -c "$query" "$tempdiff")
+# Count the number of matching log entries we have and handle errors when grep fails
+count=$(grep -c "$query" "$tempdiff" 2>&1)
+if [[ $? -gt 1 ]];then
+    echo "Log check error: $count"
+    exit "$STATE_UNKNOWN"
+fi
 
 # Get the last matching entry in the diff file
 lastentry=$(grep "$query" "$tempdiff" | tail -1)
