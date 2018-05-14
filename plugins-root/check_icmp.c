@@ -513,7 +513,7 @@ main(int argc, char **argv)
 
 	/* parse the arguments */
 	for(i = 1; i < argc; i++) {
-		while((arg = getopt(argc, argv, "vhVw:c:n:p:t:H:s:i:b:I:l:m:P:R:J:S:M:O")) != EOF) {
+		while((arg = getopt(argc, argv, "vhVw:c:n:p:t:H:s:i:b:I:l:m:P:R:J:S:M:O:6")) != EOF) {
 			long size;
 			switch(arg) {
 			case 'v':
@@ -568,6 +568,13 @@ main(int argc, char **argv)
 			case 's': /* specify source IP address */
 				set_source_ip(optarg);
 				break;
+			case '6':
+#ifdef USE_IPV6
+				address_family = AF_INET6;
+#else
+				usage4 (_("IPv6 support not available"));
+#endif
+				break;
 			case 'V': /* version */
 				print_revision (progname, NP_VERSION);
 				exit (STATE_OK);
@@ -598,6 +605,19 @@ main(int argc, char **argv)
         order_mode=1;
         break;
       }
+		}
+	}
+
+	/* If not AF_INET6 (IPv6) then set default to AF_INET (IPv4) */
+	if(address_family == AF_UNSPEC) {
+		address_family = AF_INET;
+		if(debug) {
+			printf("address_family: %i (IPv4)\n", address_family);
+		}
+	}
+	else {
+		if(debug) {
+			printf("address_family: %i (IPv6)\n", address_family);
 		}
 	}
 
