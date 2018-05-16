@@ -421,6 +421,9 @@ main(int argc, char **argv)
 	/* print a helpful error message if geteuid != 0 */
 	np_warn_if_not_root();
 
+	/* Set default address_family to AF_INET (IPv4) */
+	address_family = AF_INET;
+			
 	/* we only need to be setsuid when we get the sockets, so do
 	 * that before pointer magic (esp. on network data) */
 	icmp_sockerrno = udp_sockerrno = tcp_sockerrno = sockets = 0;
@@ -513,7 +516,7 @@ main(int argc, char **argv)
 
 	/* parse the arguments */
 	for(i = 1; i < argc; i++) {
-		while((arg = getopt(argc, argv, "vhVw:c:n:p:t:H:s:i:b:I:l:m:P:R:J:S:M:O:6")) != EOF) {
+		while((arg = getopt(argc, argv, "vhVw:c:n:p:t:6:H:s:i:b:I:l:m:P:R:J:S:M:O")) != EOF) {
 			long size;
 			switch(arg) {
 			case 'v':
@@ -550,6 +553,9 @@ main(int argc, char **argv)
 				timeout = strtoul(optarg, NULL, 0);
 				if(!timeout) timeout = 10;
 				break;
+			case '6':
+				address_family = AF_INET6;
+				break;
 			case 'H':
 				add_target(optarg);
 				break;
@@ -567,13 +573,6 @@ main(int argc, char **argv)
 				break;
 			case 's': /* specify source IP address */
 				set_source_ip(optarg);
-				break;
-			case '6':
-#ifdef USE_IPV6
-				address_family = AF_INET6;
-#else
-				usage4 (_("IPv6 support not available"));
-#endif
 				break;
 			case 'V': /* version */
 				print_revision (progname, NP_VERSION);
@@ -608,18 +607,22 @@ main(int argc, char **argv)
 		}
 	}
 
+	if(debug > 0)
+		printf("address_family: %i (IPv4 = 2; IPv6 = 10)\n", address_family);
+
+	
 	/* If not AF_INET6 (IPv6) then set default to AF_INET (IPv4) */
-	if(address_family == AF_UNSPEC) {
-		address_family = AF_INET;
-		if(debug) {
-			printf("address_family: %i (IPv4)\n", address_family);
-		}
-	}
-	else {
-		if(debug) {
-			printf("address_family: %i (IPv6)\n", address_family);
-		}
-	}
+/* 	if(address_family == AF_UNSPEC) {*/
+/* 		address_family = AF_INET;*/
+/* 		if(debug) {*/
+/* 			printf("address_family: %i (IPv4)\n", address_family);*/
+/* 		}*/
+/* 	}*/
+/* 	else {*/
+/* 		if(debug) {*/
+/* 			printf("address_family: %i (IPv6)\n", address_family);*/
+/* 		}*/
+/* 	}*/
 
 	argv = &argv[optind];
 	while(*argv) {
@@ -975,7 +978,7 @@ send_icmp_ping(int sock, struct rta_host *host)
 		return -1;
 	}
 	addr = (struct sockaddr *)&host->saddr_in;
-
+	
 	if(!packet.buf) {
 		if (!(packet.buf = malloc(icmp_pkt_size))) {
 			crash("send_icmp_ping(): failed to malloc %d bytes for send buffer",
@@ -1461,8 +1464,13 @@ add_target(char *arg)
 	struct hostent *he;
 	struct in_addr *in, ip;
 
+	inet_pton(address_family, arg, &(ip.s_addr));
+	
 	/* don't resolve if we don't have to */
-	if((ip.s_addr = inet_addr(arg)) != INADDR_NONE) {
+	if(ip.s_addr != INADDR_NONE) {
+	
+	/* don't resolve if we don't have to */
+	/*if((ip.s_addr = inet_addr(arg)) != INADDR_NONE) {*/
 		/* don't add all ip's if we were given a specific one */
 		return add_target_ip(arg, &ip);
 		/* he = gethostbyaddr((char *)in, sizeof(struct in_addr), AF_INET); */
