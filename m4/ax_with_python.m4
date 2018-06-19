@@ -46,7 +46,7 @@ AC_DEFUN([AX_WITH_PYTHON],
     if test "$PYTHON" != "m4_ifval([$2],[$2],[python])"
     then
       AC_MSG_CHECKING($PYTHON version >= $1)
-      if test `$PYTHON -c ["import sys; print sys.version[:3] >= \"$1\" and \"OK\" or \"OLD\""]` = "OK"
+      if test `$PYTHON -c ["import sys; print(sys.version[:3] >= \"$1\" and \"OK\" or \"OLD\")"]` = "OK"
       then
         AC_MSG_RESULT(ok)
       else

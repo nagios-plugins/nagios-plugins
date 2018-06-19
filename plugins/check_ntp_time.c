@@ -80,6 +80,7 @@ typedef struct {
 /* this structure holds data about results from querying offset from a peer */
 typedef struct {
 	time_t waiting;         /* ts set when we started waiting for a response */
+	int connected;          /* don't try to "write()" if "connect()" fails */
 	int num_responses;      /* number of successfully recieved responses */
 	uint8_t stratum;        /* copied verbatim from the ntp_message */
 	double rtdelay;         /* converted from the ntp_message */
@@ -355,6 +356,7 @@ double offset_request(const char *host, int *status){
 			ufds[i].fd=socklist[i];
 			ufds[i].events=POLLIN;
 			ufds[i].revents=0;
+			servers[i].connected=1;
 		}
 		ai_tmp = ai_tmp->ai_next;
 	}
@@ -370,6 +372,8 @@ double offset_request(const char *host, int *status){
 		now_time=time(NULL);
 
 		for(i=0; i<num_hosts; i++){
+			if(servers[i].connected == 0)
+				continue;
 			if(servers[i].waiting<now_time && servers[i].num_responses<AVG_NUM){
 				if(verbose && servers[i].waiting != 0) printf("re-");
 				if(verbose) printf("sending request to peer %d\n", i);
@@ -413,6 +417,9 @@ double offset_request(const char *host, int *status){
 			}
 		}
 		/* lather, rinse, repeat. */
+		/* break if we have one response but other ntp servers doesn't response */
+		/* greater than timeout_interval/2 */
+		if (servers_completed && now_time-start_ts > timeout_interval/2) break;
 	}
 
 	if (one_read == 0) {

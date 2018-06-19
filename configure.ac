@@ -786,6 +786,16 @@ then
 	ac_cv_ps_cols=10
 	AC_MSG_RESULT([$ac_cv_ps_command])
 
+dnl jails on FreeBSD:
+elif ps -axwo 'stat comm vsz rss user uid pid ppid jid args' 2>/dev/null | \
+	egrep -i "^ *STAT +COMMAND +VSZ +RSS +USER +UID +PID +PPID +JID +COMMAND" > /dev/null
+then
+	ac_cv_ps_varlist="procstat,&procuid,&procpid,&procppid,&procjid,&procvsz,&procrss,&procpcpu,procprog,&pos"
+	ac_cv_ps_command="$PATH_TO_PS -axwo 'stat uid pid ppid jid vsz rss pcpu comm args'"
+	ac_cv_ps_format="%s %d %d %d %d %d %d %f %s %n"
+	ac_cv_ps_cols=10
+	AC_MSG_RESULT([$ac_cv_ps_command])
+
 dnl Some gnu/linux systems (debian for one) don't like -axwwo and need axwwo.
 dnl so test for this first...
 elif ps axwwo 'stat comm vsz rss user uid pid ppid args' 2>/dev/null | \
@@ -1065,6 +1075,12 @@ AC_ARG_WITH(ping_command,
 		[sets syntax for ICMP ping]),
 	with_ping_command=$withval,)
 
+dnl AS I WAS LOOKING INTO THIS... (Bryan Heden 09/2017)
+dnl Ping packets first was a bit confusing
+dnl it doesn't actually mean "packet count first"
+dnl it means packets come before specifying host
+dnl If a timeout is specified, that comes first
+
 AC_MSG_CHECKING(for ICMP ping syntax)
 ac_cv_ping_packets_first=no
 ac_cv_ping_has_timeout=no
@@ -1113,6 +1129,14 @@ then
 	with_ping_command="$PATH_TO_PING -n -U -c %d %s"
 	ac_cv_ping_packets_first=yes
 	AC_MSG_RESULT([$with_ping_command])
+
+elif $PATH_TO_PING -n -t 10 -c 1 127.0.0.1 2>/dev/null | \
+  egrep -i "^round-trip|^rtt" >/dev/null
+then
+  with_ping_command="$PATH_TO_PING -n -t %d -c %d %s"
+  ac_cv_ping_packets_first=yes
+  ac_cv_ping_has_timeout=yes
+  AC_MSG_RESULT([$with_ping_command])
 
 elif $PATH_TO_PING -n -c 1 127.0.0.1 2>/dev/null | \
 	egrep -i "^round-trip|^rtt" >/dev/null
@@ -1230,6 +1254,14 @@ elif test "x$PATH_TO_PING6" != "x"; then
 		ac_cv_ping6_packets_first=yes
 		AC_MSG_RESULT([$with_ping6_command])
 
+  elif $PATH_TO_PING6 -n -X 10 -c 1 ::1 2>/dev/null | \
+    egrep -i "^round-trip|^rtt" >/dev/null
+  then
+    with_ping6_command="$PATH_TO_PING6 -n -X %d -c %d %s"
+    ac_cv_ping6_packets_first=yes
+    ac_cv_ping_has_timeout=yes
+    AC_MSG_RESULT([$with_ping6_command])
+
 	elif $PATH_TO_PING6 -n -c 1 ::1 2>/dev/null | \
 		egrep -i "^round-trip|^rtt" >/dev/null
 	then
@@ -1266,7 +1298,7 @@ elif test "x$PATH_TO_PING6" != "x"; then
 	then
 		with_ping6_command="$PATH_TO_PING6 -n -s 56 -c %d %s"
 		ac_cv_ping6_packets_first=yes
-		AC_MSG_RESULT([$with_ping_command])
+		AC_MSG_RESULT([$with_ping6_command])
 
 	elif $PATH_TO_PING6 -n -c 1 ::1 2>/dev/null | \
 		egrep -i "^round-trip|^rtt" >/dev/null
@@ -1329,7 +1361,7 @@ elif test "x$PATH_TO_PING" != "x"; then
 	then
 		with_ping6_command="$PATH_TO_PING -A inet6 -n -s 56 -c %d %s"
 		ac_cv_ping6_packets_first=yes
-		AC_MSG_RESULT([$with_ping_command])
+		AC_MSG_RESULT([$with_ping6_command])
 
 	elif $PATH_TO_PING -A inet6 -n -c 1 ::1 2>/dev/null | \
 		egrep -i "^round-trip|^rtt" >/dev/null
@@ -1557,6 +1589,17 @@ else
 	AC_MSG_WARN([Could not find qmail-qstat or equivalent])
 fi
 
+AC_PATH_PROG(PATH_TO_SMTPCTL,smtpctl)
+AC_ARG_WITH(smtpctl_command,
+            ACX_HELP_STRING([--with-smtpctl-command=PATH],
+                            [sets path to smtpctl]), PATH_TO_SMTPCTL=$withval)
+if test -n "$PATH_TO_SMTPCTL"
+then
+	AC_DEFINE_UNQUOTED(PATH_TO_SMTPCTL,"$PATH_TO_SMTPCTL",[path to smtpctl])
+else
+	AC_MSG_WARN([Could not find smtpctl or equivalent])
+fi
+
 dnl SWAP info required is amount allocated/available and amount free
 dnl The plugin works through all the swap devices and adds up the total swap
 dnl available.
@@ -1602,7 +1645,7 @@ then
 
 	if [$PATH_TO_SWAPINFO -k 2>/dev/null | egrep -i "^Device +1K-blocks +Used +Avail" >/dev/null]
 	then
-		ac_cv_swap_format=["%*s %f %*d %f"]
+		ac_cv_swap_format=["%*s %lf %*d %lf"]
 		ac_cv_swap_conv=1024
 		AC_MSG_RESULT([using FreeBSD format swapinfo])
 	fi

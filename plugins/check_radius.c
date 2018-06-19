@@ -36,6 +36,17 @@ const char *email = "devel@nagios-plugins.org";
 #include "utils.h"
 #include "netutils.h"
 
+#include <ifaddrs.h>
+
+#ifdef __FreeBSD__
+#include <net/if_dl.h>
+#else
+#include <linux/if_packet.h>
+#define AF_LINK AF_PACKET
+#define LLADDR(l) ((l)->sll_addr)
+#define sockaddr_dl sockaddr_ll
+#endif
+
 #if defined(HAVE_LIBFREERADIUS_CLIENT)
 #include <freeradius-client.h>
 #elif defined(HAVE_LIBRADIUSCLIENT_NG)
@@ -47,6 +58,7 @@ const char *email = "devel@nagios-plugins.org";
 int process_arguments (int, char **);
 void print_help (void);
 void print_usage (void);
+char *get_ether_addr(uint32_t client_id);
 
 #if defined(HAVE_LIBFREERADIUS_CLIENT) || defined(HAVE_LIBRADIUSCLIENT_NG)
 #define my_rc_conf_str(a) rc_conf_str(rch,a)
@@ -85,6 +97,7 @@ char *username = NULL;
 char *password = NULL;
 char *nasid = NULL;
 char *nasipaddress = NULL;
+char *castid = NULL;
 char *expect = NULL;
 char *config_file = NULL;
 unsigned short port = PW_AUTH_UDP_PORT;
@@ -154,6 +167,7 @@ main (int argc, char **argv)
 	SEND_DATA data;
 	int result = STATE_UNKNOWN;
 	uint32_t client_id, service;
+	char *ether;
 	char *str;
 
 	setlocale (LC_ALL, "");
@@ -197,6 +211,14 @@ main (int argc, char **argv)
 	if (my_rc_avpair_add (&(data.send_pairs), PW_NAS_IP_ADDRESS, &client_id, 0) == NULL)
 		die (STATE_UNKNOWN, _("Invalid NAS-IP-Address\n"));
 
+	if (castid != NULL) {
+		if (!(my_rc_avpair_add (&data.send_pairs, PW_CALLING_STATION_ID, castid, 0)))
+			die (STATE_UNKNOWN, _("Invalid Calling-Station-Id\n"));
+	} else if ((ether = get_ether_addr(client_id)) != NULL) {
+		if (!(my_rc_avpair_add (&data.send_pairs, PW_CALLING_STATION_ID, ether, 0)))
+			die (STATE_UNKNOWN, _("Invalid Calling-Station-Id\n"));
+	}
+
 	my_rc_buildreq (&data, PW_ACCESS_REQUEST, server, port, (int)timeout_interval,
 	             retries);
 
@@ -237,6 +259,7 @@ process_arguments (int argc, char **argv)
 		{"password", required_argument, 0, 'p'},
 		{"nas-id", required_argument, 0, 'n'},
 		{"nas-ip-address", required_argument, 0, 'N'},
+		{"calling-station-id", required_argument, 0, 'c'},
 		{"filename", required_argument, 0, 'F'},
 		{"expect", required_argument, 0, 'e'},
 		{"retries", required_argument, 0, 'r'},
@@ -248,8 +271,8 @@ process_arguments (int argc, char **argv)
 	};
 
 	while (1) {
-		c = getopt_long (argc, argv, "+hVvH:P:F:u:p:n:N:t:r:e:", longopts,
-									 &option);
+		c = getopt_long (argc, argv, "+hVvH:P:F:u:p:n:N:c:t:r:e:", longopts,
+									   &option);
 
 		if (c == -1 || c == EOF || c == 1)
 			break;
@@ -295,6 +318,9 @@ process_arguments (int argc, char **argv)
 			break;
 		case 'N':									/* nas ip address */
 			nasipaddress = optarg;
+			break;
+		case 'c':									/* calling station id */
+			castid = optarg;
 			break;
 		case 'F':									/* configuration file */
 			config_file = optarg;
@@ -358,6 +384,8 @@ print_help (void)
   printf ("    %s\n", _("NAS identifier"));
   printf (" %s\n", "-N, --nas-ip-address=STRING");
   printf ("    %s\n", _("NAS IP Address"));
+  printf (" %s\n", "-c, --calling-station-id=STRING");
+  printf ("    %s\n", _("Calling Station identifier"));
   printf (" %s\n", "-F, --filename=STRING");
   printf ("    %s\n", _("Configuration file"));
   printf (" %s\n", "-e, --expect=STRING");
@@ -402,4 +430,42 @@ int my_rc_read_config(char * a)
 #else
 	return rc_read_config(a);
 #endif
+}
+
+char *get_ether_addr(uint32_t client_id)
+{
+	static char ether_addr[18];
+	struct ifaddrs *ifap, *ifa, *ifb;
+	struct sockaddr_in *sain;
+	unsigned char *lladdr;
+
+	getifaddrs(&ifap);
+
+	for (ifa = ifap; ifa != NULL; ifa = ifa->ifa_next)
+		if (ifa->ifa_addr->sa_family == AF_INET) {
+			sain = (struct sockaddr_in *)ifa->ifa_addr;
+			if (client_id == ntohl(sain->sin_addr.s_addr))
+				break;
+		}
+	if (ifa == NULL) {
+		freeifaddrs(ifap);
+		return NULL;
+	}
+
+	ifb = ifa;
+	for (ifa = ifap; ifa != NULL; ifa = ifa->ifa_next)
+		if (ifa->ifa_addr->sa_family == AF_LINK
+		    && strcmp(ifa->ifa_name, ifb->ifa_name) == 0)
+			break;
+	if (ifa == NULL) {
+		freeifaddrs(ifap);
+		return NULL;
+	}
+
+	lladdr = (unsigned char *)LLADDR((struct sockaddr_dl *)ifa->ifa_addr);
+	sprintf(ether_addr, "%02X-%02X-%02X-%02X-%02X-%02X",
+	    lladdr[0], lladdr[1], lladdr[2], lladdr[3], lladdr[4], lladdr[5]);
+
+	freeifaddrs(ifap);
+	return ether_addr;
 }

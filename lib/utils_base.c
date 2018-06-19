@@ -164,18 +164,22 @@ _set_thresholds(thresholds **my_thresholds, char *warn_string, char *critical_st
 
 	temp_thresholds->warning = NULL;
 	temp_thresholds->critical = NULL;
+	temp_thresholds->warning_string = NULL;
+	temp_thresholds->critical_string = NULL;
 
 	if (warn_string) {
 		if (!(temp_thresholds->warning = parse_range_string(warn_string))) {
 			free(temp_thresholds);
 			return NP_RANGE_UNPARSEABLE;
 		}
+		temp_thresholds->warning_string = strdup(warn_string);
 	}
 	if (critical_string) {
 		if (!(temp_thresholds->critical = parse_range_string(critical_string))) {
 			free(temp_thresholds);
 			return NP_RANGE_UNPARSEABLE;
 		}
+		temp_thresholds->critical_string = strdup(critical_string);
 	}
 
 	*my_thresholds = temp_thresholds;
@@ -204,11 +208,17 @@ void print_thresholds(const char *threshold_name, thresholds *my_threshold) {
 	} else {
 		if (my_threshold->warning) {
 			printf("Warning: start=%g end=%g; ", my_threshold->warning->start, my_threshold->warning->end);
+			if (my_threshold->warning_string) {
+				printf("Warning String: %s; ", my_threshold->warning_string);
+			}
 		} else {
 			printf("Warning not set; ");
 		}
 		if (my_threshold->critical) {
 			printf("Critical: start=%g end=%g", my_threshold->critical->start, my_threshold->critical->end);
+			if (my_threshold->critical_string) {
+				printf("Critical String: %s; ", my_threshold->critical_string);
+			}
 		} else {
 			printf("Critical not set");
 		}
