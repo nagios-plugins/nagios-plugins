@@ -1075,7 +1075,7 @@ check_http (void)
     }
 
     /* Inform server we accept any MIME type response
-     * TODO: Take an arguement to determine what type(s) to accept,
+     * TODO: Take an argument to determine what type(s) to accept,
      * so that we can alert if a response is of an invalid type.
     */
     if (!have_accept)
@@ -1781,7 +1781,7 @@ print_help (void)
     printf ("%s\n", _("Notes:"));
     printf (" %s\n", _("This plugin will attempt to open an HTTP connection with the host."));
     printf (" %s\n", _("Successful connects return STATE_OK, refusals and timeouts return STATE_CRITICAL"));
-    printf (" %s\n", _("other errors return STATE_UNKNOWN.  Successful connects, but incorrect reponse"));
+    printf (" %s\n", _("other errors return STATE_UNKNOWN.  Successful connects, but incorrect response"));
     printf (" %s\n", _("messages from the host result in STATE_WARNING return values.  If you are"));
     printf (" %s\n", _("checking a virtual server that uses 'host headers' you must supply the FQDN"));
     printf (" %s\n", _("(fully qualified domain name) as the [host_name] argument."));

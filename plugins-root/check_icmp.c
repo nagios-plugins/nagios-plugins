@@ -893,7 +893,7 @@ int main(int argc, char **argv) {
   errno = 0;
   finish(0);
 
-  return (0);
+  return (0); 
 }
 
 static void run_checks() {

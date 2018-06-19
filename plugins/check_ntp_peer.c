@@ -86,7 +86,7 @@ typedef struct {
 	                        /* NB: not necessarily NULL terminated! */
 } ntp_control_message;
 
-/* this is an association/status-word pair found in control packet reponses */
+/* this is an association/status-word pair found in control packet responses */
 typedef struct {
 	uint16_t assoc;
 	uint16_t status;
@@ -245,7 +245,7 @@ int ntp_request(const char *host, double *offset, int *offset_result, double *ji
 		do {
 			/* Attempt to read the largest size packet possible */
 			req.count=htons(MAX_CM_SIZE);
-			DBG(printf("recieving READSTAT response"))
+			DBG(printf("receiving READSTAT response"))
 			if(read(conn, &req, SIZEOF_NTPCM(req)) == -1)
 				die(STATE_CRITICAL, "NTP CRITICAL: No response from NTP server\n");
 			DBG(print_ntp_control_message(&req));
@@ -306,7 +306,7 @@ int ntp_request(const char *host, double *offset, int *offset_result, double *ji
 				/* Putting the wanted variable names in the request
 				 * cause the server to provide _only_ the requested values.
 				 * thus reducing net traffic, guaranteeing us only a single
-				 * datagram in reply, and making intepretation much simpler
+				 * datagram in reply, and making interpretation much simpler
 				 */
 				/* Older servers doesn't know what jitter is, so if we get an
 				 * error on the first pass we redo it with "dispersion" */
@@ -585,7 +585,7 @@ int main(int argc, char *argv[]){
 	/* set socket timeout */
 	alarm (timeout_interval);
 
-	/* This returns either OK or WARNING (See comment preceeding ntp_request) */
+	/* This returns either OK or WARNING (See comment preceding ntp_request) */
 	result = ntp_request(server_address, &offset, &offset_result, &jitter, &stratum, &num_truechimers);
 
 	if(offset_result == STATE_UNKNOWN) {

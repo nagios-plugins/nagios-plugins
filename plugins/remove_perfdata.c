@@ -116,7 +116,7 @@ main(int argc, char **argv)
                     }
                 }
 
-                /* when we reach an unqouted |, stop printing */
+                /* when we reach an unquoted |, stop printing */
                 if (!in_quotes && c == '|')
                     break;
 
@@ -134,7 +134,7 @@ main(int argc, char **argv)
             break;
         }
 
-        /* for everything else, theres mastercard - or printing the full line to the screen */
+        /* for everything else, there's mastercard - or printing the full line to the screen */
         else {
             printf("%s\n", chld_out.line[i]);
         }

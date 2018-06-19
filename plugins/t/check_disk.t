@@ -329,15 +329,15 @@ cmp_ok( $result->return_code, '==', 3, "Invalid options: -p must come after grou
 $result = NPTest->testCmd( "./check_disk -w 1 -c 1 -r '('" );
 cmp_ok( $result->return_code, '==', 3, "Exit UNKNOWN if regex is not compileable");
 
-# ignore: exit unknown, if all pathes are deselected using -i
+# ignore: exit unknown, if all paths are deselected using -i
 $result = NPTest->testCmd( "./check_disk -w 0% -c 0% -p $mountpoint_valid -p $mountpoint2_valid -i '$mountpoint_valid' -i '$mountpoint2_valid'" );
 cmp_ok( $result->return_code, '==', 3, "ignore-ereg: Unknown if all fs are ignored (case sensitive)");
 
-# ignore: exit unknown, if all pathes are deselected using -I
+# ignore: exit unknown, if all paths are deselected using -I
 $result = NPTest->testCmd( "./check_disk -w 0% -c 0% -p $mountpoint_valid -p $mountpoint2_valid -I '".uc($mountpoint_valid)."' -I '".uc($mountpoint2_valid)."'" );
 cmp_ok( $result->return_code, '==', 3, "ignore-ereg: Unknown if all fs are ignored (case insensitive)");
 
-# ignore: exit unknown, if all pathes are deselected using -i
+# ignore: exit unknown, if all paths are deselected using -i
 $result = NPTest->testCmd( "./check_disk -w 0% -c 0% -p $mountpoint_valid -p $mountpoint2_valid -i '.*'" );
 cmp_ok( $result->return_code, '==', 3, "ignore-ereg: Unknown if all fs are ignored using -i '.*'");
 
@@ -346,7 +346,7 @@ $result = NPTest->testCmd( "./check_disk -w 0% -c 0% -p $mountpoint_valid -p $mo
 like( $result->output, qr/$mountpoint_valid/, "output data does have $mountpoint_valid in it");
 unlike( $result->output, qr/$mountpoint2_valid/, "output data does not have $mountpoint2_valid in it");
 
-# ignore: test if all pathes are listed when ignore regex doesn't match
+# ignore: test if all paths are listed when ignore regex doesn't match
 $result = NPTest->testCmd( "./check_disk -w 0% -c 0% -p $mountpoint_valid -p $mountpoint2_valid -i '^barbazJodsf\$'");
 like( $result->output, qr/$mountpoint_valid/, "ignore: output data does have $mountpoint_valid when regex doesn't match");
 like( $result->output, qr/$mountpoint2_valid/,"ignore: output data does have $mountpoint2_valid when regex doesn't match");

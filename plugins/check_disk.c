@@ -549,7 +549,7 @@ process_arguments (int argc, char **argv)
 
     /* Awful mistake where the range values do not make sense. Normally,
        you alert if the value is within the range, but since we are using
-       freespace, we have to alert if outside the range. Thus we artifically
+       freespace, we have to alert if outside the range. Thus we artificially
        force @ at the beginning of the range, so that it is backwards compatible
     */
     case 'c':                 /* critical threshold */
@@ -1049,7 +1049,7 @@ get_path_stats (struct parameter_list *p, struct fs_usage *fsp) {
   p->available_to_root = fsp->fsu_bfree;
   p->used = fsp->fsu_blocks - fsp->fsu_bfree;
   if (freespace_ignore_reserved) {
-    /* option activated : we substract the root-reserved space from the total */
+    /* option activated : we subtract the root-reserved space from the total */
     p->total = fsp->fsu_blocks - p->available_to_root + p->available;
   } else {
     /* default behaviour : take all the blocks into account */
