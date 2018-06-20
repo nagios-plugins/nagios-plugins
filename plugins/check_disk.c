@@ -59,7 +59,7 @@ const char *email = "devel@nagios-plugins.org";
 #endif
 
 /* If nonzero, show inode information. */
-static int inode_format = 1;
+// static int inode_format = 1;
 
 /* If nonzero, show even filesystems with zero size or
    uninteresting types. */
@@ -174,13 +174,14 @@ main (int argc, char **argv)
   char status_lit[4];
   char *perf;
   char *preamble;
-  double inode_space_pct;
+  char *flag_header;
+  //double inode_space_pct;
   double warning_high_tide;
   double critical_high_tide;
   int temp_result;
 
-  struct mount_entry *me, *last_me = NULL;
-  struct fs_usage fsp, tmpfsp;
+  struct mount_entry *me;
+  struct fs_usage fsp;
   struct parameter_list *temp_list, *path;
 
 #ifdef __CYGWIN__
@@ -460,8 +461,8 @@ process_arguments (int argc, char **argv)
   struct parameter_list *se;
   struct parameter_list *temp_list = NULL, *previous = NULL;
   struct parameter_list *temp_path_select_list = NULL;
-  struct mount_entry *me, *temp_me;
-  int result = OK;
+  struct mount_entry *me;
+  //int result = OK;
   regex_t re;
   int cflags = REG_NOSUB | REG_EXTENDED;
   int default_cflags = cflags;
