@@ -18,6 +18,7 @@ This file documents the major additions and syntax changes between releases.
 	check_ldap: Add support for checking LDAP cert age (Guillaume Rousse)
 	check_icmp: Add Jitter, MOS, Score (Alessandro Ren)
 	check_radius: Add calling-station-id (cejkar)
+	check_swap: Add --no-swap flag (Mario Trangoni)
 	ssl_utils: Added certificate expiry data in OK status (check_http, check_smtp, check_tcp) (Matt Capra)
 
 
