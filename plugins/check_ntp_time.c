@@ -81,7 +81,7 @@ typedef struct {
 typedef struct {
 	time_t waiting;         /* ts set when we started waiting for a response */
 	int connected;          /* don't try to "write()" if "connect()" fails */
-	int num_responses;      /* number of successfully recieved responses */
+	int num_responses;      /* number of successfully received responses */
 	uint8_t stratum;        /* copied verbatim from the ntp_message */
 	double rtdelay;         /* converted from the ntp_message */
 	double rtdisp;          /* converted from the ntp_message */
@@ -639,7 +639,7 @@ void print_help(void){
 	printf("%s\n", _("Notes:"));
 	printf(" %s\n", _("If you'd rather want to monitor an NTP server, please use"));
 	printf(" %s\n", _("check_ntp_peer."));
-	printf(" %s\n", _("--time-offset is usefull for compensating for servers with known"));
+	printf(" %s\n", _("--time-offset is useful for compensating for servers with known"));
 	printf(" %s\n", _("and expected clock skew."));
 	printf("\n");
 	printf(UT_THRESHOLDS_NOTES);
