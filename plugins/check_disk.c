@@ -180,7 +180,7 @@ main (int argc, char **argv)
   double critical_high_tide;
   int temp_result;
 
-  struct mount_entry *me
+  struct mount_entry *me, *last_me = NULL;
   struct fs_usage fsp;
   struct parameter_list *temp_list, *path;
 
