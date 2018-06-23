@@ -364,13 +364,13 @@ main (int argc, char **argv)
         warning_high_tide = path->dtotal_units - path->freespace_units->warning->end;
       }
       if (path->freespace_percent->warning != NULL) {
-        warning_high_tide = labs( min( (double) warning_high_tide, (double) (1.0 - path->freespace_percent->warning->end/100)*path->dtotal_units ));
+        warning_high_tide = fabs( min( (double) warning_high_tide, (double) (1.0 - path->freespace_percent->warning->end/100)*path->dtotal_units ));
       }
       if (path->freespace_units->critical != NULL) {
         critical_high_tide = path->dtotal_units - path->freespace_units->critical->end;
       }
       if (path->freespace_percent->critical != NULL) {
-        critical_high_tide = labs( min( (double) critical_high_tide, (double) (1.0 - path->freespace_percent->critical->end/100)*path->dtotal_units ));
+        critical_high_tide = fabs( min( (double) critical_high_tide, (double) (1.0 - path->freespace_percent->critical->end/100)*path->dtotal_units ));
       }
 
       /* Nb: *_high_tide are unset when == ULONG_MAX */
