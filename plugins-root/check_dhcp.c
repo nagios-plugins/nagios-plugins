@@ -516,8 +516,8 @@ int send_dhcp_discover(int sock){
 		discover_packet.options[opts++]='\x04';
 		memcpy(&discover_packet.options[opts],&requested_address,sizeof(requested_address));
 		opts += sizeof(requested_address);
-	        }
-	discover_packet.options[opts++]=DHCP_OPTION_END;
+		}
+	discover_packet.options[opts++] = (char) DHCP_OPTION_END;
 
 	/* unicast fields */
 	if(unicast)
