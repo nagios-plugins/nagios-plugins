@@ -75,7 +75,7 @@ m4_define([lt_combine],
 
 # lt_if_append_uniq(MACRO-NAME, VARNAME, [SEPARATOR], [UNIQ], [NOT-UNIQ])
 # -----------------------------------------------------------------------
-# Iff MACRO-NAME does not yet contain VARNAME, then append it (delimited
+# If MACRO-NAME does not yet contain VARNAME, then append it (delimited
 # by SEPARATOR if supplied) and expand UNIQ, else NOT-UNIQ.
 m4_define([lt_if_append_uniq],
 [m4_ifdef([$1],

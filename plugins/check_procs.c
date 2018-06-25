@@ -256,7 +256,7 @@ main (int argc, char **argv)
 
 			/* Ignore self */
 			if ((usepid && mypid == procpid) ||
-				(!usepid && ((ret = stat_exe(procpid, &statbuf) != -1) && statbuf.st_dev == mydev && statbuf.st_ino == myino) ||
+				((!usepid && ((ret = stat_exe(procpid, &statbuf) != -1) && statbuf.st_dev == mydev && statbuf.st_ino == myino)) ||
 				 (ret == -1 && errno == ENOENT))) {
 				if (verbose >= 3)
 					 printf("not considering - is myself or gone\n");
@@ -837,7 +837,7 @@ print_help (void)
   printf (" %s\n", "-C, --command=COMMAND");
   printf ("   %s\n", _("Only scan for exact matches of COMMAND (without path)."));
   printf (" %s\n", "-C, --exclude-process");
-  printf ("   %s\n", _("Exclude processes which match this comma seperated list"));
+  printf ("   %s\n", _("Exclude processes which match this comma separated list"));
   printf (" %s\n", "-k, --no-kthreads");
   printf ("   %s\n", _("Only scan for non kernel threads (works on Linux only)."));
   printf (" %s\n", "-g, --cgroup-hierarchy");

@@ -73,7 +73,7 @@ print_usage() {
     echo "Usage: $PROGNAME -F logfile -O oldlog -q query"
     echo "Usage: $PROGNAME --help"
     echo "Usage: $PROGNAME --version"
-    echo "     Aditional parameter:"
+    echo "     Additional parameter:"
     echo "        -w (--max_warning) If used, determines the maximum matching value to return as warning, when finding more matching lines than this parameter will return as critical. If not used, will consider as default 0 (any matching will consider as critical)"
     echo "Usage: $PROGNAME -F logfile -O oldlog -q query -w <number>"
 }
@@ -214,8 +214,12 @@ fi
 
 diff "$logfile" "$oldlog" | grep -v "^>" > "$tempdiff"
 
-# Count the number of matching log entries we have
-count=$(egrep -c "$query" "$tempdiff")
+# Count the number of matching log entries we have and handle errors when grep fails
+count=$(grep -c "$query" "$tempdiff" 2>&1)
+if [[ $? -gt 1 ]];then
+    echo "Log check error: $count"
+    exit "$STATE_UNKNOWN"
+fi
 
 # Get the last matching entry in the diff file
 lastentry=$(egrep "$query" "$tempdiff" | tail -1)

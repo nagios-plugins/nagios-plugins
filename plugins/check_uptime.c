@@ -129,9 +129,6 @@ int getuptime () {
 static int process_arguments (int argc, char **argv) {
 
 	int c;
-	int escape = 0;
-	char *temp;
-	
 	int option = 0;
 	static struct option longopts[] = {
 		{"critical", required_argument, 0, 'c'},

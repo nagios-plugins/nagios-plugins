@@ -28,7 +28,7 @@
 
 const char *progname = "check_disk";
 const char *program_name = "check_disk";  /* Required for coreutils libs */
-const char *copyright = "1999-2014";
+const char *copyright = "1999-2018";
 const char *email = "devel@nagios-plugins.org";
 
 
@@ -59,7 +59,7 @@ const char *email = "devel@nagios-plugins.org";
 #endif
 
 /* If nonzero, show inode information. */
-static int inode_format = 1;
+// static int inode_format = 1;
 
 /* If nonzero, show even filesystems with zero size or
    uninteresting types. */
@@ -174,13 +174,14 @@ main (int argc, char **argv)
   char status_lit[4];
   char *perf;
   char *preamble;
-  double inode_space_pct;
+  char *flag_header;
+  //double inode_space_pct;
   double warning_high_tide;
   double critical_high_tide;
   int temp_result;
 
-  struct mount_entry *me, *last_me = NULL;
-  struct fs_usage fsp, tmpfsp;
+  struct mount_entry *me;
+  struct fs_usage fsp;
   struct parameter_list *temp_list, *path;
 
 #ifdef __CYGWIN__
@@ -315,7 +316,7 @@ main (int argc, char **argv)
       get_stats (path, &fsp);
 
       if (verbose >= 3) {
-        printf ("For %s, used_pct=%g free_pct=%g used_units=%g free_units=%g total_units=%g used_inodes_pct=%g free_inodes_pct=%g fsp.fsu_blocksize=%llu mult=%llu\n",
+        printf ("For %s, used_pct=%g free_pct=%g used_units=%i free_units=%i total_units=%i used_inodes_pct=%g free_inodes_pct=%g fsp.fsu_blocksize=%llu mult=%llu\n",
           me->me_mountdir, path->dused_pct, path->dfree_pct, path->dused_units, path->dfree_units, path->dtotal_units, path->dused_inodes_percent, path->dfree_inodes_percent, fsp.fsu_blocksize, mult);
       }
 
@@ -384,7 +385,7 @@ main (int argc, char **argv)
       if (disk_result==STATE_OK && erronly && !verbose)
         continue;
 
-      xasprintf (&output, "%s%s%s%s %.0f %s (%.2f%%",
+      xasprintf (&output, "%s%s%s%s %i %s (%.2f%%",
                 output,
                 newlines ? "" : " ",
                 status_lit,
@@ -460,8 +461,8 @@ process_arguments (int argc, char **argv)
   struct parameter_list *se;
   struct parameter_list *temp_list = NULL, *previous = NULL;
   struct parameter_list *temp_path_select_list = NULL;
-  struct mount_entry *me, *temp_me;
-  int result = OK;
+  struct mount_entry *me;
+  //int result = OK;
   regex_t re;
   int cflags = REG_NOSUB | REG_EXTENDED;
   int default_cflags = cflags;
@@ -549,7 +550,7 @@ process_arguments (int argc, char **argv)
 
     /* Awful mistake where the range values do not make sense. Normally,
        you alert if the value is within the range, but since we are using
-       freespace, we have to alert if outside the range. Thus we artifically
+       freespace, we have to alert if outside the range. Thus we artificially
        force @ at the beginning of the range, so that it is backwards compatible
     */
     case 'c':                 /* critical threshold */
@@ -1004,7 +1005,7 @@ get_stats (struct parameter_list *p, struct fs_usage *fsp) {
         get_fs_usage (p_list->best_match->me_mountdir, p_list->best_match->me_devname, &tmpfsp);
         get_path_stats(p_list, &tmpfsp); 
         if (verbose >= 3)
-          printf("Group %s: adding %llu blocks sized %llu, (%s) used_units=%g free_units=%g total_units=%g fsu_blocksize=%llu mult=%llu\n",
+          printf("Group %s: adding %llu blocks sized %llu, (%s) used_units=%i free_units=%i total_units=%i fsu_blocksize=%llu mult=%llu\n",
                  p_list->group, tmpfsp.fsu_bavail, tmpfsp.fsu_blocksize, p_list->best_match->me_mountdir, p_list->dused_units, p_list->dfree_units,
                  p_list->dtotal_units, mult);
 
@@ -1025,7 +1026,7 @@ get_stats (struct parameter_list *p, struct fs_usage *fsp) {
         first = 0;
       }
       if (verbose >= 3) 
-        printf("Group %s now has: used_units=%g free_units=%g total_units=%g fsu_blocksize=%llu mult=%llu\n",
+        printf("Group %s now has: used_units=%1 free_units=%1 total_units=%1 fsu_blocksize=%llu mult=%llu\n",
                p->group, tmpfsp.fsu_bavail, tmpfsp.fsu_blocksize, p->best_match->me_mountdir, p->dused_units,
                p->dfree_units, p->dtotal_units, mult);
     }
@@ -1049,7 +1050,7 @@ get_path_stats (struct parameter_list *p, struct fs_usage *fsp) {
   p->available_to_root = fsp->fsu_bfree;
   p->used = fsp->fsu_blocks - fsp->fsu_bfree;
   if (freespace_ignore_reserved) {
-    /* option activated : we substract the root-reserved space from the total */
+    /* option activated : we subtract the root-reserved space from the total */
     p->total = fsp->fsu_blocks - p->available_to_root + p->available;
   } else {
     /* default behaviour : take all the blocks into account */
