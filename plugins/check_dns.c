@@ -288,7 +288,7 @@ main (int argc, char **argv)
     temp_buffer = "";
     for (i=0; i<expected_address_cnt; i++) {
       /* check if we get a match and prepare an error string */
-      if (strcmp(address, expected_address[i]) == 0) result = STATE_OK;
+      if (strcasecmp(address, expected_address[i]) == 0) result = STATE_OK;
       xasprintf(&temp_buffer, "%s%s; ", temp_buffer, expected_address[i]);
     }
     if (result == STATE_CRITICAL) {
