@@ -985,7 +985,7 @@ int get_results(void) {
 	requested_responses=0;
 	if(requested_servers>0) {
 		for(temp_server=requested_server_list; temp_server!=NULL; temp_server=temp_server->next) {
-			for(temp_offer=dhcp_offer_list;temp_offer!=NULL;temp_offer=temp_offer->next) {
+			for(temp_offer=dhcp_offer_list; temp_offer!=NULL; temp_offer=temp_offer->next) {
 				/* get max lease time we were offered */
 				if(temp_offer->lease_time>max_lease_time || temp_offer->lease_time==DHCP_INFINITE_TIME) {
 					max_lease_time=temp_offer->lease_time;
@@ -1009,6 +1009,7 @@ int get_results(void) {
 					if(temp_server->answered == FALSE) {
 						requested_responses++;
 						temp_server->answered=TRUE;
+						/* put here the list of servers that didn't respond */
 					}
 				}
 			}
