@@ -42,7 +42,7 @@ This file documents the major additions and syntax changes between releases.
 	check_sensors: Fix fault test with --ignore-fault
 	check_snmp: Fix perfdata not adhering to plugin dev guidelines
 	check_snmp: warning/critical perfdata is returned properly
-
+	check_dns: reverse (PTR) check is now case insensitive
 
 2.2.1 2017-04-19
 	FIXES
