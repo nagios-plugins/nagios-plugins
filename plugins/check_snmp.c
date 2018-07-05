@@ -3,7 +3,7 @@
 * Nagios check_snmp plugin
 *
 * License: GPL
-* Copyright (c) 1999-2014 Nagios Plugins Development Team
+* Copyright (c) 1999-2018 Nagios Plugins Development Team
 *
 * Description:
 *
@@ -29,7 +29,7 @@
 *****************************************************************************/
 
 const char *progname = "check_snmp";
-const char *copyright = "1999-2014";
+const char *copyright = "1999-2018";
 const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"
@@ -487,8 +487,8 @@ main (int argc, char **argv)
 		/* Process this block for numeric comparisons */
 		/* Make some special values,like Timeticks numeric only if a threshold is defined */
 		if (thlds[i]->warning || thlds[i]->critical || calculate_rate || is_ticks || offset != 0.0) {
-
 			ptr = strpbrk (show, "-0123456789");
+
 			if (ptr == NULL)
 				die (STATE_UNKNOWN,_("No valid data returned (%s)\n"), show);
 			while (i >= response_size) {
@@ -517,7 +517,12 @@ main (int argc, char **argv)
 				}
 			} else {
 				iresult = get_status(response_value[i], thlds[i]);
-				xasprintf (&show, conv, response_value[i]);
+				if(is_ticks) {
+					xasprintf (&show, "%s", response);
+				}
+				else { 
+					xasprintf (&show, conv, response_value[i]);
+				}
 			}
 		}
 
@@ -558,7 +563,7 @@ main (int argc, char **argv)
 
 		/* Result is the worst outcome of all the OIDs tested */
 		result = max_state (result, iresult);
-
+		
 		/* Prepend a label for this OID if there is one */
 		if (nlabels >= (size_t)1 && (size_t)i < nlabels && labels[i] != NULL)
 			xasprintf (&outbuff, "%s%s%s %s%s%s", outbuff,
@@ -568,12 +573,21 @@ main (int argc, char **argv)
 			xasprintf (&outbuff, "%s%s%s%s%s", outbuff, (i == 0) ? " " : output_delim,
 				mark (iresult), show, mark (iresult));
 
+		/* Add a semicolon to separate multiple oids */
+		if(outbuff != NULL && line != chld_out.lines-1) {
+			xasprintf (&outbuff, "%s;", outbuff);
+		}
+				
 		/* Append a unit string for this OID if there is one */
 		if (nunits > (size_t)0 && (size_t)i < nunits && unitv[i] != NULL)
 			xasprintf (&outbuff, "%s %s", outbuff, unitv[i]);
-
+		
 		/* Write perfdata with whatever can be parsed by strtod, if possible */
 		ptr = NULL;
+		if(is_ticks) {
+			show = strstr (response, "Timeticks: ");
+			show = strpbrk (show, "-0123456789");
+		}
 		strtod(show, &ptr);
 		if (ptr > show) {
 
@@ -704,7 +718,7 @@ main (int argc, char **argv)
 			die( STATE_OK, _("No previous data to calculate rate - assume okay" ) );
 		}
 	}
-
+	
 	printf ("%s %s -%s %s\n", label, state_text (result), outbuff, perfstr);
 	if (mult_resp) printf ("%s", mult_resp);
 
