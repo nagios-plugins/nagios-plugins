@@ -119,6 +119,7 @@ int use_ssl = FALSE;
 int use_sni = FALSE;
 int verbose = FALSE;
 int show_extended_perfdata = FALSE;
+int show_url = FALSE;
 int sd;
 int min_page_len = 0;
 int max_page_len = 0;
@@ -244,6 +245,7 @@ process_arguments (int argc, char **argv)
         {"use-ipv4", no_argument, 0, '4'},
         {"use-ipv6", no_argument, 0, '6'},
         {"extended-perfdata", no_argument, 0, 'E'},
+        {"show-url", no_argument, 0, 'U'},
         {0, 0, 0, 0}
     };
 
@@ -308,6 +310,7 @@ process_arguments (int argc, char **argv)
             display_html = FALSE;
             break;
         case 'C': /* Check SSL cert validity */
+
 #ifdef HAVE_SSL
             if ((temp=strchr(optarg,','))!=NULL) {
                 *temp='\0';
@@ -476,11 +479,13 @@ enable_ssl:
             address_family = AF_INET;
             break;
         case '6':
+
 #ifdef USE_IPV6
             address_family = AF_INET6;
 #else
             usage4 (_("IPv6 support not available"));
 #endif
+
             break;
         case 'v': /* verbose */
             verbose = TRUE;
@@ -529,6 +534,9 @@ enable_ssl:
         case 'E': /* show extended perfdata */
             show_extended_perfdata = TRUE;
             break;
+        case 'U': /* show checked url in output msg */
+          show_url = TRUE;
+          break;
         }
     }
 
@@ -1400,13 +1408,15 @@ check_http (void)
     }
 
     /* Cut-off trailing characters */
-    if(msg[strlen(msg)-2] == ',')
+    if(msg[strlen(msg)-2] == ',') {
         msg[strlen(msg)-2] = '\0';
-    else
+    }
+    else {
         msg[strlen(msg)-3] = '\0';
+    }
 
     /* check elapsed time */
-    if (show_extended_perfdata)
+    if (show_extended_perfdata) {
         xasprintf (&msg,
                    _("%s - %d bytes in %.3f second response time %s|%s %s %s %s %s %s %s"),
                    msg, page_len, elapsed_time,
@@ -1418,17 +1428,20 @@ check_http (void)
                    perfd_time_headers (elapsed_time_headers),
                    perfd_time_firstbyte (elapsed_time_firstbyte),
                    perfd_time_transfer (elapsed_time_transfer));
-    else
+    }
+    else {
         xasprintf (&msg,
                    _("%s - %d bytes in %.3f second response time %s|%s %s"),
                    msg, page_len, elapsed_time,
                    (display_html ? "</A>" : ""),
                    perfd_time (elapsed_time),
                    perfd_size (page_len));
+    }
 
     result = max_state_alt(get_status(elapsed_time, thlds), result);
 
     die (result, "HTTP %s: %s\n", state_text(result), msg);
+
     /* die failed? */
     return STATE_UNKNOWN;
 }
@@ -1763,6 +1776,8 @@ print_help (void)
     printf ("    %s\n", _("Any other tags to be sent in http header. Use multiple times for additional headers"));
     printf (" %s\n", "-E, --extended-perfdata");
     printf ("    %s\n", _("Print additional performance data"));
+    printf (" %s\n", "-U, --show-url");
+    printf ("    %s\n", _("Print URL in msg output in plain text"));
     printf (" %s\n", "-L, --link");
     printf ("    %s\n", _("Wrap output in HTML link (obsoleted by urlize)"));
     printf (" %s\n", "-f, --onredirect=<ok|warning|critical|follow|sticky|stickyport>");
@@ -1837,10 +1852,11 @@ print_usage (void)
     printf ("%s\n", _("Usage:"));
     printf (" %s -H <vhost> | -I <IP-address> [-u <uri>] [-p <port>]\n",progname);
     printf ("       [-J <client certificate file>] [-K <private key>]\n");
-    printf ("       [-w <warn time>] [-c <critical time>] [-t <timeout>] [-L] [-E] [-a auth]\n");
+    printf ("       [-w <warn time>] [-c <critical time>] [-t <timeout>] [-L] [-E] [-U] [-a auth]\n");
     printf ("       [-b proxy_auth] [-f <ok|warning|critcal|follow|sticky|stickyport>]\n");
     printf ("       [-e <expect>] [-d string] [-s string] [-l] [-r <regex> | -R <case-insensitive regex>]\n");
     printf ("       [-P string] [-m <min_pg_size>:<max_pg_size>] [-4|-6] [-N] [-M <age>]\n");
+
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L
     printf ("       [-A string] [-k string] [-S <version>] [--sni] [--verify-host]\n");
     printf ("       [-C <warn_age>[,<crit_age>]] [-T <content-type>] [-j method]\n");
@@ -1848,4 +1864,5 @@ print_usage (void)
     printf ("       [-A string] [-k string] [-S <version>] [--sni] [-C <warn_age>[,<crit_age>]]\n");
     printf ("       [-T <content-type>] [-j method]\n");
 #endif
+
 }
