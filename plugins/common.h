@@ -174,6 +174,11 @@
 #  endif
 #endif
 
+/* MariaDB 10.2 client does not set MYSQL_PORT */
+#ifndef MYSQL_PORT
+#  define MYSQL_PORT 3306
+#endif
+
 /*
  *
  * Standard Values
