@@ -27,7 +27,7 @@ plan skip_all => "SSH_HOST and SSH_IDENTITY must be defined" unless ($ssh_servic
 plan tests => 42;
 
 # Some random check strings/response
-my @responce = ('OK: Everything is fine',
+my @response = ('OK: Everything is fine',
                 'WARNING: Hey, pick me, pick me',
                 'CRITICAL: Shit happens',
                 'UNKNOWN: What can I do for ya',
@@ -35,7 +35,7 @@ my @responce = ('OK: Everything is fine',
 );
 my @responce_re;
 my @check;
-for (@responce) {
+for (@response) {
 	push(@check, "echo $_");
 	my $re_str = $_;
 	$re_str =~ s{(.)} { "\Q$1" }ge;
@@ -55,7 +55,7 @@ for (my $i=0; $i<4; $i++) {
 		"./check_by_ssh -i $ssh_key -H $ssh_service -C '$check[$i]; exit $i'"
 		);
 	cmp_ok($result->return_code, '==', $i, "Exit with return code $i");
-	is($result->output, $responce[$i], "Status text is correct for check $i");
+	is($result->output, $response[$i], "Status text is correct for check $i");
 }
 
 $result = NPTest->testCmd(
@@ -92,7 +92,7 @@ $result = NPTest->testCmd(
 	"./check_by_ssh -i $ssh_key -H $ssh_service -C '$check[4]; exit 8'"
 	);
 cmp_ok($result->return_code, '==', 8, "Exit with return code 8 (out of bounds)");
-is($result->output, $responce[4], "Return proper status text even with unknown status codes");
+is($result->output, $response[4], "Return proper status text even with unknown status codes");
 
 $result = NPTest->testCmd(
 	"./check_by_ssh -i $ssh_key -H $ssh_service -F $ssh_conf -C 'exit 0'"
@@ -116,7 +116,7 @@ my %linemap = (
 foreach my $line (0, 2, 4, 6) {
 	my $code = $linemap{$line};
 	my $statline = $line+1;
-	is($lines[$line], "$responce[$code]", "multiple checks status text is correct for line $line");
+	is($lines[$line], "$response[$code]", "multiple checks status text is correct for line $line");
 	is($lines[$statline], "STATUS CODE: $code", "multiple check status code is correct for line $line");
 }
 

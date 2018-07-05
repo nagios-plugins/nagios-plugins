@@ -375,7 +375,7 @@ print_help (void)
   printf (" %s\n", "-c, --critical");
   printf ("    %s\n", _("Critical threshold pair <incoming>,<outgoing>"));
   printf (" %s\n", _("-v, --verbose"));
-  printf ("    %s\n", _("Verbose output durring plugin runtime."));
+  printf ("    %s\n", _("Verbose output during plugin runtime."));
 
   printf ("\n");
   printf ("%s\n", _("Notes:"));
