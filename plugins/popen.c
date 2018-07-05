@@ -305,10 +305,10 @@ popen_timeout_alarm_handler (int signo)
 			}
 			/* printf (_("CRITICAL - Plugin timed out after %d seconds\n"),
 						timeout_interval); */
-			write(STDOUT_FILENO, msg1, sizeof(msg1));
+			write(STDOUT_FILENO, msg1, sizeof(msg1) - 1);
 		} else {
 			/* printf ("%s\n", _("CRITICAL - popen timeout received, but no child process")); */
-			write(STDOUT_FILENO, msg2, sizeof(msg2));
+			write(STDOUT_FILENO, msg2, sizeof(msg2) - 1);
 		}
 		exit (STATE_CRITICAL);
 	}
