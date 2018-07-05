@@ -28,6 +28,7 @@ ENHANCEMENTS
 * check_icmp: IPv6 and ICMPv6 support added (Troy Lea) (Lars Michelsen)
 * check_dhcp: Added list of servers that did not respond when requested using -s argument to the output (Troy Lea)
 * check_snmp: Added semicolon to separate output for multiple OIDs (Troy Lea)
+
 FIXES
 * check_disk: autofs being mounted despite '-l'. Fixed, and also excluded some system "fake" mountpoints
 * check_ntp_time: Periodically returns "Socket timeout" when one of several ntp server doesn't respond
