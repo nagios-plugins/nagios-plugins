@@ -139,7 +139,7 @@ double c_dfp = -1.0;
 char *path;
 char *exclude_device;
 char *units;
-uintmax_t mult = 1024 * 1024;
+uintmax_t mult = (uintmax_t)1024 * 1024;
 int verbose = 0;
 int newlines = FALSE;
 int erronly = FALSE;
@@ -180,7 +180,7 @@ main (int argc, char **argv)
   double critical_high_tide;
   int temp_result;
 
-  struct mount_entry *me;
+  struct mount_entry *me, *last_me = NULL;
   struct fs_usage fsp;
   struct parameter_list *temp_list, *path;
 
@@ -316,7 +316,7 @@ main (int argc, char **argv)
       get_stats (path, &fsp);
 
       if (verbose >= 3) {
-        printf ("For %s, used_pct=%g free_pct=%g used_units=%i free_units=%i total_units=%i used_inodes_pct=%g free_inodes_pct=%g fsp.fsu_blocksize=%llu mult=%llu\n",
+        printf ("For %s, used_pct=%g free_pct=%g used_units=%li free_units=%li total_units=%li used_inodes_pct=%g free_inodes_pct=%g fsp.fsu_blocksize=%lu mult=%ju\n",
           me->me_mountdir, path->dused_pct, path->dfree_pct, path->dused_units, path->dfree_units, path->dtotal_units, path->dused_inodes_percent, path->dfree_inodes_percent, fsp.fsu_blocksize, mult);
       }
 
@@ -364,13 +364,13 @@ main (int argc, char **argv)
         warning_high_tide = path->dtotal_units - path->freespace_units->warning->end;
       }
       if (path->freespace_percent->warning != NULL) {
-        warning_high_tide = labs( min( (double) warning_high_tide, (double) (1.0 - path->freespace_percent->warning->end/100)*path->dtotal_units ));
+        warning_high_tide = fabs( min( (double) warning_high_tide, (double) (1.0 - path->freespace_percent->warning->end/100)*path->dtotal_units ));
       }
       if (path->freespace_units->critical != NULL) {
         critical_high_tide = path->dtotal_units - path->freespace_units->critical->end;
       }
       if (path->freespace_percent->critical != NULL) {
-        critical_high_tide = labs( min( (double) critical_high_tide, (double) (1.0 - path->freespace_percent->critical->end/100)*path->dtotal_units ));
+        critical_high_tide = fabs( min( (double) critical_high_tide, (double) (1.0 - path->freespace_percent->critical->end/100)*path->dtotal_units ));
       }
 
       /* Nb: *_high_tide are unset when == ULONG_MAX */
@@ -608,13 +608,13 @@ process_arguments (int argc, char **argv)
         die (STATE_UNKNOWN, _("failed allocating storage for '%s'\n"), "units");
       break;
     case 'k': /* display mountpoint */
-      mult = 1024;
+      mult = (uintmax_t)1024;
       if (units)
         free(units);
       units = strdup ("kB");
       break;
     case 'm': /* display mountpoint */
-      mult = 1024 * 1024;
+      mult = (uintmax_t)1024 * 1024;
       if (units)
         free(units);
       units = strdup ("MB");
@@ -1005,18 +1005,18 @@ get_stats (struct parameter_list *p, struct fs_usage *fsp) {
         get_fs_usage (p_list->best_match->me_mountdir, p_list->best_match->me_devname, &tmpfsp);
         get_path_stats(p_list, &tmpfsp); 
         if (verbose >= 3)
-          printf("Group %s: adding %llu blocks sized %llu, (%s) used_units=%i free_units=%i total_units=%i fsu_blocksize=%llu mult=%llu\n",
-                 p_list->group, tmpfsp.fsu_bavail, tmpfsp.fsu_blocksize, p_list->best_match->me_mountdir, p_list->dused_units, p_list->dfree_units,
-                 p_list->dtotal_units, mult);
+          printf("Group %s: adding %lu blocks sized %lu, (%s) used_units=%li free_units=%li total_units=%li fsu_blocksize=%lu mult=%ju\n", p_list->group, tmpfsp.fsu_bavail, tmpfsp.fsu_blocksize,
+                 p_list->best_match->me_mountdir, p_list->dused_units,
+                 p_list->dfree_units, p_list->dtotal_units,
+                 tmpfsp.fsu_blocksize, mult);
 
-        /* prevent counting the first FS of a group twice since its parameter_list entry 
+        /* prevent counting the first FS of a group twice since its parameter_list entry
          * is used to carry the information of all file systems of the entire group */
         if (! first) {
           p->total += p_list->total;
           p->available += p_list->available;
           p->available_to_root += p_list->available_to_root;
           p->used += p_list->used;
-            
           p->dused_units += p_list->dused_units;
           p->dfree_units += p_list->dfree_units;
           p->dtotal_units += p_list->dtotal_units;
@@ -1025,10 +1025,10 @@ get_stats (struct parameter_list *p, struct fs_usage *fsp) {
         }
         first = 0;
       }
-      if (verbose >= 3) 
-        printf("Group %s now has: used_units=%1 free_units=%1 total_units=%1 fsu_blocksize=%llu mult=%llu\n",
-               p->group, tmpfsp.fsu_bavail, tmpfsp.fsu_blocksize, p->best_match->me_mountdir, p->dused_units,
-               p->dfree_units, p->dtotal_units, mult);
+      if (verbose >= 3)
+        printf("Group %s now has: used_units=%li free_units=%li total_units=%li fsu_blocksize=%lu mult=%ju\n",
+               p->group, p->dused_units, p->dfree_units, p->dtotal_units,
+               tmpfsp.fsu_blocksize, mult);
     }
     /* modify devname and mountdir for output */
     p->best_match->me_mountdir = p->best_match->me_devname = p->group;
@@ -1056,7 +1056,7 @@ get_path_stats (struct parameter_list *p, struct fs_usage *fsp) {
     /* default behaviour : take all the blocks into account */
     p->total = fsp->fsu_blocks;
   }
-  
+
   p->dused_units = p->used*fsp->fsu_blocksize/mult;
   p->dfree_units = p->available*fsp->fsu_blocksize/mult;
   p->dtotal_units = p->total*fsp->fsu_blocksize/mult;
