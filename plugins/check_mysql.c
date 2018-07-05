@@ -1,40 +1,43 @@
 /*****************************************************************************
-* 
+*
 * Nagios check_mysql plugin
-* 
+*
 * License: GPL
 * Copyright (c) 1999 Didi Rieder (adrieder@sbox.tu-graz.ac.at)
 * Copyright (c) 2000 Karl DeBisschop (kdebisschop@users.sourceforge.net)
-* Copyright (c) 1999-2014 Nagios Plugins Development Team
-* 
+* Copyright (c) 1999-2017 Nagios Plugins Development Team
+*
 * Description:
-* 
+*
 * This file contains the check_mysql plugin
-* 
+*
 * This program tests connections to a mysql server
-* 
-* 
+*
+*
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation, either version 3 of the License, or
 * (at your option) any later version.
-* 
+*
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 * GNU General Public License for more details.
-* 
+*
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-* 
-* 
+*
+*
 *****************************************************************************/
 
 const char *progname = "check_mysql";
-const char *copyright = "1999-2014";
+const char *copyright = "1999-2017";
 const char *email = "devel@nagios-plugins.org";
 
 #define SLAVERESULTSIZE 70
+
+/* The default port that MySQL servers listen on. */
+#define CHECK_PORT_DEFAULT 3306
 
 #include "common.h"
 #include "utils.h"
@@ -58,7 +61,7 @@ char *ciphers = NULL;
 bool ssl = false;
 char *opt_file = NULL;
 char *opt_group = NULL;
-unsigned int db_port = MYSQL_PORT;
+unsigned int db_port = CHECK_PORT_DEFAULT;
 int check_slave = 0, warn_sec = 0, crit_sec = 0;
 int ignore_auth = 0;
 int verbose = 0;
@@ -125,7 +128,7 @@ main (int argc, char **argv)
 
 	/* initialize mysql  */
 	mysql_init (&mysql);
-	
+
 	if (opt_file != NULL)
 		mysql_options(&mysql,MYSQL_READ_DEFAULT_FILE,opt_file);
 
@@ -505,7 +508,7 @@ void
 print_help (void)
 {
 	char *myport;
-	xasprintf (&myport, "%d", MYSQL_PORT);
+	xasprintf (&myport, "%d", CHECK_PORT_DEFAULT);
 
 	print_revision (progname, NP_VERSION);
 

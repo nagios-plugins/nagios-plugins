@@ -1,37 +1,40 @@
 /*****************************************************************************
-* 
+*
 * Nagios check_mysql_query plugin
-* 
+*
 * License: GPL
-* Copyright (c) 2006-2014 Nagios Plugins Development Team
+* Copyright (c) 2006-2017 Nagios Plugins Development Team
 * Original code from check_mysql, copyright 1999 Didi Rieder
-* 
+*
 * Description:
-* 
+*
 * This file contains the check_mysql_query plugin
-* 
+*
 * This plugin is for running arbitrary SQL and checking the results
-* 
-* 
+*
+*
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation, either version 3 of the License, or
 * (at your option) any later version.
-* 
+*
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 * GNU General Public License for more details.
-* 
+*
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-* 
-* 
+*
+*
 *****************************************************************************/
 
 const char *progname = "check_mysql_query";
-const char *copyright = "1999-2014";
+const char *copyright = "1999-2017";
 const char *email = "devel@nagios-plugins.org";
+
+/* The default port that MySQL servers listen on. */
+#define CHECK_PORT_DEFAULT 3306
 
 #include "common.h"
 #include "utils.h"
@@ -48,7 +51,7 @@ char *db_pass = NULL;
 char *db = NULL;
 char *opt_file = NULL;
 char *opt_group = NULL;
-unsigned int db_port = MYSQL_PORT;
+unsigned int db_port = CHECK_PORT_DEFAULT;
 
 int process_arguments (int, char **);
 int validate_arguments (void);
@@ -67,7 +70,7 @@ main (int argc, char **argv)
 	MYSQL mysql;
 	MYSQL_RES *res;
 	MYSQL_ROW row;
-	
+
 	double value;
 	char *error = NULL;
 	int status;
@@ -300,7 +303,7 @@ void
 print_help (void)
 {
 	char *myport;
-	xasprintf (&myport, "%d", MYSQL_PORT);
+	xasprintf (&myport, "%d", CHECK_PORT_DEFAULT);
 
 	print_revision (progname, NP_VERSION);
 
