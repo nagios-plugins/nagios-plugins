@@ -49,6 +49,7 @@ enum {
 
 int process_arguments (int, char **);
 int validate_arguments (void);
+int ldap_check_cert (LDAP *ld);
 void print_help (void);
 void print_usage (void);
 

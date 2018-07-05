@@ -27,6 +27,7 @@
 #include "utils_base.h"
 #include <stdarg.h>
 #include <limits.h>
+#include <ctype.h>
 
 #include <arpa/inet.h>
 

@@ -147,7 +147,7 @@ main (int argc, char **argv)
   (void) fclose (child_stderr);
 
   /* close the pipe */
-  if (result = spclose (child_process))
+  if ((result = spclose (child_process)))
     /* need to use max_state not max */
     status = max_state (status, STATE_WARNING);
 
