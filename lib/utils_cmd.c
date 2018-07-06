@@ -298,7 +298,6 @@ _cmd_fetch_output (int fd, output * op, int flags)
 int
 cmd_run (const char *cmdstring, output * out, output * err, int flags)
 {
-	int fd, pfd_out[2], pfd_err[2];
 	int i = 0, argc;
 	size_t cmdlen;
 	char **argv = NULL;

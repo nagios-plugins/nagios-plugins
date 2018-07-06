@@ -42,23 +42,30 @@ case "$1" in
 		exit "$STATE_OK"
 		;;
 	*)
+		ignorefault=0
+		if test "$1" = "-i" -o "$1" = "--ignore-fault"; then
+			ignorefault=1
+		fi
+
 		sensordata=$(sensors 2>&1)
 		status=$?
+
+		# Set a default
+		text="SENSOR UNKNOWN"
+		exit=$STATE_UNKNOWN
+
 		if [ $status -eq 127 ] ; then
 			text="SENSORS UNKNOWN - command not found (did you install lmsensors?)"
 			exit=$STATE_UNKNOWN
 		elif [ "$status" != 0 ] ; then
 			text="WARNING - sensors returned state $status"
 			exit=$STATE_WARNING
-		elif echo "${sensordata}" | egrep -q ALARM > /dev/null ; then
+		elif echo "${sensordata}" | egrep -q ALARM >/dev/null ; then
 			text="SENSOR CRITICAL - Sensor alarm detected!"
 			exit=$STATE_CRITICAL
-		elif echo "${sensordata}" | egrep -q FAULT  > /dev/null -a; then
-			if [ "$(test "$1")" != "-i" -a \
-				"$1" != "--ignore-fault" ] ; then
-				text="SENSOR UNKNOWN - Sensor reported fault"
-				exit=$STATE_UNKNOWN
-			fi
+		elif [ $ignorefault -eq 0 ] && echo "${sensordata}" | egrep -q FAULT  >/dev/null; then
+			text="SENSOR UNKNOWN - Sensor reported fault"
+			exit=$STATE_UNKNOWN
 		else
 			text="SENSORS OK"
 			exit=$STATE_OK
@@ -68,6 +75,6 @@ case "$1" in
 		if test "$1" = "-v" -o "$1" = "--verbose"; then
 			echo "${sensordata}"
 		fi
-		exit "$exit"
+		exit $exit
 		;;
 esac

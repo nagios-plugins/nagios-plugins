@@ -1,5 +1,49 @@
 This file documents the major additions and syntax changes between releases.
 
+2.3.0 xxxx-xx-xx
+	ENHANCEMENTS
+	Added directory plugins-python containing three Python plugins
+	Add plugin remove_perfdata to remove perfdata from specified plugin's output
+	Added warning_string/critical_string to struct thresholds for storing originally parsed strings
+	check_http: New parameter `--verify-host` will check if -H hostname matches the SSL certificate
+	check_ping: plugin output will now include hostname and IP address
+	check_disk_smb: Add configfile feature
+	check_apt: Add --only-critical switch
+	check_mailq: Add support for opensmtpd
+	check_mailq: Add mailq -C option for config dir or config file
+	check_disk: Add -s option to show status for each path/partition
+	check_mailq.pl: Add option for opensmtpd (brigriffin)
+	check_procs: Add FreeBSD jail support (Mathieu Arnold)
+	check_procs: Allow process to be excluded from check_procs (Marcel Klein)
+	check_ldap: Add support for checking LDAP cert age (Guillaume Rousse)
+	check_icmp: Add Jitter, MOS, Score (Alessandro Ren)
+	check_radius: Add calling-station-id (cejkar)
+	check_swap: Add --no-swap flag (Mario Trangoni)
+	ssl_utils: Added certificate expiry data in OK status (check_http, check_smtp, check_tcp) (Matt Capra)
+
+
+2.2.2 xxxx-xx-xx
+	FIXES
+	check_disk: autofs being mounted despite '-l'. Fixed, and also excluded some system "fake" mountpoints
+	check_ntp_time: Periodically returns "Socket timeout" when one of several ntp server doesn't respond
+	check_ntp_time calls `write` on a UDP socket without a successful call to `connect`
+	check_mysql_query & mysql_query: extra-opts causes crash
+	check_log does not check for "-O oldlog"
+	check_log lost ability to use regexes for query (-q) in 2.1.4
+	fix configure.ac for FreeBSD SWAPFORMAT
+	Fix --no-body
+	check_wave produces lots of errors if required arguments are not provided
+	check_disk_smb.pl added additional smb support
+	check_http Additional header/status checking
+	check_http When checking certificate, don't check content/status
+	Fix ax_with_python not crashing on Python3 (Michael Orlitzky)
+	Fix rpmbuild errors (Josh Coughlan)
+	check_ping: FreeBSD ping working natively
+	check_sensors: Fix fault test with --ignore-fault
+	check_snmp: Fix perfdata not adhering to plugin dev guidelines
+	check_snmp: warning/critical perfdata is returned properly
+	check_dns: reverse (PTR) check is now case insensitive
+
 2.2.1 2017-04-19
 	FIXES
 	check_users: not accepting zero as the threshold
@@ -17,6 +61,7 @@ This file documents the major additions and syntax changes between releases.
 	check_mailq: Nullmailer Regex is not working for Ubuntu 16.04
 	check_swap: Downstream Fedora patch: Prevent check_swap from returning OK, if no swap activated
 	Building RPMs on Amazon Linux - Add 'install-root' on line 165 of spec file
+	check_http: Memory allocation error
 
 
 2.2.0 2017-01-19
@@ -116,20 +161,20 @@ This file documents the major additions and syntax changes between releases.
 	check_dig honor the -4 and -6 switches
 	check_ntp_peer: do not use uninitialized results for max state
 	check_log.sh, check_oracle.sh, check_sensors.sh: Setting PATH at first
-	check_log.sh: droping path from basename while evaluating PROGNAME
+	check_log.sh: dropping path from basename while evaluating PROGNAME
 	check_tcp: Fix check_jabber to work with Openfire servers
 	check_ifstatus.pl: Fix "-n" and "-u" options to ignore if either is set, not just both
 	check_mrtgtraf: Fix perfdata to comply with perfdata UOM definition
 	check_real, check_ntp: fix null termination
 	check_apt: fix memset
-	check_ssh: change warning to critical for protocal/version errors
+	check_ssh: change warning to critical for protocol/version errors
 	utils_cmd.c: avoid a segfault, if ulimit is set to unlimited
 	utils_cmd.c: make constants from maxfd values
 	configure.ac: Added particular ps command for HP-UX
 	check_disk: Fix pthread start routine type
 	check_http: Make header_value() and chunked-encoding decoding more robust
 	check_http: fix Host header if explicitly set with -k
-	sslutils.c: Forcing furter restriction of ciphers for current security concerns
+	sslutils.c: Forcing further restriction of ciphers for current security concerns
 	check_nagios, check_procs: Enable check_proc to monitor processes in PID name-spaced environments.
 	check_dhcp.c: use /dev/urandom if available
 	check_http.c: Don't decode page if it's not there
@@ -167,7 +212,7 @@ This file documents the major additions and syntax changes between releases.
 	test.pl.in: Use "C" locale when running test suite
 	check_http.t: Adjust date strings to the now-localized output
 	check_dns.t - Fix Perl Warning. perl doesn't understand /d within "".
-	check_snmp.t: skip extented snmp tests if snmpd has no perl support
+	check_snmp.t: skip extended snmp tests if snmpd has no perl support
 	check_snmp.t: fix snmp test for included threshold
 	check_http.t: fix tests for certificates expire date with seconds
 	check_http.t: add faketime based tests for check_http
@@ -260,7 +305,7 @@ This file documents the major additions and syntax changes between releases.
 	check_nt.c - Changed 'Mb' to 'MB' in MEMUSE output for clarity (abrist)
 
 2.0.1 15th April 2014
-	ENHANCMENTS
+	ENHANCEMENTS
 	check_snmp.c - Added thresholds to performance data (jccomputing)
 	check_http.c - Added */* MIME support (Alex Gottschalk)
 	check_mailq.pl - Added autodetection for mailq implementation (evgeni)
@@ -370,10 +415,10 @@ This file documents the major additions and syntax changes between releases.
 	New check_procs -k option to ignore kernel threads (on Linux)
 	Let check_procs use /proc/<PID>/exe (if available) instead of getpid(2), unless -T is specified
 	Let check_mysql support SSL
-	Let check_mysql add perfromance metrics for all checks
+	Let check_mysql add performance metrics for all checks
 	New check_mysql -f option to specify a client options file
 	New check_mysql -g option to specify a client options group
-	New check_snmp --offset option to allow for adding/substracting an offset value to sensor data
+	New check_snmp --offset option to allow for adding/subtracting an offset value to sensor data
 	Let check_snmp support an arbitrary number of OIDs
 	Let check_ide_smart support NetBSD
 
@@ -388,7 +433,7 @@ This file documents the major additions and syntax changes between releases.
 	Fix deprecated imports of check_nmap.py (Fabio Rueda)
 
 	WARNINGS
-	check_http behaviour of -k/--header changed since it does not seperate multiple headers by semicolons anymore. Use multiple -k switches instead.
+	check_http behaviour of -k/--header changed since it does not separate multiple headers by semicolons anymore. Use multiple -k switches instead.
 	check_http's --proxy_authorization option is now called --proxy-authorization (it was always documented this way)
 	The contrib directory has been removed from this distribution
 
@@ -539,7 +584,7 @@ This file documents the major additions and syntax changes between releases.
 	check_ntp and check_ntp_peer now show proper jitter/stratum thresholds longopts in --help
 	check_dns now allow to repeat -a to match multiple possibly returned address (common with load balancers)
 	check_mysql and check_radius now try clearing password in processlist just like check_mysql_query
-	check_mysql and check_mysql_query now support sockets explicitely (-s, --socket)
+	check_mysql and check_mysql_query now support sockets explicitly (-s, --socket)
 	negate now has the ability to replace the status text as well (-s, --substitute)
 	Added performance data to check_ping (Christian Schneemann)
 	Added support for --extra-opts in all C plugins (disabled by default, see configure --help)
@@ -579,7 +624,7 @@ This file documents the major additions and syntax changes between releases.
 	New check_disk option -L: Only check local filesystems, but call stat() on remote ones, too.
 	  Thus accessibility of remote filesystems can be checked without any threshold comparison.
 	Check_disk's --help now prints some examples for the new features introduced in 1.4.8
-	New check_disk -i/-I option to ignore pathes/partitions based on regular expressions
+	New check_disk -i/-I option to ignore paths/partitions based on regular expressions
 	New check_disk -A option to select all filesystems explicitly
 	WARNING: check_disk's -E option must now be passed before -p or -r/-R arguments
 	  Passing -E after -p or -r results in UNKNOWN state, now

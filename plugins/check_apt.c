@@ -73,6 +73,7 @@ char* add_to_regexp(char *expr, const char *next);
 /* configuration variables */
 static int verbose = 0;      /* -v */
 static int do_update = 0;    /* whether to call apt-get update */
+static int only_critical = 0;    /* whether to warn about non-critical updates */
 static upgrade_type upgrade = UPGRADE; /* which type of upgrade to do */
 static char *upgrade_opts = NULL; /* options to override defaults for upgrade */
 static char *update_opts = NULL; /* options to override defaults for update */
@@ -112,7 +113,7 @@ int main (int argc, char **argv) {
 
 	if(sec_count > 0){
 		result = max_state(result, STATE_CRITICAL);
-	} else if(packages_available >= packages_warning){
+	} else if(packages_available >= packages_warning && only_critical == 0){
 		result = max_state(result, STATE_WARNING);
 	} else if(result > STATE_UNKNOWN){
 		result = STATE_UNKNOWN;
@@ -150,13 +151,14 @@ int process_arguments (int argc, char **argv) {
 		{"include", required_argument, 0, 'i'},
 		{"exclude", required_argument, 0, 'e'},
 		{"critical", required_argument, 0, 'c'},
+		{"only-critical", no_argument, 0, 'o'},
 		{"input-file", required_argument, 0, INPUT_FILE_OPT},
 		{"packages-warning", required_argument, 0, 'w'},
 		{0, 0, 0, 0}
 	};
 
 	while(1) {
-		c = getopt_long(argc, argv, "hVvt:u::U::d::ni:e:c:w:", longopts, NULL);
+		c = getopt_long(argc, argv, "hVvt:u::U::d::ni:e:c:ow:", longopts, NULL);
 
 		if(c == -1 || c == EOF || c == 1) break;
 
@@ -205,6 +207,9 @@ int process_arguments (int argc, char **argv) {
 			break;
 		case 'c':
 			do_critical=add_to_regexp(do_critical, optarg);
+			break;
+		case 'o':
+			only_critical=1;
 			break;
 		case INPUT_FILE_OPT:
 			input_filename = optarg;
