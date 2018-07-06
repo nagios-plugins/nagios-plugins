@@ -495,5 +495,5 @@ void
 print_usage(void)
 {
   printf ("%s\n", _("Usage:"));
-  printf ("%s [[-d|-u|-U]opts] [-n] [-l] [-t timeout] [-w packages-warning]\n", progname);
+  printf ("%s [[-d|-u|-U]opts] [-n] [-t timeout] [-w packages-warning]\n", progname);
 }
