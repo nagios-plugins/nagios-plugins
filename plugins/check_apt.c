@@ -475,6 +475,10 @@ print_help (void)
   printf ("    \t\%s\n", SECURITY_RE);
   printf ("    %s\n", _("Note that the package must first match the include list before its"));
   printf ("    %s\n", _("information is compared against the critical list."));
+  printf (" %s\n", "-o, --only-critical");
+  printf ("    %s\n", _("Only warn about upgrades matching the critical list.  The total number"));
+  printf ("    %s\n", _("of upgrades will be printed, but any non-critical upgrades will not cause"));
+  printf ("    %s\n\n", _("the plugin to return WARNING status."));
   printf (" %s\n", "-w, --packages-warning=INTEGER");
   printf ("    %s\n", _("Minumum number of packages available for upgrade to return WARNING status."));
   printf ("    %s\n\n", _("Default is 1 package."));
