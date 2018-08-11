@@ -100,6 +100,7 @@ char *user_agent;
 int server_url_length;
 int server_expect_yn = 0;
 char server_expect[MAX_INPUT_BUFFER] = HTTP_EXPECT;
+char header_expect_first[MAX_INPUT_BUFFER] = "";
 char header_expect[MAX_INPUT_BUFFER] = "";
 char string_expect[MAX_INPUT_BUFFER] = "";
 char output_header_search[30] = "";
@@ -224,6 +225,7 @@ process_arguments (int argc, char **argv)
         {"port", required_argument, 0, 'p'},
         {"authorization", required_argument, 0, 'a'},
         {"proxy-authorization", required_argument, 0, 'b'},
+        {"header-string-first", required_argument, 0, 'D'},
         {"header-string", required_argument, 0, 'd'},
         {"string", required_argument, 0, 's'},
         {"expect", required_argument, 0, 'e'},
@@ -266,7 +268,7 @@ process_arguments (int argc, char **argv)
     }
 
     while (1) {
-        c = getopt_long (argc, argv, "Vvh46t:c:w:A:k:H:P:j:T:I:a:b:d:e:p:s:R:r:u:f:C:J:K:nlLS::m:M:NE", longopts, &option);
+        c = getopt_long (argc, argv, "Vvh46t:c:w:A:k:H:P:j:T:I:a:b:D:d:e:p:s:R:r:u:f:C:J:K:nlLS::m:M:NE", longopts, &option);
         if (c == -1 || c == EOF)
             break;
 
@@ -442,6 +444,10 @@ enable_ssl:
             if (http_method)
                 free(http_method);
             http_method = strdup (optarg);
+            break;
+        case 'D': /* string or substring */
+            strncpy (header_expect_first, optarg, MAX_INPUT_BUFFER - 1);
+            header_expect_first[MAX_INPUT_BUFFER - 1] = 0;
             break;
         case 'd': /* string or substring */
             strncpy (header_expect, optarg, MAX_INPUT_BUFFER - 1);
@@ -1252,6 +1258,17 @@ check_http (void)
         printf ("**** HEADER ****\n%s\n**** CONTENT ****\n%s\n", header,
                 (no_body ? "  [[ skipped ]]" : page));
 
+    if (strlen (header_expect_first)) {
+        if (!strstr (header, header_expect_first)) {
+            strncpy(&output_header_search[0],header_expect_first,sizeof(output_header_search));
+            if(output_header_search[sizeof(output_header_search)-1]!='\0') {
+                bcopy("...",&output_header_search[sizeof(output_header_search)-4],4);
+            }
+            die (STATE_CRITICAL, _("HTTP CRITICAL: %sheader '%s' not found on '%s://%s:%d%s'\n"), msg, output_header_search, use_ssl ? "https" : "http", host_name ? host_name : server_address, server_port, server_url);
+        }
+        header_expect_first[0]='\0';
+    }
+
     xasprintf(&msg, "");
 
     /* make sure the status line matches the response we are looking for */
@@ -1740,8 +1757,10 @@ print_help (void)
     printf ("    %s", _("the first (status) line of the server response (default: "));
     printf ("%s)\n", HTTP_EXPECT);
     printf ("    %s\n", _("If specified skips all other status line logic (ex: 3xx, 4xx, 5xx processing)"));
+    printf (" %s\n", "-D, --header-string-first=STRING");
+    printf ("    %s\n", _("String to expect in the very first response headers, so before redirections"));
     printf (" %s\n", "-d, --header-string=STRING");
-    printf ("    %s\n", _("String to expect in the response headers"));
+    printf ("    %s\n", _("String to expect in the very last response headers, so after redirections"));
     printf (" %s\n", "-s, --string=STRING");
     printf ("    %s\n", _("String to expect in the content"));
     printf (" %s\n", "-u, --uri=PATH");
@@ -1858,7 +1877,7 @@ print_usage (void)
     printf ("       [-J <client certificate file>] [-K <private key>]\n");
     printf ("       [-w <warn time>] [-c <critical time>] [-t <timeout>] [-L] [-E] [-U] [-a auth]\n");
     printf ("       [-b proxy_auth] [-f <ok|warning|critcal|follow|sticky|stickyport>]\n");
-    printf ("       [-e <expect>] [-d string] [-s string] [-l] [-r <regex> | -R <case-insensitive regex>]\n");
+    printf ("       [-e <expect>] [-D string] [-d string] [-s string] [-l] [-r <regex> | -R <case-insensitive regex>]\n");
     printf ("       [-P string] [-m <min_pg_size>:<max_pg_size>] [-4|-6] [-N] [-M <age>]\n");
 
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L
