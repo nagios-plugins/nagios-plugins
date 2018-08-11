@@ -6,6 +6,7 @@ This file documents the major additions and syntax changes between releases.
 	Add plugin remove_perfdata to remove perfdata from specified plugin's output
 	Added warning_string/critical_string to struct thresholds for storing originally parsed strings
 	check_http: New parameter `--verify-host` will check if -H hostname matches the SSL certificate
+	check_http: New parameter `-D` will check headers in the very first response, before redirections
 	check_ping: plugin output will now include hostname and IP address
 	check_disk_smb: Add configfile feature
 	check_apt: Add --only-critical switch
