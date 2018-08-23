@@ -212,13 +212,13 @@ main (int argc, char **argv)
 				result = max_state (result, STATE_WARNING);
 			}
 			xasprintf (&data, "%s",
-			          perfdata ("voltage", (long)(1000*ups_utility_voltage), "mV",
-			                    check_warn, (long)(1000*warning_value),
-			                    check_crit, (long)(1000*critical_value),
+			          fperfdata ("voltage", ups_utility_voltage, "",
+			                    check_warn, warning_value,
+			                    check_crit, critical_value,
 			                    TRUE, 0, FALSE, 0));
 		} else {
 			xasprintf (&data, "%s",
-			          perfdata ("voltage", (long)(1000*ups_utility_voltage), "mV",
+			          fperfdata ("voltage", ups_utility_voltage, "",
 			                    FALSE, 0, FALSE, 0, TRUE, 0, FALSE, 0));
 		}
 	}
@@ -241,13 +241,13 @@ main (int argc, char **argv)
 				result = max_state (result, STATE_WARNING);
 			}
 			xasprintf (&data, "%s %s", data,
-			          perfdata ("battery", (long)ups_battery_percent, "%",
-			                    check_warn, (long)(1000*warning_value),
-			                    check_crit, (long)(1000*critical_value),
+			          fperfdata ("battery", ups_battery_percent, "%",
+			                    check_warn, warning_value,
+			                    check_crit, critical_value,
 			                    TRUE, 0, TRUE, 100));
 		} else {
 			xasprintf (&data, "%s %s", data,
-			          perfdata ("battery", (long)ups_battery_percent, "%",
+			          fperfdata ("battery", ups_battery_percent, "%",
 			                    FALSE, 0, FALSE, 0, TRUE, 0, TRUE, 100));
 		}
 	}
@@ -270,13 +270,13 @@ main (int argc, char **argv)
 				result = max_state (result, STATE_WARNING);
 			}
 			xasprintf (&data, "%s %s", data,
-			          perfdata ("load", (long)ups_load_percent, "%",
-			                    check_warn, (long)(1000*warning_value),
-			                    check_crit, (long)(1000*critical_value),
+			          fperfdata ("load", ups_load_percent, "%",
+			                    check_warn, warning_value,
+			                    check_crit, critical_value,
 			                    TRUE, 0, TRUE, 100));
 		} else {
 			xasprintf (&data, "%s %s", data,
-			          perfdata ("load", (long)ups_load_percent, "%",
+			          fperfdata ("load", ups_load_percent, "%",
 			                    FALSE, 0, FALSE, 0, TRUE, 0, TRUE, 100));
 		}
 	}
@@ -307,13 +307,13 @@ main (int argc, char **argv)
 				result = max_state (result, STATE_WARNING);
 			}
 			xasprintf (&data, "%s %s", data,
-			          perfdata ("temp", (long)ups_temperature, tunits,
-			                    check_warn, (long)(1000*warning_value),
-			                    check_crit, (long)(1000*critical_value),
+			          fperfdata ("temp", ups_temperature, "",
+			                    check_warn, warning_value,
+			                    check_crit, critical_value,
 			                    TRUE, 0, FALSE, 0));
 		} else {
 			xasprintf (&data, "%s %s", data,
-			          perfdata ("temp", (long)ups_temperature, tunits,
+			          fperfdata ("temp", ups_temperature, "",
 			                    FALSE, 0, FALSE, 0, TRUE, 0, FALSE, 0));
 		}
 	}
