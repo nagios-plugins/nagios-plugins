@@ -581,6 +581,18 @@ process_arguments (int argc, char **argv)
       } else if (! strcmp (optarg, "TB")) {
         mult = (uintmax_t)1024 * 1024 * 1024 * 1024;
         units = strdup ("TB");
+      } else if (! strcmp (optarg, "KiB")) {
+        mult = (uintmax_t)1000;
+        units = strdup ("KiB");
+      } else if (! strcmp (optarg, "MiB")) {
+        mult = (uintmax_t)1000 * 1000;
+        units = strdup ("MiB");
+      } else if (! strcmp (optarg, "GiB")) {
+        mult = (uintmax_t)1000 * 1000 * 1000;
+        units = strdup ("GiB");
+      } else if (! strcmp (optarg, "TiB")) {
+        mult = (uintmax_t)1000 * 1000 * 1000 * 1000;
+        units = strdup ("TiB");
       } else {
         die (STATE_UNKNOWN, _("unit type %s not known\n"), optarg);
       }
@@ -951,7 +963,7 @@ print_help (void)
   printf ("    %s\n", _("Regular expression to ignore selected path or partition (may be repeated)"));
   printf (UT_PLUG_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
   printf (" %s\n", "-u, --units=STRING");
-  printf ("    %s\n", _("Choose bytes, kB, MB, GB, TB (default: MB)"));
+  printf ("    %s\n", _("Choose bytes, kB, MB, GB, TB, KiB, MiB, GiB, TiB (default: MB)"));
   printf (UT_VERBOSE);
   printf (" %s\n", "-X, --exclude-type=TYPE");
   printf ("    %s\n", _("Ignore all filesystems of indicated type (may be repeated)"));
