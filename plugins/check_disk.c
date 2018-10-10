@@ -576,7 +576,7 @@ process_arguments (int argc, char **argv)
         mult = (uintmax_t)1000 * 1000;
         units = strdup ("MB");
       } else if (! strcmp (optarg, "GB")) {
-        mult = (uintmax_t)1000 * 1000 * 100;
+        mult = (uintmax_t)1000 * 1000 * 1000;
         units = strdup ("GB");
       } else if (! strcmp (optarg, "TB")) {
         mult = (uintmax_t)1000 * 1000 * 1000 * 1000;
