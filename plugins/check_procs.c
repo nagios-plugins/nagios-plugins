@@ -203,6 +203,8 @@ main (int argc, char **argv)
 			exit(STATE_WARNING);
 		}
 	} else {
+	    if (verbose >= 2)
+		    printf (_("INPUT FILE: %s\n"), input_filename);
 		result = cmd_file_read( input_filename, &chld_out, 0);
 	}
 
