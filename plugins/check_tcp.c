@@ -254,13 +254,13 @@ main (int argc, char **argv)
 	}
 #endif /* HAVE_SSL */
 
-	if (server_send != NULL &&  strlen(server_send) > my_send(server_send, strlen(server_send))) {		/* Something to send? and validate return*/
-		die(STATE_UNKNOWN, "%s - %s", _("No data sent to host"), strerror(errno));
-	}
-
 	if (delay > 0) {
 		tv.tv_sec += delay;
 		sleep (delay);
+	}
+
+	if (server_send != NULL &&  strlen(server_send) > my_send(server_send, strlen(server_send))) {		/* Something to send? and validate return*/
+		die(STATE_UNKNOWN, "%s - %s", _("No data sent to host"), strerror(errno));
 	}
 
 	if(flags & FLAG_VERBOSE) {
