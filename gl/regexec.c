@@ -1,5 +1,5 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002-2013 Free Software Foundation, Inc.
+   Copyright (C) 2002-2015 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
@@ -2269,7 +2269,7 @@ sift_states_iter_mb (const re_match_context_t *mctx, re_sift_context_t *sctx,
 			    dfa->nexts[node_idx]))
     /* The node can't accept the "multi byte", or the
        destination was already thrown away, then the node
-       couldn't accept the current input "multi byte".   */
+       could't accept the current input "multi byte".   */
     naccepted = 0;
   /* Otherwise, it is sure that the node could accept
      'naccepted' bytes input.  */

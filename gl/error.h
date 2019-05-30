@@ -1,5 +1,5 @@
 /* Declaration for error-reporting function
-   Copyright (C) 1995-1997, 2003, 2006, 2008-2013 Free Software Foundation,
+   Copyright (C) 1995-1997, 2003, 2006, 2008-2015 Free Software Foundation,
    Inc.
    This file is part of the GNU C Library.
 
@@ -16,8 +16,8 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef NAGIOS_GL_ERROR_H_INCLUDED
-#define NAGIOS_GL_ERROR_H_INCLUDED
+#ifndef _ERROR_H
+#define _ERROR_H 1
 
 /* The __attribute__ feature is available in gcc versions 2.5 and later.
    The __-protected variants of the attributes 'format' and 'printf' are

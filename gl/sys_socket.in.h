@@ -1,6 +1,6 @@
 /* Provide a sys/socket header file for systems lacking it (read: MinGW)
    and for systems where it is incomplete.
-   Copyright (C) 2005-2013 Free Software Foundation, Inc.
+   Copyright (C) 2005-2015 Free Software Foundation, Inc.
    Written by Simon Josefsson.
 
    This program is free software; you can redistribute it and/or modify
@@ -63,6 +63,9 @@
 #ifndef _@GUARD_PREFIX@_SYS_SOCKET_H
 #define _@GUARD_PREFIX@_SYS_SOCKET_H
 
+#ifndef _GL_INLINE_HEADER_BEGIN
+ #error "Please include config.h first."
+#endif
 _GL_INLINE_HEADER_BEGIN
 #ifndef _GL_SYS_SOCKET_INLINE
 # define _GL_SYS_SOCKET_INLINE _GL_INLINE
