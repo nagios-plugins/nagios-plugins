@@ -1,5 +1,5 @@
 # DO NOT EDIT! GENERATED AUTOMATICALLY!
-# Copyright (C) 2002-2013 Free Software Foundation, Inc.
+# Copyright (C) 2002-2015 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,6 +39,7 @@ AC_DEFUN([gl_EARLY],
   m4_pattern_allow([^gl_LTLIBOBJS$])dnl a variable
   AC_REQUIRE([gl_PROG_AR_RANLIB])
   AC_REQUIRE([AM_PROG_CC_C_O])
+  # Code from module absolute-header:
   # Code from module alloca-opt:
   # Code from module arpa_inet:
   # Code from module base64:
@@ -68,6 +69,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module getopt-posix:
   # Code from module gettext:
   # Code from module gettext-h:
+  # Code from module gettimeofday:
   # Code from module havelib:
   # Code from module hostent:
   # Code from module idpriv-droptemp:
@@ -81,7 +83,6 @@ AC_DEFUN([gl_EARLY],
   # Code from module locale:
   # Code from module localeconv:
   # Code from module lock:
-  # Code from module malloc-gnu:
   # Code from module malloc-posix:
   # Code from module malloca:
   # Code from module math:
@@ -133,6 +134,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module strsep:
   # Code from module strstr-simple:
   # Code from module sys_socket:
+  # Code from module sys_time:
   # Code from module sys_types:
   # Code from module sys_uio:
   # Code from module threadlib:
@@ -260,6 +262,12 @@ AC_DEFUN([gl_INIT],
   AM_GNU_GETTEXT_VERSION([0.18.1])
   AC_SUBST([LIBINTL])
   AC_SUBST([LTLIBINTL])
+  gl_FUNC_GETTIMEOFDAY
+  if test $HAVE_GETTIMEOFDAY = 0 || test $REPLACE_GETTIMEOFDAY = 1; then
+    AC_LIBOBJ([gettimeofday])
+    gl_PREREQ_GETTIMEOFDAY
+  fi
+  gl_SYS_TIME_MODULE_INDICATOR([gettimeofday])
   gl_HOSTENT
   gl_IDPRIV
   gl_FUNC_INET_NTOP
@@ -282,11 +290,6 @@ AC_DEFUN([gl_INIT],
   gl_LOCALE_MODULE_INDICATOR([localeconv])
   gl_LOCK
   gl_MODULE_INDICATOR([lock])
-  gl_FUNC_MALLOC_GNU
-  if test $REPLACE_MALLOC = 1; then
-    AC_LIBOBJ([malloc])
-  fi
-  gl_MODULE_INDICATOR([malloc-gnu])
   gl_FUNC_MALLOC_POSIX
   if test $REPLACE_MALLOC = 1; then
     AC_LIBOBJ([malloc])
@@ -373,8 +376,8 @@ AC_DEFUN([gl_INIT],
   gl_FUNC_SNPRINTF
   gl_STDIO_MODULE_INDICATOR([snprintf])
   gl_MODULE_INDICATOR([snprintf])
-  gl_SOCKETLIB
-  gl_SOCKETS
+  AC_REQUIRE([gl_SOCKETLIB])
+  AC_REQUIRE([gl_SOCKETS])
   gl_TYPE_SOCKLEN_T
   gt_TYPE_SSIZE_T
   gl_STDALIGN_H
@@ -439,7 +442,9 @@ AC_DEFUN([gl_INIT],
     AC_LIBOBJ([strstr])
   fi
   gl_STRING_MODULE_INDICATOR([strstr])
-  gl_HEADER_SYS_SOCKET
+  AC_REQUIRE([gl_HEADER_SYS_SOCKET])
+  AC_PROG_MKDIR_P
+  gl_HEADER_SYS_TIME_H
   AC_PROG_MKDIR_P
   gl_SYS_TYPES_H
   AC_PROG_MKDIR_P
@@ -670,6 +675,8 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/getopt1.c
   lib/getopt_int.h
   lib/gettext.h
+  lib/gettimeofday.c
+  lib/gl_openssl.h
   lib/glthread/lock.c
   lib/glthread/lock.h
   lib/glthread/threadlib.c
@@ -751,6 +758,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/strstr.c
   lib/sys_socket.c
   lib/sys_socket.in.h
+  lib/sys_time.in.h
   lib/sys_types.in.h
   lib/sys_uio.in.h
   lib/time.in.h
@@ -778,6 +786,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/xstrndup.c
   lib/xstrndup.h
   m4/00gnulib.m4
+  m4/absolute-header.m4
   m4/alloca.m4
   m4/arpa_inet_h.m4
   m4/base64.m4
@@ -803,6 +812,8 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/getloadavg.m4
   m4/getopt.m4
   m4/gettext.m4
+  m4/gettimeofday.m4
+  m4/gl-openssl.m4
   m4/glibc2.m4
   m4/glibc21.m4
   m4/gnulib-common.m4
@@ -889,6 +900,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/strsep.m4
   m4/strstr.m4
   m4/sys_socket_h.m4
+  m4/sys_time_h.m4
   m4/sys_types_h.m4
   m4/sys_uio_h.m4
   m4/threadlib.m4
