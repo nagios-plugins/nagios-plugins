@@ -576,6 +576,8 @@ print_usage (void)
 			);
 }
 
+#ifdef HAVE_SSL
+
 int ldap_check_cert (LDAP *ld)
 {
 	SSL *ssl;
@@ -588,3 +590,10 @@ int ldap_check_cert (LDAP *ld)
 	}
 	return np_net_ssl_check_cert_real(ssl, days_till_exp_warn, days_till_exp_crit);
 }
+
+#else
+int ldap_check_cert (LDAP *ld) {
+    return TRUE;
+}
+
+#endif
