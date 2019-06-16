@@ -30,12 +30,12 @@
 #include "common.h"
 #include "netutils.h"
 
+int check_hostname = 0;
 #ifdef HAVE_SSL
 static SSL_CTX *c=NULL;
 static SSL *s=NULL;
 static int initialized=0;
 
-int check_hostname = 0;
 
 int np_net_ssl_init(int sd) {
 	return np_net_ssl_init_with_hostname(sd, NULL);
