@@ -327,7 +327,7 @@ main (int argc, char **argv)
 
       if (verbose_machine_output) {
         printf ("For %s, used_pct=%g free_pct=%g used_units=%g free_units=%g total_units=%g used_inodes_pct=%g free_inodes_pct=%g fsp.fsu_blocksize=%llu mult=%llu\n",
-          me->me_mountdir, path->dused_pct, path->dfree_pct, path->dused_units, path->dfree_units, path->dtotal_units, path->dused_inodes_percent, path->dfree_inodes_percent, fsp.fsu_blocksize, mult);
+          me->me_mountdir, path->dused_pct, path->dfree_pct, (double)path->dused_units, (double)path->dfree_units, (double)path->dtotal_units, path->dused_inodes_percent, path->dfree_inodes_percent, fsp.fsu_blocksize, mult);
       }
 
       /* Threshold comparisons */
@@ -371,13 +371,13 @@ main (int argc, char **argv)
         warning_high_tide = path->dtotal_units - path->freespace_units->warning->end;
       }
       if (path->freespace_percent->warning != NULL) {
-        warning_high_tide = labs( min( (double) warning_high_tide, (double) (1.0 - path->freespace_percent->warning->end/100)*path->dtotal_units ));
+        warning_high_tide = fabs( min( (double) warning_high_tide, (double) (1.0 - path->freespace_percent->warning->end/100)*path->dtotal_units ));
       }
       if (path->freespace_units->critical != NULL) {
         critical_high_tide = path->dtotal_units - path->freespace_units->critical->end;
       }
       if (path->freespace_percent->critical != NULL) {
-        critical_high_tide = labs( min( (double) critical_high_tide, (double) (1.0 - path->freespace_percent->critical->end/100)*path->dtotal_units ));
+        critical_high_tide = fabs( min( (double) critical_high_tide, (double) (1.0 - path->freespace_percent->critical->end/100)*path->dtotal_units ));
       }
 
       if (human_output) {
@@ -419,7 +419,7 @@ main (int argc, char **argv)
           xasprintf (&output, "%s %s %.0f %s (%.2f%%",
                      output,
                      (!strcmp(me->me_mountdir, "none") || display_mntp) ? me->me_devname : me->me_mountdir,
-                     path->dfree_units,
+                     (double)path->dfree_units,
                      units,
                      path->dfree_pct);
           /* Whether or not to put all disks on new line */
@@ -444,7 +444,7 @@ main (int argc, char **argv)
       /* TODO: Need to do a similar debug line
       xasprintf (&details, _("%s\n\
 %.0f of %.0f %s (%.0f%% inode=%.0f%%) free on %s (type %s mounted on %s) warn:%lu crit:%lu warn%%:%.0f%% crit%%:%.0f%%"),
-                details, dfree_units, dtotal_units, units, dfree_pct, inode_space_pct,
+                details, (double)dfree_units, (double)dtotal_units, units, dfree_pct, inode_space_pct,
                 me->me_devname, me->me_type, me->me_mountdir,
                 (unsigned long)w_df, (unsigned long)c_df, w_dfp, c_dfp);
       */
@@ -1088,8 +1088,8 @@ get_stats (struct parameter_list *p, struct fs_usage *fsp) {
         get_path_stats(p_list, &tmpfsp); 
         if (verbose >= 3)
           printf("Group %s: adding %llu blocks sized %llu, (%s) used_units=%g free_units=%g total_units=%g fsu_blocksize=%llu mult=%llu\n",
-                 p_list->group, tmpfsp.fsu_bavail, tmpfsp.fsu_blocksize, p_list->best_match->me_mountdir, p_list->dused_units, p_list->dfree_units,
-                 p_list->dtotal_units, mult);
+                 p_list->group, tmpfsp.fsu_bavail, tmpfsp.fsu_blocksize, p_list->best_match->me_mountdir, (double)p_list->dused_units, (double)p_list->dfree_units,
+                 (double)p_list->dtotal_units, mult);
 
         /* prevent counting the first FS of a group twice since its parameter_list entry 
          * is used to carry the information of all file systems of the entire group */
@@ -1109,8 +1109,8 @@ get_stats (struct parameter_list *p, struct fs_usage *fsp) {
       }
       if (verbose >= 3) 
         printf("Group %s now has: used_units=%g free_units=%g total_units=%g fsu_blocksize=%llu mult=%llu\n",
-               p->group, tmpfsp.fsu_bavail, tmpfsp.fsu_blocksize, p->best_match->me_mountdir, p->dused_units,
-               p->dfree_units, p->dtotal_units, mult);
+               p->group, tmpfsp.fsu_bavail, tmpfsp.fsu_blocksize, p->best_match->me_mountdir, (double)p->dused_units,
+               (double)p->dfree_units, (double)p->dtotal_units, mult);
     }
     /* modify devname and mountdir for output */
     p->best_match->me_mountdir = p->best_match->me_devname = p->group;
@@ -1164,7 +1164,7 @@ print_human_disk_entries(human_disk_entry_t* human_disk_entries, unsigned num_hu
     memset(&sep_buf[0], '-', separator_length);
     sep_buf[separator_length] = 0;
 
-    human_disk_entry_t** entries_table = malloc(sizeof(human_disk_entry_t*) * num_human_disk_entries);
+    const human_disk_entry_t** entries_table = malloc(sizeof(human_disk_entry_t*) * num_human_disk_entries);
 
     int i = 0;
     int num_warn = 0, num_critical = 0;
