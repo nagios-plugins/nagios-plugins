@@ -200,11 +200,11 @@ main (int argc, char **argv)
 {
   int result = STATE_UNKNOWN;
   int disk_result = STATE_UNKNOWN;
-  char *output;
+  char *output = NULL;
   char *details;
   char *perf;
   char *preamble;
-  char *flag_header;
+  char *flag_header = NULL;
   double inode_space_pct;
   double warning_high_tide;
   double critical_high_tide;
@@ -436,10 +436,10 @@ main (int argc, char **argv)
                   xasprintf(&output, "%s inode=%.0f%%)%s;", output, path->dfree_inodes_percent, ((disk_result && verbose) ? "]" : ""));
               }
           }
+
+          free(flag_header);
       }
 
-
-      free(flag_header);
 
       /* TODO: Need to do a similar debug line
       xasprintf (&details, _("%s\n\
