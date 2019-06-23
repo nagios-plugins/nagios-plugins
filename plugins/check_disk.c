@@ -119,8 +119,10 @@ typedef struct human_disk_entry {
     double free_pct;
     uintmax_t avail_bytes;
     uintmax_t total_bytes;
-    //char fs[MAX_HUMAN_COL_WIDTH];
-    //char mount_point[MAX_HUMAN_COL_WIDTH];
+    char free_pct_str[10];
+    char avail_bytes_str[10];
+    char total_bytes_str[10];
+    char disk_result_str[10];
     char *type;
     char *mount_dir;
 
@@ -135,7 +137,8 @@ typedef struct  {
     unsigned int type;
     unsigned int mount_dir;
 } human_column_widths_t;
-human_column_widths_t human_column_widths = { 8, 6, 6, 6, 0, 0 };
+#define HUMAN_INTER_COLUMN_WIDTH 3
+human_column_widths_t human_column_widths = { 0, 0, 0, 0, 0, 0 };
 
 void print_human_disk_entries(human_disk_entry_t* human_disk_entries, unsigned num_human_disk_entries);
 int human_disk_entry_comparer(const void*, const void*);
@@ -393,8 +396,24 @@ main (int argc, char **argv)
 
           num_human_disk_entries++;
 
-          if (human_column_widths.type < strlen(me->me_type))          human_column_widths.type = strlen(me->me_type);
-          if (human_column_widths.mount_dir < strlen(me->me_mountdir)) human_column_widths.mount_dir = strlen(me->me_mountdir);
+          snprintf(&human_disk_entry->free_pct_str[0], 9, "%2.1f%%", human_disk_entry->free_pct);
+
+          int human_opts = human_autoscale | human_suppress_point_zero | human_SI | human_B;
+          char human_buf[MAX_HUMAN_COL_WIDTH];
+          const char *free_pct_str = &human_disk_entry->free_pct_str[0];
+          const char *disk_result_str = state_text(human_disk_entry->disk_result);
+          const char *avail_bytes_str = human_readable(human_disk_entry->avail_bytes, &human_buf[0], human_opts, 1, 1);
+          strncpy(&human_disk_entry->avail_bytes_str[0], avail_bytes_str, sizeof(human_disk_entry->avail_bytes_str));
+          const char *total_bytes_str = human_readable(human_disk_entry->total_bytes, &human_buf[0], human_opts, 1, 1);
+          strncpy(&human_disk_entry->total_bytes_str[0], total_bytes_str, sizeof(human_disk_entry->total_bytes_str));
+
+          strncpy(&human_disk_entry->disk_result_str[0], disk_result_str, sizeof(human_disk_entry->disk_result_str));
+          if (human_column_widths.free_pct < strlen(free_pct_str))       human_column_widths.free_pct = strlen(free_pct_str);
+          if (human_column_widths.avail_bytes < strlen(avail_bytes_str)) human_column_widths.avail_bytes = strlen(avail_bytes_str);
+          if (human_column_widths.total_bytes < strlen(total_bytes_str)) human_column_widths.total_bytes = strlen(total_bytes_str);
+          if (human_column_widths.disk_result < strlen(disk_result_str)) human_column_widths.disk_result = strlen(disk_result_str);
+          if (human_column_widths.type < strlen(me->me_type))            human_column_widths.type = strlen(me->me_type);
+          if (human_column_widths.mount_dir < strlen(me->me_mountdir))   human_column_widths.mount_dir = strlen(me->me_mountdir);
       } else {
           /* Nb: *_high_tide are unset when == ULONG_MAX */
           xasprintf (&perf, "%s %s", perf,
@@ -1149,8 +1168,7 @@ get_path_stats (struct parameter_list *p, struct fs_usage *fsp) {
 
 void
 print_human_disk_entries(human_disk_entry_t* human_disk_entries, unsigned num_human_disk_entries) {
-    char avail_bytes_buf[10], total_bytes_buf[10], free_pct_buf[10];
-    int human_opts = human_autoscale | human_suppress_point_zero | human_SI | human_B;
+    char avail_bytes_buf[10], total_bytes_buf[10];
     const human_disk_entry_t* human_disk_entry = human_disk_entries;
     unsigned int separator_length =
             human_column_widths.disk_result +
@@ -1158,8 +1176,8 @@ print_human_disk_entries(human_disk_entry_t* human_disk_entries, unsigned num_hu
             human_column_widths.avail_bytes +
             human_column_widths.total_bytes +
             human_column_widths.type +
-            human_column_widths.mount_dir
-            + 1; // +1 for the space in the printf below
+            strlen("Mount Point") +
+            HUMAN_INTER_COLUMN_WIDTH * 3 + 6;
     char sep_buf[separator_length];
     memset(&sep_buf[0], '-', separator_length);
     sep_buf[separator_length] = 0;
@@ -1183,12 +1201,12 @@ print_human_disk_entries(human_disk_entry_t* human_disk_entries, unsigned num_hu
         printf("Warning: less than %2.1f%% is free on one or more file systems\n\n", pct->end);
     }
 
-    printf("%-*s%*s%*s%*s %-*s%-*s\n",
+    printf("%-*s%*s%*s%*s   %-*s   %-*s\n",
            human_column_widths.disk_result, "Status",
-           human_column_widths.free_pct, "Free",
-           human_column_widths.avail_bytes,"Avail",
-           human_column_widths.total_bytes,"Total",
-           human_column_widths.type, "Type",
+           human_column_widths.free_pct    + HUMAN_INTER_COLUMN_WIDTH, "Free",
+           human_column_widths.avail_bytes + HUMAN_INTER_COLUMN_WIDTH,"Avail",
+           human_column_widths.total_bytes + HUMAN_INTER_COLUMN_WIDTH,"Total",
+           human_column_widths.type     , "Type",
            human_column_widths.mount_dir, "Mount Point");
     printf("%s\n", &sep_buf[0]);
 
@@ -1196,15 +1214,12 @@ print_human_disk_entries(human_disk_entry_t* human_disk_entries, unsigned num_hu
 
     for (i = 0; i < num_human_disk_entries; i++) {
         human_disk_entry = entries_table[i];
-        snprintf(&free_pct_buf[0], 9, "%2.1f%%", human_disk_entry->free_pct);
-        printf("%-*s%*s%*s%*s %-*s%-*s\n",
-               human_column_widths.disk_result, state_text(human_disk_entry->disk_result),
-               human_column_widths.free_pct, &free_pct_buf[0],
-               human_column_widths.avail_bytes,
-               human_readable (human_disk_entry->avail_bytes, avail_bytes_buf, human_opts, 1, 1),
-               human_column_widths.total_bytes,
-               human_readable (human_disk_entry->total_bytes, total_bytes_buf, human_opts, 1, 1),
-               human_column_widths.type, human_disk_entry->type,
+        printf("%-*s%*s%*s%*s   %-*s   %-*s\n",
+               human_column_widths.disk_result, &human_disk_entry->disk_result_str[0],
+               human_column_widths.free_pct    + HUMAN_INTER_COLUMN_WIDTH, &human_disk_entry->free_pct_str[0],
+               human_column_widths.avail_bytes + HUMAN_INTER_COLUMN_WIDTH, &human_disk_entry->avail_bytes_str[0],
+               human_column_widths.total_bytes + HUMAN_INTER_COLUMN_WIDTH, &human_disk_entry->total_bytes_str[0],
+               human_column_widths.type     , human_disk_entry->type,
                human_column_widths.mount_dir, human_disk_entry->mount_dir);
     };
 
