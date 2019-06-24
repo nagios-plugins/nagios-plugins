@@ -138,6 +138,14 @@ typedef struct  {
     unsigned int mount_dir;
 } human_column_widths_t;
 #define HUMAN_INTER_COLUMN_WIDTH 3
+#define HUMAN_HEADER_COUNT 6
+const char* human_column_header_names[HUMAN_HEADER_COUNT] = {
+        "Status",
+        "Free",
+        "Avail",
+        "Total",
+        "Type",
+        "Mount Point"};
 human_column_widths_t human_column_widths = { 0, 0, 0, 0, 0, 0 };
 
 void print_human_disk_entries(human_disk_entry_t* human_disk_entries, unsigned num_human_disk_entries);
@@ -268,6 +276,14 @@ main (int argc, char **argv)
     }
 
     temp_list = temp_list->name_next;
+  }
+
+  /* Initialize the header lengths to be the header text, so each column is at minimum as wide as its header */
+  if (human_output) {
+      int i;
+      for (i = 0; i < HUMAN_HEADER_COUNT; i++) {
+          ((unsigned int *)&human_column_widths.disk_result)[i] = strlen(human_column_header_names[i]);
+      }
   }
 
   /* Process for every path in list */
@@ -1201,20 +1217,22 @@ print_human_disk_entries(human_disk_entry_t* human_disk_entries, unsigned num_hu
         printf("Warning: less than %2.1f%% is free on one or more file systems\n\n", pct->end);
     }
 
-    printf("%-*s%*s%*s%*s   %-*s   %-*s\n",
-           human_column_widths.disk_result, "Status",
-           human_column_widths.free_pct    + HUMAN_INTER_COLUMN_WIDTH, "Free",
-           human_column_widths.avail_bytes + HUMAN_INTER_COLUMN_WIDTH,"Avail",
-           human_column_widths.total_bytes + HUMAN_INTER_COLUMN_WIDTH,"Total",
-           human_column_widths.type     , "Type",
-           human_column_widths.mount_dir, "Mount Point");
+    const char *row_fmt = "%-*s%*s%*s%*s   %*s   %-*s\n";
+
+    printf(row_fmt,
+           human_column_widths.disk_result, human_column_header_names[0],
+           human_column_widths.free_pct    + HUMAN_INTER_COLUMN_WIDTH, human_column_header_names[1],
+           human_column_widths.avail_bytes + HUMAN_INTER_COLUMN_WIDTH, human_column_header_names[2],
+           human_column_widths.total_bytes + HUMAN_INTER_COLUMN_WIDTH, human_column_header_names[3],
+           human_column_widths.type     , human_column_header_names[4],
+           human_column_widths.mount_dir, human_column_header_names[5]);
     printf("%s\n", &sep_buf[0]);
 
     qsort(entries_table, num_human_disk_entries, sizeof(human_disk_entry_t*), human_disk_entry_comparer);
 
     for (i = 0; i < num_human_disk_entries; i++) {
         human_disk_entry = entries_table[i];
-        printf("%-*s%*s%*s%*s   %-*s   %-*s\n",
+        printf(row_fmt,
                human_column_widths.disk_result, &human_disk_entry->disk_result_str[0],
                human_column_widths.free_pct    + HUMAN_INTER_COLUMN_WIDTH, &human_disk_entry->free_pct_str[0],
                human_column_widths.avail_bytes + HUMAN_INTER_COLUMN_WIDTH, &human_disk_entry->avail_bytes_str[0],
