@@ -1269,7 +1269,7 @@ check_http (void)
     }
 
     /* Bypass normal status line check if server_expect was set by user and not default */
-    if ( server_expect_yn  )  {
+    if ( server_expect_yn && !bad_response )  {
 
         xasprintf (&msg,
                    _("Status line output matched \"%s\" - "), server_expect);
