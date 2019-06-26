@@ -1192,7 +1192,7 @@ print_human_disk_entries(human_disk_entry_t* human_disk_entries, unsigned num_hu
             human_column_widths.avail_bytes +
             human_column_widths.total_bytes +
             human_column_widths.type +
-            strlen("Mount Point") +
+            human_column_widths.mount_dir +
             HUMAN_INTER_COLUMN_WIDTH * 3 + 6;
     char sep_buf[separator_length];
     memset(&sep_buf[0], '-', separator_length);
