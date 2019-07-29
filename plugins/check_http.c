@@ -204,7 +204,7 @@ process_arguments (int argc, char **argv)
   enum {
     INVERT_REGEX = CHAR_MAX + 1,
     SNI_OPTION,
-		VERIFY_HOST
+    VERIFY_HOST
   };
 
   int option = 0;
@@ -214,7 +214,7 @@ process_arguments (int argc, char **argv)
     {"nohtml", no_argument, 0, 'n'},
     {"ssl", optional_argument, 0, 'S'},
     {"sni", no_argument, 0, SNI_OPTION},
-		{"verify-host", no_argument, 0, VERIFY_HOST},
+    {"verify-host", no_argument, 0, VERIFY_HOST},
     {"post", required_argument, 0, 'P'},
     {"method", required_argument, 0, 'j'},
     {"IP-address", required_argument, 0, 'I'},
@@ -373,9 +373,9 @@ process_arguments (int argc, char **argv)
     case SNI_OPTION:
       use_sni = TRUE;
       break;
-		case VERIFY_HOST:
-			check_hostname = 1;
-			break;
+    case VERIFY_HOST:
+      check_hostname = 1;
+      break;
     case 'f': /* onredirect */
       if (!strcmp (optarg, "stickyport"))
         onredirect = STATE_DEPENDENT, followsticky = STICKY_HOST|STICKY_PORT;
@@ -700,7 +700,7 @@ int chunk_header(char **buf)
   int lth = strtol(*buf, buf, 16);
 
   if (lth <= 0)
-	 return lth;
+   return lth;
 
   while (**buf != '\r' && **buf != '\n')
     ++*buf;
@@ -991,8 +991,8 @@ check_http (void)
   int page_len = 0;
   int result = STATE_OK;
   char *force_host_header = NULL;
-	int bad_response = FALSE;
-	char save_char;
+  int bad_response = FALSE;
+  char save_char;
 
   /* try to connect to the host at the given port number */
   gettimeofday (&tv_temp, NULL);
@@ -1033,12 +1033,12 @@ check_http (void)
     microsec_ssl = deltime (tv_temp);
     elapsed_time_ssl = (double)microsec_ssl / 1.0e6;
     if (check_cert == TRUE) {
-			result = np_net_ssl_check_cert(days_till_exp_warn, days_till_exp_crit);
-			if (result != STATE_OK) {
-				np_net_ssl_cleanup();
-				if (sd) close(sd);
-				return result;
-			}
+      result = np_net_ssl_check_cert(days_till_exp_warn, days_till_exp_crit);
+      if (result != STATE_OK) {
+        np_net_ssl_cleanup();
+        if (sd) close(sd);
+        return result;
+      }
     }
   }
 #endif /* HAVE_SSL */
@@ -1201,10 +1201,10 @@ check_http (void)
 
   /* find status line and null-terminate it */
   page += (size_t) strcspn (page, "\r\n");
-	save_char = *page;
-	*page = '\0';
-	status_line = strdup(pos);
-	*page = save_char;
+  save_char = *page;
+  *page = '\0';
+  status_line = strdup(pos);
+  *page = save_char;
   pos = page;
 
   strip (status_line);
@@ -1213,16 +1213,16 @@ check_http (void)
 
   /* find header info and null-terminate it */
   header = page;
-	for (;;) {
-		if (!strncmp(page, "\r\n\r\n", 4) || !strncmp(page, "\n\n", 2))
-		 break;
-		while (*page == '\r' || *page == '\n') { ++page; }
+  for (;;) {
+    if (!strncmp(page, "\r\n\r\n", 4) || !strncmp(page, "\n\n", 2))
+     break;
+    while (*page == '\r' || *page == '\n') { ++page; }
     page += (size_t) strcspn (page, "\r\n");
     pos = page;
   }
   page += (size_t) strspn (page, "\r\n");
   header[pos - header] = 0;
-	while (*header == '\r' || *header == '\n') { ++header; }
+  while (*header == '\r' || *header == '\n') { ++header; }
 
   if (chunked_transfer_encoding(header) && *page)
     page = decode_chunked_page(page, page);
@@ -1297,7 +1297,7 @@ check_http (void)
     xasprintf (&msg, _("%s%s - "), msg, status_line);
   }
 
-	free(status_line);
+  free(status_line);
 
   if (bad_response) 
     die (STATE_CRITICAL, "HTTP CRITICAL - %s", msg);
@@ -1677,7 +1677,7 @@ print_help (void)
   printf (" %s\n", "--sni");
   printf ("    %s\n", _("Enable SSL/TLS hostname extension support (SNI)"));
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L
-	printf (" %s\n", "--verify-host");
+  printf (" %s\n", "--verify-host");
   printf ("    %s\n", _("Verify SSL certificate is for the -H hostname (with --sni and -S)"));
 #endif
   printf (" %s\n", "-C, --certificate=INTEGER[,INTEGER]");
@@ -1815,10 +1815,10 @@ print_usage (void)
   printf ("       [-e <expect>] [-d string] [-s string] [-l] [-r <regex> | -R <case-insensitive regex>]\n");
   printf ("       [-P string] [-m <min_pg_size>:<max_pg_size>] [-4|-6] [-N] [-M <age>]\n");
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L
-	printf ("       [-A string] [-k string] [-S <version>] [--sni] [--verify-host]\n");
-	printf ("       [-C <warn_age>[,<crit_age>]] [-T <content-type>] [-j method]\n");
+  printf ("       [-A string] [-k string] [-S <version>] [--sni] [--verify-host]\n");
+  printf ("       [-C <warn_age>[,<crit_age>]] [-T <content-type>] [-j method]\n");
 #else
-	printf ("       [-A string] [-k string] [-S <version>] [--sni] [-C <warn_age>[,<crit_age>]]\n");
-	printf ("       [-T <content-type>] [-j method]\n");
+  printf ("       [-A string] [-k string] [-S <version>] [--sni] [-C <warn_age>[,<crit_age>]]\n");
+  printf ("       [-T <content-type>] [-j method]\n");
 #endif
 }
