@@ -30,6 +30,7 @@
 #include "common.h"
 #include "netutils.h"
 
+int check_hostname = 0;
 #ifdef HAVE_SSL
 static SSL_CTX *c=NULL;
 static SSL *s=NULL;
@@ -94,6 +95,26 @@ int np_net_ssl_init_with_hostname_version_and_cert(int sd, char *host_name, int 
 		method = TLSv1_2_client_method();
 		break;
 #endif
+	case MP_TLSv1_3: /* TLSv1.3 protocol */
+#if !defined(SSL_OP_NO_TLSv1_3)
+	printf ("%s\n", _("Your OpenSSL version hasn't been compiled with TLS 1.3."));
+	return STATE_UNKNOWN;
+#else
+	method = TLS_client_method();
+	options |= SSL_OP_NO_SSLv2;
+	options |= SSL_OP_NO_SSLv3;
+	options |= SSL_OP_NO_TLSv1;
+	options |= SSL_OP_NO_TLSv1_1;
+	options |= SSL_OP_NO_TLSv1_2;
+	break;
+#endif
+	case MP_TLSv1_3_OR_NEWER:
+#if !defined(SSL_OP_NO_TLSv1_2)
+		printf("%s\n", _("UNKNOWN - Disabling TLSv1.2 is not supported by your SSL library."));
+		return STATE_UNKNOWN;
+#else
+		options |= SSL_OP_NO_TLSv1_2;
+#endif
 	case MP_TLSv1_2_OR_NEWER:
 #if !defined(SSL_OP_NO_TLSv1_1)
 		printf("%s\n", _("UNKNOWN - Disabling TLSv1.1 is not supported by your SSL library."));
@@ -157,6 +178,16 @@ int np_net_ssl_init_with_hostname_version_and_cert(int sd, char *host_name, int 
 #endif
 		SSL_set_fd(s, sd);
 		if (SSL_connect(s) == 1) {
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+			if (check_hostname && host_name && *host_name) {
+				X509 *certificate=SSL_get_peer_certificate(s);
+				int rc = X509_check_host(certificate, host_name, 0, 0, NULL);
+				if (rc != 1) {
+					printf("%s\n", _("CRITICAL - Hostname mismatch."));
+					return STATE_CRITICAL;
+				}
+			}
+#endif
 			return OK;
 		} else {
 			printf("%s\n", _("CRITICAL - Cannot make SSL connection."));
@@ -195,6 +226,15 @@ int np_net_ssl_read(void *buf, int num) {
 
 int np_net_ssl_check_cert(int days_till_exp_warn, int days_till_exp_crit){
 #  ifdef USE_OPENSSL
+	return np_net_ssl_check_cert_real(s, days_till_exp_warn, days_till_exp_crit);
+#  else /* ifndef USE_OPENSSL */
+	printf ("%s\n", _("WARNING - Plugin does not support checking certificates."));
+	return STATE_WARNING;
+#  endif /* USE_OPENSSL */
+}
+
+int np_net_ssl_check_cert_real(SSL *ssl, int days_till_exp_warn, int days_till_exp_crit){
+#  ifdef USE_OPENSSL
 	X509 *certificate=NULL;
 	X509_NAME *subj=NULL;
 	char timestamp[50] = "";
@@ -214,7 +254,7 @@ int np_net_ssl_check_cert(int days_till_exp_warn, int days_till_exp_crit){
 	// Prefix whatever we're about to print with SSL
 	printf("SSL ");
 
-	certificate=SSL_get_peer_certificate(s);
+	certificate=SSL_get_peer_certificate(ssl);
 	if (!certificate) {
 		printf("%s\n",_("CRITICAL - Cannot retrieve server certificate."));
 		return STATE_CRITICAL;
@@ -304,7 +344,7 @@ int np_net_ssl_check_cert(int days_till_exp_warn, int days_till_exp_crit){
 		else
 			status = STATE_CRITICAL;
 	} else {
-		printf(_("OK - Certificate '%s' will expire on %s. "), cn, timestamp);
+		printf(_("OK - Certificate '%s' will expire in %u days on %s.\n"), cn, days_left, timestamp);
 		status = STATE_OK;
 	}
 	X509_free(certificate);
