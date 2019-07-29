@@ -13,6 +13,7 @@ This file documents the major additions and syntax changes between releases.
 	check_mailq: Add support for opensmtpd
 	check_mailq: Add mailq -C option for config dir or config file
 	check_disk: Add -s option to show status for each path/partition
+	check_disk: Add support for base-10 units kB, MB, GB, TB; rename base-2 units to KiB, MiB, GiB, TiB
 	check_mailq.pl: Add option for opensmtpd (brigriffin)
 	check_procs: Add FreeBSD jail support (Mathieu Arnold)
 	check_procs: Allow process to be excluded from check_procs (Marcel Klein)
