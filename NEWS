@@ -1,5 +1,6 @@
 This file documents the major additions and syntax changes between releases.
 
+
 2.3.0 xxxx-xx-xx
 	ENHANCEMENTS
 	Added directory plugins-python containing three Python plugins
@@ -43,6 +44,7 @@ This file documents the major additions and syntax changes between releases.
 	check_snmp: Fix perfdata not adhering to plugin dev guidelines
 	check_snmp: warning/critical perfdata is returned properly
 	check_dns: reverse (PTR) check is now case insensitive
+
 
 2.2.1 2017-04-19
 	FIXES

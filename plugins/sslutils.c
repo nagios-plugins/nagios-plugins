@@ -36,7 +36,6 @@ static SSL_CTX *c=NULL;
 static SSL *s=NULL;
 static int initialized=0;
 
-
 int np_net_ssl_init(int sd) {
 	return np_net_ssl_init_with_hostname(sd, NULL);
 }
