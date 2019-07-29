@@ -1257,7 +1257,7 @@ check_http (void)
 
     for (;;) {
 
-        if ((page == NULL) || !strncmp(page, "\r\n\r\n", 4) || !strncmp(page, "\n\n", 2))
+        if ((page == NULL) || !strncmp(page, "\r\n\r\n", 4) || !strncmp(page, "\n\n", 2) || *page == '\0' )
             break;
 
         while (*page == '\r' || *page == '\n') {
