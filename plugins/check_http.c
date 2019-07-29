@@ -1233,10 +1233,10 @@ check_http (void)
 
   /* find header info and null-terminate it */
   header = page;
-	while (strlen(page)) {
-		if (!strncmp(page, "\r\n\r\n", 4) || !strncmp(page, "\n\n", 2))
-		 break;
-		while (*page == '\r' || *page == '\n') { ++page; }
+  while (strlen(page)) {
+    if (!strncmp(page, "\r\n\r\n", 4) || !strncmp(page, "\n\n", 2))
+     break;
+    while (*page == '\r' || *page == '\n') { ++page; }
     page += (size_t) strcspn (page, "\r\n");
     save_char = *page;
     *page = '\0';
