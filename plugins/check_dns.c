@@ -95,7 +95,7 @@ main (int argc, char **argv)
 {
   char *command_line = NULL;
   char input_buffer[MAX_INPUT_BUFFER];
-  char *address = NULL; /* comma seperated str with addrs/ptrs (sorted) */
+  char *address = NULL; /* comma separated str with addrs/ptrs (sorted) */
   char **addresses = NULL;
   int n_addresses = 0;
   char *msg = NULL;
@@ -288,7 +288,7 @@ main (int argc, char **argv)
     temp_buffer = "";
     for (i=0; i<expected_address_cnt; i++) {
       /* check if we get a match and prepare an error string */
-      if (strcmp(address, expected_address[i]) == 0) result = STATE_OK;
+      if (strcasecmp(address, expected_address[i]) == 0) result = STATE_OK;
       xasprintf(&temp_buffer, "%s%s; ", temp_buffer, expected_address[i]);
     }
     if (result == STATE_CRITICAL) {

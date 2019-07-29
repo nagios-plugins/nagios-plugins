@@ -5,7 +5,7 @@
 #
 #
 # These are the database permissions required for this test:
-#  GRANT SELECT ON $db.* TO $user@$host INDENTIFIED BY '$password';
+#  GRANT SELECT ON $db.* TO $user@$host IDENTIFIED BY '$password';
 #  GRANT SUPER, REPLICATION CLIENT ON *.* TO $user@$host;
 # Check with:
 #  mysql -u$user -p$password -h$host $db
