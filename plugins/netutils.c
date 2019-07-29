@@ -392,3 +392,33 @@ resolve_host_or_addr (const char *address, int family)
 		return TRUE;
 	}
 }
+
+/* Turn a network address into a string */
+void
+parse_address_string(int address_family, struct sockaddr_storage *addr, char *address, int size)
+{
+	switch (address_family) {
+		case AF_INET:
+			inet_ntop(address_family, &((struct sockaddr_in *)addr)->sin_addr, address, size);
+		break;
+
+		case AF_INET6:
+			inet_ntop(address_family, &((struct sockaddr_in6 *)addr)->sin6_addr, address, size);
+		break;
+	}
+}
+
+/* Define the address length */
+char
+address_length(int address_family)
+{
+	switch (address_family) {
+		case AF_INET:
+			return INET_ADDRSTRLEN;
+		break;
+
+		case AF_INET6:
+			return INET6_ADDRSTRLEN;
+		break;
+	}
+}

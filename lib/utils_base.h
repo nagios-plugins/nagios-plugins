@@ -28,6 +28,8 @@ typedef struct range_struct {
 typedef struct thresholds_struct {
 	range	*warning;
 	range	*critical;
+	char    *warning_string;
+	char    *critical_string;
 	} thresholds;
 
 #define NP_STATE_FORMAT_VERSION 1

@@ -49,6 +49,7 @@ enum {
 
 int process_arguments (int, char **);
 int validate_arguments (void);
+int ldap_check_cert (LDAP *ld);
 void print_help (void);
 void print_usage (void);
 
@@ -75,6 +76,9 @@ char* crit_entries = NULL;
 int starttls = FALSE;
 int ssl_on_connect = FALSE;
 int verbose = 0;
+
+int check_cert = FALSE;
+int days_till_exp_warn, days_till_exp_crit;
 
 /* for ldap tls */
 
@@ -183,6 +187,9 @@ main (int argc, char *argv[])
 			printf (_("Could not init TLS at port %i!\n"), ld_port);
 			return STATE_CRITICAL;
 		}
+
+		if (check_cert == TRUE)
+			return ldap_check_cert(ld);
 #else
 		printf (_("TLS not supported by the libraries!\n"));
 		return STATE_CRITICAL;
@@ -207,6 +214,9 @@ main (int argc, char *argv[])
 			printf (_("Could not init startTLS at port %i!\n"), ld_port);
 			return STATE_CRITICAL;
 		}
+
+		if (check_cert == TRUE)
+			return ldap_check_cert(ld);
 #else
 		printf (_("startTLS not supported by the library, needs LDAPv3!\n"));
 		return STATE_CRITICAL;
@@ -254,7 +264,7 @@ main (int argc, char *argv[])
 	if(entries_thresholds != NULL) {
 		if (verbose) {
 			printf ("entries found: %d\n", num_entries);
-			print_thresholds("entry threasholds", entries_thresholds);
+			print_thresholds("entry thresholds", entries_thresholds);
 		}
 		status_entries = get_status(num_entries, entries_thresholds);
 		if (status_entries == STATE_CRITICAL) {
@@ -296,6 +306,7 @@ int
 process_arguments (int argc, char **argv)
 {
 	int c;
+	char *temp;
 
 	int option = 0;
 	/* initialize the long option struct */
@@ -315,6 +326,7 @@ process_arguments (int argc, char **argv)
 #endif
 		{"starttls", no_argument, 0, 'T'},
 		{"ssl", no_argument, 0, 'S'},
+		{"age", required_argument, 0, 'A'},
 		{"use-ipv4", no_argument, 0, '4'},
 		{"use-ipv6", no_argument, 0, '6'},
 		{"port", required_argument, 0, 'p'},
@@ -335,7 +347,7 @@ process_arguments (int argc, char **argv)
 	}
 
 	while (1) {
-		c = getopt_long (argc, argv, "hvV234TS6t:c:w:H:b:p:a:D:P:U:C:W:", longopts, &option);
+		c = getopt_long (argc, argv, "hvV234TS6t:c:w:H:b:p:a:D:P:U:C:W:A:", longopts, &option);
 
 		if (c == -1 || c == EOF)
 			break;
@@ -403,6 +415,33 @@ process_arguments (int argc, char **argv)
 			else
 				usage_va(_("%s cannot be combined with %s"), "-T/--starttls", "-S/--ssl");
 			break;
+		case 'A': /* Check SSL cert validity */
+#ifndef HAVE_SSL
+			usage4 (_("Invalid option - SSL is not available"));
+#else
+			if (starttls || ssl_on_connect || strstr(argv[0],"check_ldaps")) {
+				if ((temp=strchr(optarg,','))!=NULL) {
+					*temp = '\0';
+					if (!is_intnonneg (temp))
+						usage2 (_("Invalid certificate expiration period"), optarg);
+					days_till_exp_warn = atoi(optarg);
+					*temp = ',';
+					temp++;
+					if (!is_intnonneg (temp))
+						usage2 (_("Invalid certificate expiration period"), temp);
+						days_till_exp_crit = atoi (temp);
+				} else {
+					days_till_exp_crit = 0;
+					if (!is_intnonneg (optarg))
+						usage2 (_("Invalid certificate expiration period"), optarg);
+					days_till_exp_warn = atoi (optarg);
+				}
+				check_cert = TRUE;
+			} else {
+				usage_va(_("%s requires either %s or %s"), "-A/--age", "-S/--ssl", "-T/--starttls");
+			}
+			break;
+#endif
 		case 'S':
 			if (! starttls) {
 				ssl_on_connect = TRUE;
@@ -477,32 +516,34 @@ print_help (void)
 
 	printf (UT_IPv46);
 
-	printf (" %s\n", "-a [--attr]");
+	printf (" %s\n", "-a, --attr=ATTRIBUTE");
   printf ("    %s\n", _("ldap attribute to search (default: \"(objectclass=*)\""));
-  printf (" %s\n", "-b [--base]");
+  printf (" %s\n", "-b, --base=BASE");
   printf ("    %s\n", _("ldap base (eg. ou=my unit, o=my org, c=at"));
-  printf (" %s\n", "-D [--bind]");
+  printf (" %s\n", "-D, --bind=DN");
   printf ("    %s\n", _("ldap bind DN (if required)"));
-  printf (" %s\n", "-P [--pass]");
+  printf (" %s\n", "-P, --pass=PASSWORD");
   printf ("    %s\n", _("ldap password (if required)"));
-  printf (" %s\n", "-T [--starttls]");
+  printf (" %s\n", "-T, --starttls");
   printf ("    %s\n", _("use starttls mechanism introduced in protocol version 3"));
-  printf (" %s\n", "-S [--ssl]");
+  printf (" %s\n", "-S, --ssl");
   printf ("    %s %i\n", _("use ldaps (ldap v2 ssl method). this also sets the default port to"), LDAPS_PORT);
+  printf (" %s\n", "-A, --age=INTEGER[,INTEGER]");
+  printf ("    %s\n", _("Minimum number of days a certificate has to be valid"));
 
 #ifdef HAVE_LDAP_SET_OPTION
-	printf (" %s\n", "-2 [--ver2]");
+	printf (" %s\n", "-2, --ver2");
   printf ("    %s\n", _("use ldap protocol version 2"));
-  printf (" %s\n", "-3 [--ver3]");
+  printf (" %s\n", "-3, --ver3");
   printf ("    %s\n", _("use ldap protocol version 3"));
   printf ("    (%s %d)\n", _("default protocol version:"), DEFAULT_PROTOCOL);
 #endif
 
 	printf (UT_WARN_CRIT);
 
-  printf (" %s\n", "-W [--warn-entries]");
+  printf (" %s\n", "-W, --warn-entries=INTEGER");
   printf ("    %s\n", _("Number of found entries to result in warning status"));
-  printf (" %s\n", "-C [--crit-entries]");
+  printf (" %s\n", "-C, --crit-entries=INTEGER");
   printf ("    %s\n", _("Number of found entries to result in critical status"));
 
 	printf (UT_CONN_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
@@ -526,7 +567,7 @@ print_usage (void)
 {
   printf ("%s\n", _("Usage:"));
   printf (" %s (-H <host>|-U <uri>) -b <base_dn> [-p <port>] [-a <attr>] [-D <binddn>]\n", progname);
-  printf ("       [-P <password>] [-w <warn_time>] [-c <crit_time>] [-t timeout]%s\n",
+  printf ("       [-P <password>] [-w <warn_time>] [-c <crit_time>] [-t timeout] [-A <age>]%s\n",
 #ifdef HAVE_LDAP_SET_OPTION
 			"\n       [-2|-3] [-4|-6]"
 #else
@@ -534,3 +575,25 @@ print_usage (void)
 #endif
 			);
 }
+
+#ifdef HAVE_SSL
+
+int ldap_check_cert (LDAP *ld)
+{
+	SSL *ssl;
+	int rc;
+
+	rc = ldap_get_option(ld, LDAP_OPT_X_TLS_SSL_CTX, &ssl);
+	if (rc == LDAP_OPT_ERROR || ssl == NULL) {
+		printf ("%s\n",_("CRITICAL - Cannot retrieve ssl session from connection."));
+		return STATE_CRITICAL;
+	}
+	return np_net_ssl_check_cert_real(ssl, days_till_exp_warn, days_till_exp_crit);
+}
+
+#else
+int ldap_check_cert (LDAP *ld) {
+    return TRUE;
+}
+
+#endif

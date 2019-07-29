@@ -63,7 +63,7 @@ sub print_usage ();
 sub connection ($$$$);
 sub bindRemote ($$);
 
-# -------------------------------------------------------------[ Enviroment ]--
+# ------------------------------------------------------------[ Environment ]--
 
 $ENV{'PATH'}='@TRUSTED_PATH@';
 $ENV{'BASH_ENV'}=''; 
@@ -209,7 +209,7 @@ MAIN:
 
 	# Just in case of problems, let's not hang Nagios
 	$SIG{'ALRM'} = sub {
-		print "Somthing is Taking a Long Time, Increase Your TIMEOUT (Currently Set At $TIMEOUT Seconds)\n";
+		print "Something is Taking a Long Time, Increase Your TIMEOUT (Currently Set At $TIMEOUT Seconds)\n";
 		exit $ERRORS{"UNKNOWN"};
 	};
 	

@@ -34,7 +34,9 @@ char *progname = "check_uptime";
 char *version = "1.0";
 char *email = "devel@nagios-plugins.org";
 char *copyright = "2014";
-char *developer = "Andy Brist";
+/* There no developer in COPYRIGHT's definition
+ * char *developer = "Andy Brist";
+ */
 
 static int process_arguments (int, char **);
 int validate_arguments (void);
@@ -129,9 +131,6 @@ int getuptime () {
 static int process_arguments (int argc, char **argv) {
 
 	int c;
-	int escape = 0;
-	char *temp;
-	
 	int option = 0;
 	static struct option longopts[] = {
 		{"critical", required_argument, 0, 'c'},
@@ -220,7 +219,7 @@ void print_help (void) {
 
 	print_revision ( progname, NP_VERSION );
 
-	printf ( COPYRIGHT, copyright, developer, email );
+	printf ( COPYRIGHT, copyright, email );
 	printf ( "%s\n", _("This plugin checks the system uptime and alerts if more than the threshold.") );
 	printf ( "%s\n", _("Threshold unit of measurement specified with \"-u\".") );
 	printf ( "%s\n", _("\"-u\" switch supports: seconds|minutes|hours|days.") );
