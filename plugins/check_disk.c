@@ -590,17 +590,29 @@ process_arguments (int argc, char **argv)
         mult = (uintmax_t)1;
         units = strdup ("B");
       } else if (! strcmp (optarg, "kB")) {
-        mult = (uintmax_t)1024;
+        mult = (uintmax_t)1000;
         units = strdup ("kB");
       } else if (! strcmp (optarg, "MB")) {
-        mult = (uintmax_t)1024 * 1024;
+        mult = (uintmax_t)1000 * 1000;
         units = strdup ("MB");
       } else if (! strcmp (optarg, "GB")) {
-        mult = (uintmax_t)1024 * 1024 * 1024;
+        mult = (uintmax_t)1000 * 1000 * 1000;
         units = strdup ("GB");
       } else if (! strcmp (optarg, "TB")) {
-        mult = (uintmax_t)1024 * 1024 * 1024 * 1024;
+        mult = (uintmax_t)1000 * 1000 * 1000 * 1000;
         units = strdup ("TB");
+      } else if (! strcmp (optarg, "KiB")) {
+        mult = (uintmax_t)1024;
+        units = strdup ("KiB");
+      } else if (! strcmp (optarg, "MiB")) {
+        mult = (uintmax_t)1024 * 1024;
+        units = strdup ("MiB");
+      } else if (! strcmp (optarg, "GiB")) {
+        mult = (uintmax_t)1024 * 1024 * 1024;
+        units = strdup ("GiB");
+      } else if (! strcmp (optarg, "TiB")) {
+        mult = (uintmax_t)1024 * 1024 * 1024 * 1024;
+        units = strdup ("TiB");
       } else {
         die (STATE_UNKNOWN, _("unit type %s not known\n"), optarg);
       }
@@ -608,13 +620,13 @@ process_arguments (int argc, char **argv)
         die (STATE_UNKNOWN, _("failed allocating storage for '%s'\n"), "units");
       break;
     case 'k': /* display mountpoint */
-      mult = (uintmax_t)1024;
+      mult = (uintmax_t)1000;
       if (units)
         free(units);
       units = strdup ("kB");
       break;
     case 'm': /* display mountpoint */
-      mult = (uintmax_t)1024 * 1024;
+      mult = (uintmax_t)1000 * 1000;
       if (units)
         free(units);
       units = strdup ("MB");
@@ -827,7 +839,7 @@ process_arguments (int argc, char **argv)
   }
 
   if (units == NULL) {
-    units = strdup ("MB");
+    units = strdup ("MiB");
     mult = (uintmax_t)1024 * 1024;
   }
 
@@ -933,7 +945,7 @@ print_help (void)
   printf ("    %s\n", _("Show status for each path/partition"));
   printf (UT_PLUG_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
   printf (" %s\n", "-u, --units=STRING");
-  printf ("    %s\n", _("Choose bytes, kB, MB, GB, TB (default: MB)"));
+  printf ("    %s\n", _("Choose bytes, kB, MB, GB, TB, KiB, MiB, GiB, TiB (default: MiB)"));
   printf (UT_VERBOSE);
   printf (" %s\n", "-X, --exclude-type=TYPE");
   printf ("    %s\n", _("Ignore all filesystems of indicated type (may be repeated)"));
