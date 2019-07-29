@@ -844,7 +844,7 @@ print_help (void)
   printf ("   %s\n", _("Only scan for processes belonging to STRING hierarchy (works on Linux only)."));
 
 	printf(_("\n\
-RANGEs are specified 'min:max' or 'min:' or ':max' (or 'max'). If\n\
+RANGEs are prefixed with @ and specified 'min:max' or 'min:' or ':max' (or 'max'). If\n\
 specified 'max:min', a warning status will be generated if the\n\
 count is inside the specified range\n\n"));
 
@@ -856,10 +856,10 @@ process owner, parent process PID, current state (e.g., 'Z'), or may\n\
 be the total number of running processes\n\n"));
 
 	printf ("%s\n", _("Examples:"));
-  printf (" %s\n", "check_procs -w 2:2 -c 2:1024 -C portsentry");
+  printf (" %s\n", "check_procs -w @2:2 -c 2:1024 -C portsentry");
   printf ("  %s\n", _("Warning if not two processes with command name portsentry."));
   printf ("  %s\n\n", _("Critical if < 2 or > 1024 processes"));
-  printf (" %s\n", "check_procs -c 1:1 -C bind -g /");
+  printf (" %s\n", "check_procs -c @1:1 -C bind -g /");
   printf ("  %s\n\n", _("Critical if not one processes with command name bind belonging to root cgroup."));
   printf (" %s\n", "check_procs -w 10 -a '/usr/local/bin/perl' -u root");
   printf ("  %s\n", _("Warning alert if > 10 processes with command arguments containing"));
