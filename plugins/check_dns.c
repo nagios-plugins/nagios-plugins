@@ -53,7 +53,9 @@ int error_scan (char *);
 void print_help (void);
 void print_usage (void);
 
-#define ADDRESS_LENGTH 384 
+/* Allow up to 4096 input length, this is helpful
+   when the TXT records returned have multiple 255 legth values returned */
+#define ADDRESS_LENGTH 4096
 char query_address[ADDRESS_LENGTH] = "";
 char dns_server[ADDRESS_LENGTH] = "";
 char tmp_dns_server[ADDRESS_LENGTH] = "";
