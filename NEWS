@@ -10,6 +10,8 @@ This file documents the major additions and syntax changes between releases.
 	check_ping: plugin output will now include hostname and IP address
 	check_disk_smb: Add configfile feature
 	check_apt: Add --only-critical switch
+	check_apt: Add --packages-warning (Marc Sánchez)
+	check_oracle: Add support for Oracle XE databases (Peter Athaks)
 	check_mailq: Add support for opensmtpd
 	check_mailq: Add mailq -C option for config dir or config file
 	check_disk: Add -s option to show status for each path/partition
@@ -23,9 +25,8 @@ This file documents the major additions and syntax changes between releases.
 	check_swap: Add --no-swap flag (Mario Trangoni)
 	ssl_utils: Added certificate expiry data in OK status (check_http, check_smtp, check_tcp) (Matt Capra)
 	check_smtp: Add --proxy flag for PROXY protocol (Patrick Uiterwijk)
+	check_mysql_query: Add --character-set flag
 
-
-2.2.2 xxxx-xx-xx
 	FIXES
 	check_disk: autofs being mounted despite '-l'. Fixed, and also excluded some system "fake" mountpoints
 	check_ntp_time: Periodically returns "Socket timeout" when one of several ntp server doesn't respond
@@ -37,8 +38,8 @@ This file documents the major additions and syntax changes between releases.
 	Fix --no-body
 	check_wave produces lots of errors if required arguments are not provided
 	check_disk_smb.pl added additional smb support
-	check_http Additional header/status checking
-	check_http When checking certificate, don't check content/status
+	check_http: Additional header/status checking
+	check_http: When checking certificate, don't check content/status unless specified by --continue-after-certificate
 	Fix ax_with_python not crashing on Python3 (Michael Orlitzky)
 	Fix rpmbuild errors (Josh Coughlan)
 	check_ping: FreeBSD ping working natively
@@ -47,6 +48,8 @@ This file documents the major additions and syntax changes between releases.
 	check_snmp: warning/critical perfdata is returned properly
 	check_snmp: Fix --authpasswd option
 	check_dns: reverse (PTR) check is now case insensitive
+	check_dns: Fix for Bind 9.11.x AAAA records being reported with A record format (Troy Lea)
+	check_radius: Fix for null pointer dereference (Vít Heřman)
 
 
 2.2.1 2017-04-19
