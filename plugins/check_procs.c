@@ -201,16 +201,17 @@ main (int argc, char **argv)
 	}
 	(void) alarm ((unsigned) timeout_interval);
 
-	if (verbose >= 2)
-		printf (_("CMD: %s\n"), PS_COMMAND);
-
 	if (input_filename == NULL) {
+	    if (verbose >= 2)
+		    printf (_("CMD: %s\n"), PS_COMMAND);
 		result = cmd_run( PS_COMMAND, &chld_out, &chld_err, 0);
 		if (chld_err.lines > 0) {
 			printf ("%s: %s", _("System call sent warnings to stderr"), chld_err.line[0]);
 			exit(STATE_WARNING);
 		}
 	} else {
+	    if (verbose >= 2)
+		    printf (_("INPUT FILE: %s\n"), input_filename);
 		result = cmd_file_read( input_filename, &chld_out, 0);
 	}
 
@@ -842,6 +843,11 @@ print_help (void)
   printf ("   %s\n", _("Only scan for non kernel threads (works on Linux only)."));
   printf (" %s\n", "-g, --cgroup-hierarchy");
   printf ("   %s\n", _("Only scan for processes belonging to STRING hierarchy (works on Linux only)."));
+
+  printf ("\n");
+	printf ("%s\n", "Extra:");
+  printf (" %s\n", "--input-file=FILE");
+  printf ("   %s\n", _("Use FILE content instead of /bin/ps output."));
 
 	printf(_("\n\
 RANGEs are prefixed with @ and specified 'min:max' or 'min:' or ':max' (or 'max'). If\n\
