@@ -23,6 +23,7 @@ This file documents the major additions and syntax changes between releases.
 	check_icmp: Add Jitter, MOS, Score (Alessandro Ren)
 	check_radius: Add calling-station-id (cejkar)
 	check_swap: Add --no-swap flag (Mario Trangoni)
+  check_ntp_time: Add support for monitoring stratum of timesources
 	ssl_utils: Added certificate expiry data in OK status (check_http, check_smtp, check_tcp) (Matt Capra)
 	check_smtp: Add --proxy flag for PROXY protocol (Patrick Uiterwijk)
 	check_mysql_query: Add --character-set flag
