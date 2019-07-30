@@ -3,54 +3,54 @@ This file documents the major additions and syntax changes between releases.
 
 2.3.0 xxxx-xx-xx
 	ENHANCEMENTS
+	Added a plugin "remove_perfdata" to remove perfdata from another plugin's output
 	Added directory plugins-python containing three Python plugins
-	Add plugin remove_perfdata to remove perfdata from specified plugin's output
-	Added warning_string/critical_string to struct thresholds for storing originally parsed strings
-	check_http: New parameter `--verify-host` will check if -H hostname matches the SSL certificate
-	check_ping: plugin output will now include hostname and IP address
-	check_disk_smb: Add configfile feature
 	check_apt: Add --only-critical switch
 	check_apt: Add --packages-warning (Marc Sánchez)
-	check_oracle: Add support for Oracle XE databases (Peter Athaks)
-	check_mailq: Add support for opensmtpd
-	check_mailq: Add mailq -C option for config dir or config file
 	check_disk: Add -s option to show status for each path/partition
 	check_disk: Add support for base-10 units kB, MB, GB, TB; rename base-2 units to KiB, MiB, GiB, TiB
-	check_mailq.pl: Add option for opensmtpd (brigriffin)
+	check_disk_smb: Add configfile feature
+	check_disk_smb: added additional smb support
+	check_http: New parameter `--verify-host` will check if -H hostname matches the SSL certificate
+	check_icmp: Add Jitter, MOS, Score (Alessandro Ren)
+	check_ldap: Add support for checking LDAP cert age (Guillaume Rousse)
+	check_mailq: Add mailq -C option for config dir or config file
+	check_mailq: Add option for opensmtpd (brigriffin)
+	check_mailq: Add support for opensmtpd
+	check_mysql_query: Add --character-set flag
+	check_ntp_time: Add support for monitoring stratum of timesources
+	check_oracle: Add support for Oracle XE databases (Peter Athaks)
+	check_ping: plugin output will now include hostname and IP address
 	check_procs: Add FreeBSD jail support (Mathieu Arnold)
 	check_procs: Allow process to be excluded from check_procs (Marcel Klein)
-	check_ldap: Add support for checking LDAP cert age (Guillaume Rousse)
-	check_icmp: Add Jitter, MOS, Score (Alessandro Ren)
 	check_radius: Add calling-station-id (cejkar)
-	check_swap: Add --no-swap flag (Mario Trangoni)
-  check_ntp_time: Add support for monitoring stratum of timesources
-	ssl_utils: Added certificate expiry data in OK status (check_http, check_smtp, check_tcp) (Matt Capra)
 	check_smtp: Add --proxy flag for PROXY protocol (Patrick Uiterwijk)
-	check_mysql_query: Add --character-set flag
+	check_swap: Add --no-swap flag (Mario Trangoni)
+	lib: Added warning_string/critical_string to struct thresholds for storing originally parsed strings
+	ssl_utils: Added certificate expiry data in OK status (check_http, check_smtp, check_tcp) (Matt Capra)
 
 	FIXES
+	build: Fix ax_with_python not crashing on Python3 (Michael Orlitzky)
+	build: fix configure.ac for FreeBSD SWAPFORMAT
+	build: Fix rpmbuild errors (Josh Coughlan)
 	check_disk: autofs being mounted despite '-l'. Fixed, and also excluded some system "fake" mountpoints
-	check_ntp_time: Periodically returns "Socket timeout" when one of several ntp server doesn't respond
-	check_ntp_time calls `write` on a UDP socket without a successful call to `connect`
-	check_mysql_query & mysql_query: extra-opts causes crash
+	check_dns: Fix for Bind 9.11.x AAAA records being reported with A record format (Troy Lea)
+	check_dns: reverse (PTR) check is now case insensitive
+	check_http: Additional header/status checking
+	check_http: Fix --no-body
+	check_http: When checking certificate, don't check content/status unless specified by --continue-after-certificate
 	check_log does not check for "-O oldlog"
 	check_log lost ability to use regexes for query (-q) in 2.1.4
-	fix configure.ac for FreeBSD SWAPFORMAT
-	Fix --no-body
-	check_wave produces lots of errors if required arguments are not provided
-	check_disk_smb.pl added additional smb support
-	check_http: Additional header/status checking
-	check_http: When checking certificate, don't check content/status unless specified by --continue-after-certificate
-	Fix ax_with_python not crashing on Python3 (Michael Orlitzky)
-	Fix rpmbuild errors (Josh Coughlan)
+	check_mysql_query & mysql_query: extra-opts causes crash
+	check_ntp_time calls `write` on a UDP socket without a successful call to `connect`
+	check_ntp_time: Periodically returns "Socket timeout" when one of several ntp server doesn't respond
 	check_ping: FreeBSD ping working natively
+	check_radius: Fix for null pointer dereference (Vít Heřman)
 	check_sensors: Fix fault test with --ignore-fault
+	check_snmp: Fix --authpasswd option
 	check_snmp: Fix perfdata not adhering to plugin dev guidelines
 	check_snmp: warning/critical perfdata is returned properly
-	check_snmp: Fix --authpasswd option
-	check_dns: reverse (PTR) check is now case insensitive
-	check_dns: Fix for Bind 9.11.x AAAA records being reported with A record format (Troy Lea)
-	check_radius: Fix for null pointer dereference (Vít Heřman)
+	check_wave: produces lots of errors if required arguments are not provided
 
 
 2.2.1 2017-04-19
