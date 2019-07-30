@@ -13,7 +13,8 @@ use vars qw($opt_V $opt_h $verbose $opt_w $opt_c $opt_H);
 my (@test, $low1, $med1, $high1, $snr, $low2, $med2, $high2);
 my ($low, $med, $high, $lowavg, $medavg, $highavg, $tot, $ss);
 
-$PROGNAME = "check_wave";
+$PROGNAME = $0;
+chomp $PROGNAME;
 sub print_help ();
 sub print_usage ();
 
@@ -41,9 +42,9 @@ if ($opt_h) {
 }
 
 $opt_H = shift unless ($opt_H);
-print_usage() unless ($opt_H);
+unless ($opt_H) { print_usage(); exit -1; }
 my $host = $1 if ($opt_H =~ m/^([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+|[a-zA-Z][-a-zA-Z0]+(\.[a-zA-Z][-a-zA-Z0]+)*)$/);
-print_usage() unless ($host);
+unless ($host) { print_usage(); exit -1; }
 
 ($opt_c) || ($opt_c = shift) || ($opt_c = 120);
 my $critical = $1 if ($opt_c =~ /([0-9]+)/);
@@ -51,7 +52,12 @@ my $critical = $1 if ($opt_c =~ /([0-9]+)/);
 ($opt_w) || ($opt_w = shift) || ($opt_w = 60);
 my $warning = $1 if ($opt_w =~ /([0-9]+)/);
 
-$low1 = `snmpget $host public .1.3.6.1.4.1.74.2.21.1.2.1.8.1`;
+$low1 = `snmpget $host public .1.3.6.1.4.1.74.2.21.1.2.1.8.1 2>/dev/null`;
+unless ($low1) {
+	print "UNKNOWN - Could not find the 'snmpget' command Please install\n";
+	print "the snmp commands (usually net-snmp) before using $PROGNAME\n";
+	exit $ERRORS{'UNKNOWN'};
+}
 @test = split(/ /,$low1);
 $low1 = $test[2];
 
@@ -97,7 +103,7 @@ if ($tot==0) {
 	$ss = ($medavg*50) + ($highavg*100);
 }
 
-printf("Signal Strength at: %3.0f%,  SNR at $snr%",$ss);
+printf("Signal Strength at: %3.0f%,  SNR at $snr%\n",$ss);
 
 if ($ss<$critical) {
 	exit(2);

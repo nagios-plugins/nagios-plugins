@@ -28,7 +28,7 @@
 
 const char *progname = "check_disk";
 const char *program_name = "check_disk";  /* Required for coreutils libs */
-const char *copyright = "1999-2014";
+const char *copyright = "1999-2018";
 const char *email = "devel@nagios-plugins.org";
 
 
@@ -59,7 +59,7 @@ const char *email = "devel@nagios-plugins.org";
 #endif
 
 /* If nonzero, show inode information. */
-static int inode_format = 1;
+// static int inode_format = 1;
 
 /* If nonzero, show even filesystems with zero size or
    uninteresting types. */
@@ -127,7 +127,6 @@ enum
 int process_arguments (int, char **);
 void print_path (const char *mypath);
 void set_all_thresholds (struct parameter_list *path);
-int validate_arguments (uintmax_t, uintmax_t, double, double, double, double, char *);
 void print_help (void);
 void print_usage (void);
 double calculate_percent(uintmax_t, uintmax_t);
@@ -140,13 +139,14 @@ double c_dfp = -1.0;
 char *path;
 char *exclude_device;
 char *units;
-uintmax_t mult = 1024 * 1024;
+uintmax_t mult = (uintmax_t)1024 * 1024;
 int verbose = 0;
 int newlines = FALSE;
 int erronly = FALSE;
 int display_mntp = FALSE;
 int exact_match = FALSE;
 int freespace_ignore_reserved = FALSE;
+int show_status = FALSE;
 char *warn_freespace_units = NULL;
 char *crit_freespace_units = NULL;
 char *warn_freespace_percent = NULL;
@@ -171,17 +171,17 @@ main (int argc, char **argv)
   int result = STATE_UNKNOWN;
   int disk_result = STATE_UNKNOWN;
   char *output;
-  char *details;
+  char status_lit[4];
   char *perf;
   char *preamble;
   char *flag_header;
-  double inode_space_pct;
+  //double inode_space_pct;
   double warning_high_tide;
   double critical_high_tide;
   int temp_result;
 
-  struct mount_entry *me;
-  struct fs_usage fsp, tmpfsp;
+  struct mount_entry *me, *last_me = NULL;
+  struct fs_usage fsp;
   struct parameter_list *temp_list, *path;
 
 #ifdef __CYGWIN__
@@ -190,7 +190,6 @@ main (int argc, char **argv)
 
   preamble = strdup (" - free space:");
   output = strdup ("");
-  details = strdup ("");
   perf = strdup ("");
   stat_buf = malloc(sizeof *stat_buf);
 
@@ -206,11 +205,37 @@ main (int argc, char **argv)
   if (process_arguments (argc, argv) == ERROR)
     usage4 (_("Could not parse arguments"));
 
+  if (show_status)
+    sprintf(status_lit, "x:");
+  else
+    status_lit[0] = '\0';
+
   /* If a list of paths has not been selected, find entire
      mount list and create list of paths
    */
   if (path_selected == FALSE) {
     for (me = mount_list; me; me = me->me_next) {
+			if (strcmp(me->me_type, "autofs") == 0 && show_local_fs) {
+				if (last_me == NULL)
+					mount_list = me;
+				else
+					last_me->me_next = me->me_next;
+				free_mount_entry (me);
+				continue;
+			}
+			if (strcmp(me->me_type, "sysfs") == 0 || strcmp(me->me_type, "proc") == 0
+			|| strcmp(me->me_type, "debugfs") == 0 || strcmp(me->me_type, "tracefs") == 0
+			|| strcmp(me->me_type, "fusectl") == 0 || strcmp(me->me_type, "fuse.gvfsd-fuse") == 0
+			|| strcmp(me->me_type, "cgroup") == 0 || strstr(me->me_type, "tmpfs") != NULL)
+			{
+				if (last_me == NULL)
+					mount_list = me->me_next;
+				else
+					last_me->me_next = me->me_next;
+				free_mount_entry (me);
+				continue;
+			}
+
       if (! (path = np_find_parameter(path_select_list, me->me_mountdir))) {
         path = np_add_parameter(&path_select_list, me->me_mountdir);
       }
@@ -291,7 +316,7 @@ main (int argc, char **argv)
       get_stats (path, &fsp);
 
       if (verbose >= 3) {
-        printf ("For %s, used_pct=%g free_pct=%g used_units=%g free_units=%g total_units=%g used_inodes_pct=%g free_inodes_pct=%g fsp.fsu_blocksize=%llu mult=%llu\n",
+        printf ("For %s, used_pct=%g free_pct=%g used_units=%li free_units=%li total_units=%li used_inodes_pct=%g free_inodes_pct=%g fsp.fsu_blocksize=%lu mult=%ju\n",
           me->me_mountdir, path->dused_pct, path->dfree_pct, path->dused_units, path->dfree_units, path->dtotal_units, path->dused_inodes_percent, path->dfree_inodes_percent, fsp.fsu_blocksize, mult);
       }
 
@@ -321,6 +346,9 @@ main (int argc, char **argv)
       if (verbose >=3) printf("Freeinodes_percent result=%d\n", temp_result);
       disk_result = max_state( disk_result, temp_result );
 
+      if (show_status)
+        status_lit[0] = state_text(disk_result)[0];
+
       result = max_state(result, disk_result);
 
       /* What a mess of units. The output shows free space, the perf data shows used space. Yikes!
@@ -336,13 +364,13 @@ main (int argc, char **argv)
         warning_high_tide = path->dtotal_units - path->freespace_units->warning->end;
       }
       if (path->freespace_percent->warning != NULL) {
-        warning_high_tide = labs( min( (double) warning_high_tide, (double) (1.0 - path->freespace_percent->warning->end/100)*path->dtotal_units ));
+        warning_high_tide = fabs( min( (double) warning_high_tide, (double) (1.0 - path->freespace_percent->warning->end/100)*path->dtotal_units ));
       }
       if (path->freespace_units->critical != NULL) {
         critical_high_tide = path->dtotal_units - path->freespace_units->critical->end;
       }
       if (path->freespace_percent->critical != NULL) {
-        critical_high_tide = labs( min( (double) critical_high_tide, (double) (1.0 - path->freespace_percent->critical->end/100)*path->dtotal_units ));
+        critical_high_tide = fabs( min( (double) critical_high_tide, (double) (1.0 - path->freespace_percent->critical->end/100)*path->dtotal_units ));
       }
 
       /* Nb: *_high_tide are unset when == ULONG_MAX */
@@ -357,14 +385,10 @@ main (int argc, char **argv)
       if (disk_result==STATE_OK && erronly && !verbose)
         continue;
 
-      if (disk_result && verbose) {
-	      xasprintf(&flag_header, " %s [", state_text (disk_result));
-      }
-      else {
-	      xasprintf(&flag_header, "");
-      }
-      xasprintf (&output, "%s %s %.0f %s (%.2f%%",
+      xasprintf (&output, "%s%s%s%s %i %s (%.2f%%",
                 output,
+                newlines ? "" : " ",
+                status_lit,
                 (!strcmp(me->me_mountdir, "none") || display_mntp) ? me->me_devname : me->me_mountdir,
                 path->dfree_units,
                 units,
@@ -384,8 +408,6 @@ main (int argc, char **argv)
         }
       }
 
-      free(flag_header);
-
       /* TODO: Need to do a similar debug line
       xasprintf (&details, _("%s\n\
 %.0f of %.0f %s (%.0f%% inode=%.0f%%) free on %s (type %s mounted on %s) warn:%lu crit:%lu warn%%:%.0f%% crit%%:%.0f%%"),
@@ -397,9 +419,6 @@ main (int argc, char **argv)
     }
 
   }
-
-  if (verbose >= 2)
-    xasprintf (&output, "%s%s", output, details);
 
   if (newlines) {
     printf ("DISK %s%s\n%s|%s\n", state_text (result), (erronly && result==STATE_OK) ? "" : preamble, output, perf);
@@ -442,8 +461,8 @@ process_arguments (int argc, char **argv)
   struct parameter_list *se;
   struct parameter_list *temp_list = NULL, *previous = NULL;
   struct parameter_list *temp_path_select_list = NULL;
-  struct mount_entry *me, *temp_me;
-  int result = OK;
+  struct mount_entry *me;
+  //int result = OK;
   regex_t re;
   int cflags = REG_NOSUB | REG_EXTENDED;
   int default_cflags = cflags;
@@ -483,6 +502,7 @@ process_arguments (int argc, char **argv)
     {"errors-only", no_argument, 0, 'e'},
     {"exact-match", no_argument, 0, 'E'},
     {"all", no_argument, 0, 'A'},
+    {"show-status", no_argument, 0, 's'},
     {"verbose", no_argument, 0, 'v'},
     {"quiet", no_argument, 0, 'q'},
     {"clear", no_argument, 0, 'C'},
@@ -502,7 +522,7 @@ process_arguments (int argc, char **argv)
       strcpy (argv[c], "-t");
 
   while (1) {
-    c = getopt_long (argc, argv, "+?VqhvefCt:c:w:K:W:u:p:x:X:N:mklLg:R:r:i:I:MEAn", longopts, &option);
+    c = getopt_long (argc, argv, "+?VqhvefCt:c:w:K:W:u:p:x:X:N:mklLg:R:r:i:I:MEAns", longopts, &option);
 
     if (c == -1 || c == EOF)
       break;
@@ -530,7 +550,7 @@ process_arguments (int argc, char **argv)
 
     /* Awful mistake where the range values do not make sense. Normally,
        you alert if the value is within the range, but since we are using
-       freespace, we have to alert if outside the range. Thus we artifically
+       freespace, we have to alert if outside the range. Thus we artificially
        force @ at the beginning of the range, so that it is backwards compatible
     */
     case 'c':                 /* critical threshold */
@@ -570,17 +590,29 @@ process_arguments (int argc, char **argv)
         mult = (uintmax_t)1;
         units = strdup ("B");
       } else if (! strcmp (optarg, "kB")) {
-        mult = (uintmax_t)1024;
+        mult = (uintmax_t)1000;
         units = strdup ("kB");
       } else if (! strcmp (optarg, "MB")) {
-        mult = (uintmax_t)1024 * 1024;
+        mult = (uintmax_t)1000 * 1000;
         units = strdup ("MB");
       } else if (! strcmp (optarg, "GB")) {
-        mult = (uintmax_t)1024 * 1024 * 1024;
+        mult = (uintmax_t)1000 * 1000 * 1000;
         units = strdup ("GB");
       } else if (! strcmp (optarg, "TB")) {
-        mult = (uintmax_t)1024 * 1024 * 1024 * 1024;
+        mult = (uintmax_t)1000 * 1000 * 1000 * 1000;
         units = strdup ("TB");
+      } else if (! strcmp (optarg, "KiB")) {
+        mult = (uintmax_t)1024;
+        units = strdup ("KiB");
+      } else if (! strcmp (optarg, "MiB")) {
+        mult = (uintmax_t)1024 * 1024;
+        units = strdup ("MiB");
+      } else if (! strcmp (optarg, "GiB")) {
+        mult = (uintmax_t)1024 * 1024 * 1024;
+        units = strdup ("GiB");
+      } else if (! strcmp (optarg, "TiB")) {
+        mult = (uintmax_t)1024 * 1024 * 1024 * 1024;
+        units = strdup ("TiB");
       } else {
         die (STATE_UNKNOWN, _("unit type %s not known\n"), optarg);
       }
@@ -588,13 +620,13 @@ process_arguments (int argc, char **argv)
         die (STATE_UNKNOWN, _("failed allocating storage for '%s'\n"), "units");
       break;
     case 'k': /* display mountpoint */
-      mult = 1024;
+      mult = (uintmax_t)1000;
       if (units)
         free(units);
       units = strdup ("kB");
       break;
     case 'm': /* display mountpoint */
-      mult = 1024 * 1024;
+      mult = (uintmax_t)1000 * 1000;
       if (units)
         free(units);
       units = strdup ("MB");
@@ -703,6 +735,10 @@ process_arguments (int argc, char **argv)
       cflags = default_cflags;
       break;
 
+    case 's':
+      show_status = TRUE;
+			break;
+
     case 'A':
       optarg = strdup(".*");
     case 'R':
@@ -803,7 +839,7 @@ process_arguments (int argc, char **argv)
   }
 
   if (units == NULL) {
-    units = strdup ("MB");
+    units = strdup ("MiB");
     mult = (uintmax_t)1024 * 1024;
   }
 
@@ -838,50 +874,6 @@ set_all_thresholds (struct parameter_list *path)
     if (path->freeinodes_percent != NULL) free (path->freeinodes_percent);
     set_thresholds(&path->freeinodes_percent, warn_freeinodes_percent, crit_freeinodes_percent);
 }
-
-/* TODO: Remove?
-
-int
-validate_arguments (uintmax_t w, uintmax_t c, double wp, double cp, double iwp, double icp, char *mypath)
-{
-  if (w < 0 && c < 0 && wp < 0.0 && cp < 0.0) {
-    printf (_("INPUT ERROR: No thresholds specified"));
-    print_path (mypath);
-    return ERROR;
-  }
-  else if ((wp >= 0.0 || cp >= 0.0) &&
-           (wp < 0.0 || cp < 0.0 || wp > 100.0 || cp > 100.0 || cp > wp)) {
-    printf (_("\
-INPUT ERROR: C_DFP (%f) should be less than W_DFP (%.1f) and both should be between zero and 100 percent, inclusive"),
-            cp, wp);
-    print_path (mypath);
-    return ERROR;
-  }
-  else if ((iwp >= 0.0 || icp >= 0.0) &&
-           (iwp < 0.0 || icp < 0.0 || iwp > 100.0 || icp > 100.0 || icp > iwp)) {
-    printf (_("\
-INPUT ERROR: C_IDFP (%f) should be less than W_IDFP (%.1f) and both should be between zero and 100 percent, inclusive"),
-            icp, iwp);
-    print_path (mypath);
-    return ERROR;
-  }
-  else if ((w > 0 || c > 0) && (w == 0 || c == 0 || c > w)) {
-    printf (_("\
-INPUT ERROR: C_DF (%lu) should be less than W_DF (%lu) and both should be greater than zero"),
-            (unsigned long)c, (unsigned long)w);
-    print_path (mypath);
-    return ERROR;
-  }
-
-  return OK;
-}
-
-*/
-
-
-
-
-
 
 
 void
@@ -949,9 +941,11 @@ print_help (void)
   printf ("    %s\n", _("Regular expression to ignore selected path/partition (case insensitive) (may be repeated)"));
   printf (" %s\n", "-i, --ignore-ereg-path=PATH, --ignore-ereg-partition=PARTITION");
   printf ("    %s\n", _("Regular expression to ignore selected path or partition (may be repeated)"));
+  printf (" %s\n", "-s, --show-status");
+  printf ("    %s\n", _("Show status for each path/partition"));
   printf (UT_PLUG_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
   printf (" %s\n", "-u, --units=STRING");
-  printf ("    %s\n", _("Choose bytes, kB, MB, GB, TB (default: MB)"));
+  printf ("    %s\n", _("Choose bytes, kB, MB, GB, TB, KiB, MiB, GiB, TiB (default: MiB)"));
   printf (UT_VERBOSE);
   printf (" %s\n", "-X, --exclude-type=TYPE");
   printf ("    %s\n", _("Ignore all filesystems of indicated type (may be repeated)"));
@@ -980,16 +974,20 @@ print_usage (void)
 {
   printf ("%s\n", _("Usage:"));
   printf (" %s -w limit -c limit [-W limit] [-K limit] {-p path | -x device}\n", progname);
-  printf ("[-C] [-E] [-e] [-f] [-g group ] [-k] [-l] [-M] [-m] [-R path ] [-r path ]\n");
-  printf ("[-t timeout] [-u unit] [-v] [-X type] [-N type] [-n]\n");
+  printf ("[-C] [-E] [-e] [-f] [-g group ] [-k] [-l] [-M] [-m] {-A | [-R path] [-r path]}\n");
+  printf ("[-s] [-t timeout] [-u unit] [-v] [-X type] [-N type] [-n]\n");
 }
 
 void
 stat_path (struct parameter_list *p)
 {
   /* Stat entry to check that dir exists and is accessible */
-  if (verbose >= 3)
-    printf("calling stat on %s\n", p->name);
+  if (verbose >= 3) {
+    if (p->best_match)
+      printf("calling stat on %s (%s %s)\n", p->name, p->best_match->me_devname, p->best_match->me_type);
+    else
+      printf("calling stat on %s\n", p->name);
+  }
   if (stat (p->name, &stat_buf[0])) {
     if (verbose >= 3)
       printf("stat failed on %s\n", p->name);
@@ -1019,18 +1017,18 @@ get_stats (struct parameter_list *p, struct fs_usage *fsp) {
         get_fs_usage (p_list->best_match->me_mountdir, p_list->best_match->me_devname, &tmpfsp);
         get_path_stats(p_list, &tmpfsp); 
         if (verbose >= 3)
-          printf("Group %s: adding %llu blocks sized %llu, (%s) used_units=%g free_units=%g total_units=%g fsu_blocksize=%llu mult=%llu\n",
-                 p_list->group, tmpfsp.fsu_bavail, tmpfsp.fsu_blocksize, p_list->best_match->me_mountdir, p_list->dused_units, p_list->dfree_units,
-                 p_list->dtotal_units, mult);
+          printf("Group %s: adding %lu blocks sized %lu, (%s) used_units=%li free_units=%li total_units=%li fsu_blocksize=%lu mult=%ju\n", p_list->group, tmpfsp.fsu_bavail, tmpfsp.fsu_blocksize,
+                 p_list->best_match->me_mountdir, p_list->dused_units,
+                 p_list->dfree_units, p_list->dtotal_units,
+                 tmpfsp.fsu_blocksize, mult);
 
-        /* prevent counting the first FS of a group twice since its parameter_list entry 
+        /* prevent counting the first FS of a group twice since its parameter_list entry
          * is used to carry the information of all file systems of the entire group */
         if (! first) {
           p->total += p_list->total;
           p->available += p_list->available;
           p->available_to_root += p_list->available_to_root;
           p->used += p_list->used;
-            
           p->dused_units += p_list->dused_units;
           p->dfree_units += p_list->dfree_units;
           p->dtotal_units += p_list->dtotal_units;
@@ -1039,10 +1037,10 @@ get_stats (struct parameter_list *p, struct fs_usage *fsp) {
         }
         first = 0;
       }
-      if (verbose >= 3) 
-        printf("Group %s now has: used_units=%g free_units=%g total_units=%g fsu_blocksize=%llu mult=%llu\n",
-               p->group, tmpfsp.fsu_bavail, tmpfsp.fsu_blocksize, p->best_match->me_mountdir, p->dused_units,
-               p->dfree_units, p->dtotal_units, mult);
+      if (verbose >= 3)
+        printf("Group %s now has: used_units=%li free_units=%li total_units=%li fsu_blocksize=%lu mult=%ju\n",
+               p->group, p->dused_units, p->dfree_units, p->dtotal_units,
+               tmpfsp.fsu_blocksize, mult);
     }
     /* modify devname and mountdir for output */
     p->best_match->me_mountdir = p->best_match->me_devname = p->group;
@@ -1064,13 +1062,13 @@ get_path_stats (struct parameter_list *p, struct fs_usage *fsp) {
   p->available_to_root = fsp->fsu_bfree;
   p->used = fsp->fsu_blocks - fsp->fsu_bfree;
   if (freespace_ignore_reserved) {
-    /* option activated : we substract the root-reserved space from the total */
+    /* option activated : we subtract the root-reserved space from the total */
     p->total = fsp->fsu_blocks - p->available_to_root + p->available;
   } else {
     /* default behaviour : take all the blocks into account */
     p->total = fsp->fsu_blocks;
   }
-  
+
   p->dused_units = p->used*fsp->fsu_blocksize/mult;
   p->dfree_units = p->available*fsp->fsu_blocksize/mult;
   p->dtotal_units = p->total*fsp->fsu_blocksize/mult;

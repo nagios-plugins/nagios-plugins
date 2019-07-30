@@ -577,8 +577,8 @@ msgstr ""
 "être utilisé plusieurs fois)"
 
 #: plugins/check_disk.c:957
-msgid "Choose bytes, kB, MB, GB, TB (default: MB)"
-msgstr "Choisissez octets, kb, MB, GB, TB (par défaut: MB)"
+msgid "Choose bytes, kB, MB, GB, TB, KiB, MiB, GiB, TiB (default: MiB)"
+msgstr "Choisissez octets, kb, MB, GB, TB, KiB, MiB, GiB, TiB (par défaut: MiB)"
 
 #: plugins/check_disk.c:960
 msgid "Ignore all filesystems of indicated type (may be repeated)"

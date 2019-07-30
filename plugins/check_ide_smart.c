@@ -281,7 +281,7 @@ main (int argc, char *argv[])
 		smart_read_values (fd, &values);
 		smart_read_thresholds (fd, &thresholds);
 		retval = nagios (&values, &thresholds);
-		printf( _("-n, This flag is depricated, and will be removed in a future release. Nagios output is now the default.\n") );
+		printf( _("-n, This flag is deprecated, and will be removed in a future release. Nagios output is now the default.\n") );
 		break;
 	default:
 		smart_read_values (fd, &values);
@@ -304,7 +304,7 @@ get_offline_text (int status)
 			return offline_status_text[i].text;
 		}
 	}
-	return "UNKNOW";
+	return "UNKNOWN";
 }
 
 
@@ -439,7 +439,7 @@ nagios (values_t * p, thresholds_t * t)
 		status=STATE_OK;
 		break;
 	default:
-		printf (_("ERROR - Status '%d' unkown. %d/%d tests passed\n"), status,
+		printf (_("ERROR - Status '%d' unknown. %d/%d tests passed\n"), status,
 						passed, total);
 		status = STATE_UNKNOWN;
 		break;
