@@ -441,22 +441,28 @@ char *get_ether_addr(uint32_t client_id)
 
 	getifaddrs(&ifap);
 
-	for (ifa = ifap; ifa != NULL; ifa = ifa->ifa_next)
+	for (ifa = ifap; ifa != NULL; ifa = ifa->ifa_next) {
+		if (ifa->ifa_addr == NULL)
+			continue;
 		if (ifa->ifa_addr->sa_family == AF_INET) {
 			sain = (struct sockaddr_in *)ifa->ifa_addr;
 			if (client_id == ntohl(sain->sin_addr.s_addr))
 				break;
 		}
+	}
 	if (ifa == NULL) {
 		freeifaddrs(ifap);
 		return NULL;
 	}
 
 	ifb = ifa;
-	for (ifa = ifap; ifa != NULL; ifa = ifa->ifa_next)
+	for (ifa = ifap; ifa != NULL; ifa = ifa->ifa_next) {
+		if (ifa->ifa_addr == NULL)
+			continue;
 		if (ifa->ifa_addr->sa_family == AF_LINK
 		    && strcmp(ifa->ifa_name, ifb->ifa_name) == 0)
 			break;
+	}
 	if (ifa == NULL) {
 		freeifaddrs(ifap);
 		return NULL;
