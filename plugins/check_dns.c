@@ -72,10 +72,10 @@ thresholds *time_thresholds = NULL;
 static int
 qstrcmp(const void *p1, const void *p2)
 {
-	/* The actual arguments to this function are "pointers to
-	   pointers to char", but strcmp() arguments are "pointers
-	   to char", hence the following cast plus dereference */
-	return strcmp(* (char * const *) p1, * (char * const *) p2);
+    /* The actual arguments to this function are "pointers to
+       pointers to char", but strcmp() arguments are "pointers
+       to char", hence the following cast plus dereference */
+    return strcmp(* (char * const *) p1, * (char * const *) p2);
 }
 
 
@@ -131,8 +131,8 @@ main (int argc, char **argv)
     argv=np_extra_opts (&argc, argv, progname);
 
     if (process_arguments (argc, argv) == ERROR) {
-	    usage_va(_("Could not parse arguments"));
-	}
+        usage_va(_("Could not parse arguments"));
+    }
 
     /* get the command to run */
     xasprintf (&command_line, "%s %s %s %s", NSLOOKUP_COMMAND, query_type, query_address, dns_server);
@@ -187,16 +187,16 @@ main (int argc, char **argv)
         }
         /* Provide the server name\ip to error_scan when not using -s */
         else if (strlen(tmp_dns_server) == 0) {
-	        temp_buffer = strchr(chld_out.line[i], ':');
-	        temp_buffer++;
-	        if (temp_buffer > (char *)1) {
-	            /* Strip leading tabs */
-	            for (; *temp_buffer != '\0' && *temp_buffer == '\t'; temp_buffer++) {
-	                /* NOOP */;
-    	        }
-	            strip(temp_buffer);
-	            strncpy(tmp_dns_server, temp_buffer, ADDRESS_LENGTH);
-	        }
+            temp_buffer = strchr(chld_out.line[i], ':');
+            temp_buffer++;
+            if (temp_buffer > (char *)1) {
+                /* Strip leading tabs */
+                for (; *temp_buffer != '\0' && *temp_buffer == '\t'; temp_buffer++) {
+                    /* NOOP */;
+                }
+                strip(temp_buffer);
+                strncpy(tmp_dns_server, temp_buffer, ADDRESS_LENGTH);
+            }
         }
 
         if (strstr (chld_out.line[i], "Authoritative answers can be found from:")) {
@@ -240,21 +240,21 @@ main (int argc, char **argv)
             temp_buffer = index (chld_out.line[i], ':');
             char *temp_address = check_new_address(temp_buffer);
             addresses[n_addresses++] = temp_address;
-			/* Bind 9.11.x onwards reports AAAA records the same as A records */
-			/* It is assumed that nslookup returns a valid IPv4 or IPv6 address */
-			/* Hence we'll look for a colon : in the address to detect an IPv6 address */
-			if (strstr(temp_address, ":")) {
-			    if (verbose) {
+            /* Bind 9.11.x onwards reports AAAA records the same as A records */
+            /* It is assumed that nslookup returns a valid IPv4 or IPv6 address */
+            /* Hence we'll look for a colon : in the address to detect an IPv6 address */
+            if (strstr(temp_address, ":")) {
+                if (verbose) {
                     printf("Found AAAA record\n");
                 }
                 strncpy(query_found, "-querytype=AAAA", sizeof(query_found));
             }
-		    else {
+            else {
                 if (verbose) {
                     printf("Found A record\n");
                 }
                 strncpy(query_found, "-querytype=A", sizeof(query_found));
-			}
+            }
         }
         /* must be after other records with "name" as an identifier, as ptr does not spefify */
         else IF_RECORD("name =", "-querytype=PTR", "Found PTR record\n", ' ') }
@@ -281,9 +281,9 @@ main (int argc, char **argv)
         if (result != STATE_OK) {
             msg = strchr (chld_out.line[i], ':');
             if(msg) {
-	  	        msg++;
+                msg++;
             }
-	  	    else {
+            else {
                 msg = chld_out.line[i];
             }
             break;
@@ -294,17 +294,17 @@ main (int argc, char **argv)
     for(i = 0; i < chld_err.lines; i++) {
         if (verbose) {
             puts(chld_err.line[i]);
-		}
+        }
 
         if (error_scan (chld_err.line[i]) != STATE_OK) {
             result = max_state (result, error_scan (chld_err.line[i]));
             msg = strchr(chld_err.line[i], ':');
             if(msg) {
-			    msg++;
-			}
-			else {
-			    msg = chld_err.line[i];
-			}
+                msg++;
+            }
+            else {
+                msg = chld_err.line[i];
+            }
         }
     }
 
@@ -628,9 +628,9 @@ validate_arguments ()
     /* set the querytype to A if it has not already been specified. */
     /* If an end user wants both A and AAAA then they need to use ANY. */
     if (strcmp(query_type, "") == 0) {
-		/*query_type = "-querytype=A";*/
-		strcpy(query_type, "-querytype=");
-		strcat(query_type, "A");
+        /*query_type = "-querytype=A";*/
+        strcpy(query_type, "-querytype=");
+        strcat(query_type, "A");
         query_set = TRUE;
     }
 
