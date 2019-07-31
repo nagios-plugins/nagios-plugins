@@ -186,6 +186,24 @@ main (int argc, char **argv)
     return result;
 }
 
+/* Plugin-specific wrapper for vdie() */
+void
+check_http_die(int state, char* fmt, ...)
+{
+    char* msg = malloc(4096);
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(msg, 4096, fmt, ap );
+    va_end(ap);
+
+    if (show_url) {
+        die (state, "HTTP %s - %s://%s:%d%s - %s", state_text(state), use_ssl ? "https" : "http", host_name ? host_name : server_address, server_port, server_url, msg);
+    }
+    else {
+        die (state, "HTTP %s - %s", state_text(state), msg);
+    }
+}
+
 /* check whether a file exists */
 void
 test_file (char *path)
@@ -1304,11 +1322,11 @@ check_http (void)
                 status_code += sizeof(char);
 
             if (status_code == NULL || (strspn(status_code, "1234567890") != 3))
-                die (STATE_CRITICAL, _("HTTP CRITICAL: Invalid Status Line (%s)\n"), status_line);
+                check_http_die (STATE_CRITICAL, _("Invalid Status Line (%s)\n"), status_line);
 
         } else {
 
-            die(STATE_CRITICAL, _("HTTP CRITICAL: No Status Line\n"));
+            check_http_die (STATE_CRITICAL, _("No Status Line\n"));
         }
 
         http_status = atoi (status_code);
@@ -1316,7 +1334,7 @@ check_http (void)
         /* check the return code */
 
         if (http_status >= 600 || http_status < 100) {
-            die (STATE_CRITICAL, _("HTTP CRITICAL: Invalid Status (%s)\n"), status_line);
+            check_http_die (STATE_CRITICAL, _("Invalid Status (%s)\n"), status_line);
         }
 
         /* server errors result in a critical state */
@@ -1355,7 +1373,7 @@ check_http (void)
     free(status_line);
 
     if (bad_response)
-        die (STATE_CRITICAL, "HTTP CRITICAL - %s", msg);
+        check_http_die (STATE_CRITICAL, msg);
 
     /* reset the alarm - must be called *after* redir or we'll never die on redirects! */
     alarm (0);
