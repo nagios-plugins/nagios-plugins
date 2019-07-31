@@ -269,7 +269,7 @@ process_arguments (int argc, char **argv)
     }
 
     while (1) {
-        c = getopt_long (argc, argv, "Vvh46t:c:w:A:k:H:P:j:T:I:a:b:d:e:p:s:R:r:u:f:C:J:K:nlLS::m:M:NE", longopts, &option);
+        c = getopt_long (argc, argv, "Vvh46t:c:w:A:k:H:P:j:T:I:a:b:d:e:p:s:R:r:u:f:C:J:K:nlLS::m:M:NEU", longopts, &option);
         if (c == -1 || c == EOF)
             break;
 
@@ -420,6 +420,8 @@ enable_ssl:
             server_address = strdup (optarg);
             break;
         case 'u': /* URL path */
+            /* server_url is first allocated in main() */
+            free(server_url);
             server_url = strdup (optarg);
             server_url_length = strlen (server_url);
             break;
@@ -1450,6 +1452,12 @@ check_http (void)
     else {
         msg[strlen(msg)-3] = '\0';
     }
+
+    /* show checked URL */
+    if (show_url)
+        xasprintf (&msg, _("%s - %s://%s:%d%s"), msg, use_ssl ? "https" : "http", host_name ? host_name : server_address, server_port, server_url);
+
+
 
     /* check elapsed time */
     if (show_extended_perfdata) {
