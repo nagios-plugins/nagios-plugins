@@ -1209,46 +1209,26 @@ check_http (void)
     np_net_ssl_cleanup();
 #endif
 
-  /* Save check time */
-  microsec = deltime (tv);
-  elapsed_time = (double)microsec / 1.0e6;
+    /* Save check time */
+    microsec = deltime (tv);
+    elapsed_time = (double)microsec / 1.0e6;
 
-  /* leave full_page untouched so we can free it later */
-  pos = page = full_page;
+    /* leave full_page untouched so we can free it later */
+    pos = page = full_page;
 
-  if (verbose)
-    printf ("%s://%s:%d%s is %d characters\n",
-      use_ssl ? "https" : "http", server_address,
-      server_port, server_url, (int)pagesize);
+    if (verbose)
+        printf ("%s://%s:%d%s is %d characters\n",
+            use_ssl ? "https" : "http", server_address,
+            server_port, server_url, (int)pagesize);
 
-  /* find status line and null-terminate it */
-  page += (size_t) strcspn (page, "\r\n");
-  save_char = *page;
-  *page = '\0';
-  status_line = strdup(pos);
-  *page = save_char;
-  pos = page;
-
-  strip (status_line);
-  if (verbose)
-    printf ("STATUS: %s\n", status_line);
-
-  /* find header info and null-terminate it */
-  header = page;
-  while (strlen(page)) {
-    if (!strncmp(page, "\r\n\r\n", 4) || !strncmp(page, "\n\n", 2))
-     break;
-    while (*page == '\r' || *page == '\n') { ++page; }
+    /* find status line and null-terminate it */
     page += (size_t) strcspn (page, "\r\n");
     save_char = *page;
     *page = '\0';
     status_line = strdup(pos);
     *page = save_char;
     pos = page;
-  }
-  page += (size_t) strspn (page, "\r\n");
-  header[pos - header] = 0;
-  while (*header == '\r' || *header == '\n') { ++header; }
+
 
     strip (status_line);
     if (verbose)
