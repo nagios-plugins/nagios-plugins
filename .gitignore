@@ -211,6 +211,7 @@ NP-VERSION-FILE
 /plugins/libnpcommon.a
 /plugins/negate
 /plugins/stamp-h*
+/plugins/remove_perfdata
 /plugins/urlize
 
 # /plugins/t/
