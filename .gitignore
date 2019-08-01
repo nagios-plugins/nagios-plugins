@@ -101,6 +101,7 @@ NP-VERSION-FILE
 /gl/warn-on-use.h
 /gl/wchar.h
 /gl/wctype.h
+/gl/*~
 
 # /lib/
 /lib/.deps
