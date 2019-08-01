@@ -225,6 +225,7 @@ main (int argc, char **argv)
   int temp_result;
 
   struct mount_entry *me;
+  struct mount_entry *last_me;
   struct fs_usage fsp, tmpfsp;
   struct parameter_list *temp_list, *path;
 
@@ -289,6 +290,8 @@ main (int argc, char **argv)
       path->best_match = me;
       path->group = group;
       set_all_thresholds(path);
+
+      last_me = me;
     }
   }
   np_set_best_match(path_select_list, mount_list, exact_match);
