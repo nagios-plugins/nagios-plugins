@@ -1,5 +1,5 @@
 /* Invalid parameter handler for MSVC runtime libraries.
-   Copyright (C) 2011-2013 Free Software Foundation, Inc.
+   Copyright (C) 2011-2015 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -14,8 +14,8 @@
    You should have received a copy of the GNU General Public License along
    with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef NAGIOS_MSVC_INVAL_H_INCLUDED
-#define NAGIOS_MSVC_INVAL_H_INCLUDED
+#ifndef _MSVC_INVAL_H
+#define _MSVC_INVAL_H
 
 /* With MSVC runtime libraries with the "invalid parameter handler" concept,
    functions like fprintf(), dup2(), or close() crash when the caller passes
@@ -219,4 +219,4 @@ extern struct gl_msvc_inval_per_thread *gl_msvc_inval_current (void);
 
 #endif
 
-#endif /* NAGIOS_MSVC_INVAL_H_INCLUDED */
+#endif /* _MSVC_INVAL_H */

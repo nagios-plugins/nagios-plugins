@@ -1,5 +1,5 @@
 # DO NOT EDIT! GENERATED AUTOMATICALLY!
-# Copyright (C) 2002-2013 Free Software Foundation, Inc.
+# Copyright (C) 2002-2015 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,10 +39,16 @@ AC_DEFUN([gl_EARLY],
   m4_pattern_allow([^gl_LTLIBOBJS$])dnl a variable
   AC_REQUIRE([gl_PROG_AR_RANLIB])
   AC_REQUIRE([AM_PROG_CC_C_O])
+  # Code from module absolute-header:
   # Code from module alloca-opt:
+  # Code from module argmatch:
   # Code from module arpa_inet:
+  # Code from module assure:
   # Code from module base64:
   # Code from module btowc:
+  # Code from module c-ctype:
+  # Code from module c-strcase:
+  # Code from module c-strcaseeq:
   # Code from module configmake:
   # Code from module crypto/sha1:
   # Code from module dirname:
@@ -68,12 +74,15 @@ AC_DEFUN([gl_EARLY],
   # Code from module getopt-posix:
   # Code from module gettext:
   # Code from module gettext-h:
+  # Code from module gettimeofday:
   # Code from module havelib:
   # Code from module hostent:
+  # Code from module human:
   # Code from module idpriv-droptemp:
   # Code from module include_next:
   # Code from module inet_ntop:
   # Code from module intprops:
+  # Code from module inttypes-incomplete:
   # Code from module langinfo:
   # Code from module largefile:
   AC_REQUIRE([AC_SYS_LARGEFILE])
@@ -81,7 +90,6 @@ AC_DEFUN([gl_EARLY],
   # Code from module locale:
   # Code from module localeconv:
   # Code from module lock:
-  # Code from module malloc-gnu:
   # Code from module malloc-posix:
   # Code from module malloca:
   # Code from module math:
@@ -99,6 +107,9 @@ AC_DEFUN([gl_EARLY],
   # Code from module netinet_in:
   # Code from module nl_langinfo:
   # Code from module nocrash:
+  # Code from module quote:
+  # Code from module quotearg:
+  # Code from module quotearg-simple:
   # Code from module read:
   # Code from module regex:
   # Code from module safe-read:
@@ -132,7 +143,10 @@ AC_DEFUN([gl_EARLY],
   # Code from module strnlen:
   # Code from module strsep:
   # Code from module strstr-simple:
+  # Code from module strtoull:
+  # Code from module strtoumax:
   # Code from module sys_socket:
+  # Code from module sys_time:
   # Code from module sys_types:
   # Code from module sys_uio:
   # Code from module threadlib:
@@ -154,6 +168,8 @@ AC_DEFUN([gl_EARLY],
   # Code from module xalloc-oversized:
   # Code from module xsize:
   # Code from module xstrndup:
+  # Code from module xstrtol:
+  # Code from module xstrtoumax:
 ])
 
 # This macro should be invoked from ./configure.ac, in the section
@@ -260,7 +276,14 @@ AC_DEFUN([gl_INIT],
   AM_GNU_GETTEXT_VERSION([0.18.1])
   AC_SUBST([LIBINTL])
   AC_SUBST([LTLIBINTL])
+  gl_FUNC_GETTIMEOFDAY
+  if test $HAVE_GETTIMEOFDAY = 0 || test $REPLACE_GETTIMEOFDAY = 1; then
+    AC_LIBOBJ([gettimeofday])
+    gl_PREREQ_GETTIMEOFDAY
+  fi
+  gl_SYS_TIME_MODULE_INDICATOR([gettimeofday])
   gl_HOSTENT
+  gl_HUMAN
   gl_IDPRIV
   gl_FUNC_INET_NTOP
   if test $HAVE_INET_NTOP = 0 || test $REPLACE_INET_NTOP = 1; then
@@ -268,6 +291,7 @@ AC_DEFUN([gl_INIT],
     gl_PREREQ_INET_NTOP
   fi
   gl_ARPA_INET_MODULE_INDICATOR([inet_ntop])
+  gl_INTTYPES_INCOMPLETE
   gl_LANGINFO_H
   AC_REQUIRE([gl_LARGEFILE])
   gl_LOCALCHARSET
@@ -282,11 +306,6 @@ AC_DEFUN([gl_INIT],
   gl_LOCALE_MODULE_INDICATOR([localeconv])
   gl_LOCK
   gl_MODULE_INDICATOR([lock])
-  gl_FUNC_MALLOC_GNU
-  if test $REPLACE_MALLOC = 1; then
-    AC_LIBOBJ([malloc])
-  fi
-  gl_MODULE_INDICATOR([malloc-gnu])
   gl_FUNC_MALLOC_POSIX
   if test $REPLACE_MALLOC = 1; then
     AC_LIBOBJ([malloc])
@@ -351,6 +370,8 @@ AC_DEFUN([gl_INIT],
     AC_LIBOBJ([nl_langinfo])
   fi
   gl_LANGINFO_MODULE_INDICATOR([nl_langinfo])
+  gl_QUOTE
+  gl_QUOTEARG
   gl_FUNC_READ
   if test $REPLACE_READ = 1; then
     AC_LIBOBJ([read])
@@ -373,8 +394,8 @@ AC_DEFUN([gl_INIT],
   gl_FUNC_SNPRINTF
   gl_STDIO_MODULE_INDICATOR([snprintf])
   gl_MODULE_INDICATOR([snprintf])
-  gl_SOCKETLIB
-  gl_SOCKETS
+  AC_REQUIRE([gl_SOCKETLIB])
+  AC_REQUIRE([gl_SOCKETS])
   gl_TYPE_SOCKLEN_T
   gt_TYPE_SSIZE_T
   gl_STDALIGN_H
@@ -439,7 +460,21 @@ AC_DEFUN([gl_INIT],
     AC_LIBOBJ([strstr])
   fi
   gl_STRING_MODULE_INDICATOR([strstr])
-  gl_HEADER_SYS_SOCKET
+  gl_FUNC_STRTOULL
+  if test $HAVE_STRTOULL = 0; then
+    AC_LIBOBJ([strtoull])
+    gl_PREREQ_STRTOULL
+  fi
+  gl_STDLIB_MODULE_INDICATOR([strtoull])
+  gl_FUNC_STRTOUMAX
+  if test $HAVE_DECL_STRTOUMAX = 0 || test $REPLACE_STRTOUMAX = 1; then
+    AC_LIBOBJ([strtoumax])
+    gl_PREREQ_STRTOUMAX
+  fi
+  gl_INTTYPES_MODULE_INDICATOR([strtoumax])
+  AC_REQUIRE([gl_HEADER_SYS_SOCKET])
+  AC_PROG_MKDIR_P
+  gl_HEADER_SYS_TIME_H
   AC_PROG_MKDIR_P
   gl_SYS_TYPES_H
   AC_PROG_MKDIR_P
@@ -485,6 +520,7 @@ AC_DEFUN([gl_INIT],
   gl_XALLOC
   gl_XSIZE
   gl_XSTRNDUP
+  gl_XSTRTOL
   # End of code from modules
   m4_ifval(gl_LIBSOURCES_LIST, [
     m4_syscmd([test ! -d ]m4_defn([gl_LIBSOURCES_DIR])[ ||
@@ -631,14 +667,23 @@ AC_DEFUN([gl_FILE_LIST], [
   build-aux/snippet/c++defs.h
   build-aux/snippet/warn-on-use.h
   lib/alloca.in.h
+  lib/argmatch.c
+  lib/argmatch.h
   lib/arpa_inet.in.h
   lib/asnprintf.c
   lib/asprintf.c
+  lib/assure.h
   lib/base64.c
   lib/base64.h
   lib/basename-lgpl.c
   lib/basename.c
   lib/btowc.c
+  lib/c-ctype.c
+  lib/c-ctype.h
+  lib/c-strcase.h
+  lib/c-strcasecmp.c
+  lib/c-strcaseeq.h
+  lib/c-strncasecmp.c
   lib/config.charset
   lib/dirname-lgpl.c
   lib/dirname.c
@@ -670,13 +715,18 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/getopt1.c
   lib/getopt_int.h
   lib/gettext.h
+  lib/gettimeofday.c
+  lib/gl_openssl.h
   lib/glthread/lock.c
   lib/glthread/lock.h
   lib/glthread/threadlib.c
+  lib/human.c
+  lib/human.h
   lib/idpriv-droptemp.c
   lib/idpriv.h
   lib/inet_ntop.c
   lib/intprops.h
+  lib/inttypes.in.h
   lib/itold.c
   lib/langinfo.in.h
   lib/localcharset.c
@@ -710,6 +760,9 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/printf-args.h
   lib/printf-parse.c
   lib/printf-parse.h
+  lib/quote.h
+  lib/quotearg.c
+  lib/quotearg.h
   lib/read.c
   lib/ref-add.sin
   lib/ref-del.sin
@@ -749,8 +802,14 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/strnlen.c
   lib/strsep.c
   lib/strstr.c
+  lib/strtoimax.c
+  lib/strtol.c
+  lib/strtoul.c
+  lib/strtoull.c
+  lib/strtoumax.c
   lib/sys_socket.c
   lib/sys_socket.in.h
+  lib/sys_time.in.h
   lib/sys_types.in.h
   lib/sys_uio.in.h
   lib/time.in.h
@@ -777,7 +836,13 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/xsize.h
   lib/xstrndup.c
   lib/xstrndup.h
+  lib/xstrtol-error.c
+  lib/xstrtol.c
+  lib/xstrtol.h
+  lib/xstrtoul.c
+  lib/xstrtoumax.c
   m4/00gnulib.m4
+  m4/absolute-header.m4
   m4/alloca.m4
   m4/arpa_inet_h.m4
   m4/base64.m4
@@ -803,10 +868,13 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/getloadavg.m4
   m4/getopt.m4
   m4/gettext.m4
+  m4/gettimeofday.m4
+  m4/gl-openssl.m4
   m4/glibc2.m4
   m4/glibc21.m4
   m4/gnulib-common.m4
   m4/hostent.m4
+  m4/human.m4
   m4/iconv.m4
   m4/idpriv.m4
   m4/include_next.m4
@@ -818,6 +886,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/intmax.m4
   m4/intmax_t.m4
   m4/inttypes-pri.m4
+  m4/inttypes.m4
   m4/inttypes_h.m4
   m4/langinfo_h.m4
   m4/largefile.m4
@@ -859,6 +928,8 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/printf-posix.m4
   m4/printf.m4
   m4/progtest.m4
+  m4/quote.m4
+  m4/quotearg.m4
   m4/read.m4
   m4/regex.m4
   m4/safe-read.m4
@@ -888,7 +959,10 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/strnlen.m4
   m4/strsep.m4
   m4/strstr.m4
+  m4/strtoull.m4
+  m4/strtoumax.m4
   m4/sys_socket_h.m4
+  m4/sys_time_h.m4
   m4/sys_types_h.m4
   m4/sys_uio_h.m4
   m4/threadlib.m4
@@ -910,4 +984,5 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/xalloc.m4
   m4/xsize.m4
   m4/xstrndup.m4
+  m4/xstrtol.m4
 ])
