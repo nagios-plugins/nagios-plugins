@@ -1,7 +1,7 @@
-# serial 30
+# serial 31
 # How to list mounted file systems.
 
-# Copyright (C) 1998-2004, 2006, 2009-2013 Free Software Foundation, Inc.
+# Copyright (C) 1998-2004, 2006, 2009-2015 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -151,6 +151,26 @@ if test $ac_cv_func_getmntent = yes; then
         [Define if there is a function named getmntent for reading the list
          of mounted file systems, and that function takes a single argument.
          (4.3BSD, SunOS, HP-UX, Dynix, Irix)])
+      AC_CHECK_FUNCS([hasmntopt])
+
+      AC_ARG_WITH([libmount],
+        [AS_HELP_STRING([--with-libmount],
+          [use libmount if available to parse the system mount list.])],
+        [],
+        dnl libmount has the advantage of propagating accurate device IDs for
+        dnl each entry, but the disadvantage of many dependent shared libs
+        dnl with associated runtime startup overhead and virt mem usage.
+        [with_libmount=no])
+
+      # Check for libmount to support /proc/self/mountinfo on Linux
+      if test "x$with_libmount" != xno; then
+        AC_CHECK_LIB([mount], [mnt_new_table_from_file],
+           [AC_DEFINE([MOUNTED_PROC_MOUNTINFO], [1],
+             [Define if want to use /proc/self/mountinfo on Linux.])
+            LIBS="-lmount $LIBS"],
+           [test -f /proc/self/mountinfo &&
+             AC_MSG_WARN([/proc/self/mountinfo present but libmount missing.])])
+      fi
     fi
   fi
 

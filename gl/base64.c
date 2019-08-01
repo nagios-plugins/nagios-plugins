@@ -1,5 +1,5 @@
 /* base64.c -- Encode binary data using printable characters.
-   Copyright (C) 1999-2001, 2004-2006, 2009-2013 Free Software Foundation, Inc.
+   Copyright (C) 1999-2001, 2004-2006, 2009-2015 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -59,6 +59,27 @@ to_uchar (char ch)
   return ch;
 }
 
+static const char b64c[64] =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+/* Base64 encode IN array of size INLEN into OUT array. OUT needs
+   to be of length >= BASE64_LENGTH(INLEN), and INLEN needs to be
+   a multiple of 3.  */
+static void
+base64_encode_fast (const char *restrict in, size_t inlen, char *restrict out)
+{
+  while (inlen)
+    {
+      *out++ = b64c[to_uchar (in[0]) >> 2];
+      *out++ = b64c[((to_uchar (in[0]) << 4) + (to_uchar (in[1]) >> 4)) & 0x3f];
+      *out++ = b64c[((to_uchar (in[1]) << 2) + (to_uchar (in[2]) >> 6)) & 0x3f];
+      *out++ = b64c[to_uchar (in[2]) & 0x3f];
+
+      inlen -= 3;
+      in += 3;
+    }
+}
+
 /* Base64 encode IN array of size INLEN into OUT array of size OUTLEN.
    If OUTLEN is less than BASE64_LENGTH(INLEN), write as many bytes as
    possible.  If OUTLEN is larger than BASE64_LENGTH(INLEN), also zero
@@ -67,28 +88,38 @@ void
 base64_encode (const char *restrict in, size_t inlen,
                char *restrict out, size_t outlen)
 {
-  static const char b64str[64] =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  /* Note this outlen constraint can be enforced at compile time.
+     I.E. that the output buffer is exactly large enough to hold
+     the encoded inlen bytes.  The inlen constraints (of corresponding
+     to outlen, and being a multiple of 3) can change at runtime
+     at the end of input.  However the common case when reading
+     large inputs is to have both constraints satisfied, so we depend
+     on both in base_encode_fast().  */
+  if (outlen % 4 == 0 && inlen == outlen / 4 * 3)
+    {
+      base64_encode_fast (in, inlen, out);
+      return;
+    }
 
   while (inlen && outlen)
     {
-      *out++ = b64str[(to_uchar (in[0]) >> 2) & 0x3f];
+      *out++ = b64c[to_uchar (in[0]) >> 2];
       if (!--outlen)
         break;
-      *out++ = b64str[((to_uchar (in[0]) << 4)
+      *out++ = b64c[((to_uchar (in[0]) << 4)
                        + (--inlen ? to_uchar (in[1]) >> 4 : 0))
                       & 0x3f];
       if (!--outlen)
         break;
       *out++ =
         (inlen
-         ? b64str[((to_uchar (in[1]) << 2)
+         ? b64c[((to_uchar (in[1]) << 2)
                    + (--inlen ? to_uchar (in[2]) >> 6 : 0))
                   & 0x3f]
          : '=');
       if (!--outlen)
         break;
-      *out++ = inlen ? b64str[to_uchar (in[2]) & 0x3f] : '=';
+      *out++ = inlen ? b64c[to_uchar (in[2]) & 0x3f] : '=';
       if (!--outlen)
         break;
       if (inlen)

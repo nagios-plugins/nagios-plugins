@@ -1,5 +1,5 @@
 /* Supplemental information about the floating-point formats.
-   Copyright (C) 2007, 2009-2013 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2009-2015 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2007.
 
    This program is free software; you can redistribute it and/or modify
@@ -15,8 +15,8 @@
    You should have received a copy of the GNU General Public License
    along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef NAGIOS_FLOATPLUS_H_INCLUDED
-#define NAGIOS_FLOATPLUS_H_INCLUDED
+#ifndef _FLOATPLUS_H
+#define _FLOATPLUS_H
 
 #include <float.h>
 #include <limits.h>
@@ -144,4 +144,4 @@ typedef int verify_sizeof_flt[SIZEOF_FLT <= sizeof (float) ? 1 : -1];
 typedef int verify_sizeof_dbl[SIZEOF_DBL <= sizeof (double) ? 1 : - 1];
 typedef int verify_sizeof_ldbl[SIZEOF_LDBL <= sizeof (long double) ? 1 : - 1];
 
-#endif /* NAGIOS_FLOATPLUS_H_INCLUDED */
+#endif /* _FLOATPLUS_H */

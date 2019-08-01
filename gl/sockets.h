@@ -1,6 +1,6 @@
 /* sockets.h - wrappers for Windows socket functions
 
-   Copyright (C) 2008-2013 Free Software Foundation, Inc.
+   Copyright (C) 2008-2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -17,8 +17,8 @@
 
 /* Written by Simon Josefsson */
 
-#ifndef NAGIOS_SOCKETS_H_INCLUDED
-# define NAGIOS_SOCKETS_H_INCLUDED
+#ifndef SOCKETS_H
+# define SOCKETS_H 1
 
 #define SOCKETS_1_0 0x100  /* don't use - does not work on Windows XP */
 #define SOCKETS_1_1 0x101
@@ -59,4 +59,4 @@ gl_fd_to_handle (int fd)
 
 #endif /* WINDOWS_SOCKETS */
 
-#endif /* NAGIOS_SOCKETS_H_INCLUDED */
+#endif /* SOCKETS_H */

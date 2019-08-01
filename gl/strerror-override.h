@@ -1,6 +1,6 @@
 /* strerror-override.h --- POSIX compatible system error routine
 
-   Copyright (C) 2010-2013 Free Software Foundation, Inc.
+   Copyright (C) 2010-2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,8 +15,8 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef NAGIOS_GL_STRERROR_OVERRIDE_H_INCLUDED
-# define NAGIOS_GL_STRERROR_OVERRIDE_H_INCLUDED
+#ifndef _GL_STRERROR_OVERRIDE_H
+# define _GL_STRERROR_OVERRIDE_H
 
 # include <errno.h>
 # include <stddef.h>
@@ -48,9 +48,9 @@
      || GNULIB_defined_EOWNERDEAD \
      || GNULIB_defined_ENOTRECOVERABLE \
      || GNULIB_defined_EILSEQ
-extern const char *strerror_override (int errnum);
+extern const char *strerror_override (int errnum) _GL_ATTRIBUTE_CONST;
 # else
 #  define strerror_override(ignored) NULL
 # endif
 
-#endif /* NAGIOS_GL_STRERROR_OVERRIDE_H_INCLUDED */
+#endif /* _GL_STRERROR_OVERRIDE_H */

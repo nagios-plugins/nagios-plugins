@@ -1,5 +1,5 @@
 /* Internal declarations for getopt.
-   Copyright (C) 1989-1994, 1996-1999, 2001, 2003-2004, 2009-2013 Free Software
+   Copyright (C) 1989-1994, 1996-1999, 2001, 2003-2004, 2009-2015 Free Software
    Foundation, Inc.
    This file is part of the GNU C Library.
 
@@ -16,8 +16,8 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef NAGIOS_GL_GETOPT_INT_H_INCLUDED
-#define NAGIOS_GL_GETOPT_INT_H_INCLUDED
+#ifndef _GETOPT_INT_H
+#define _GETOPT_INT_H   1
 
 #include <getopt.h>
 
