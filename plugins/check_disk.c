@@ -72,6 +72,9 @@ static int show_local_fs = 0;
 /* If nonzero, show only local filesystems but call stat() on remote ones. */
 static int stat_remote_fs = 0;
 
+/* If nonzero, skip "fake" filesystems created by the system */
+static int skip_fake_fs = 0;
+
 /* If positive, the units to use when printing sizes;
    if negative, the human-readable base.  */
 /* static int output_block_size; */
@@ -257,6 +260,29 @@ main (int argc, char **argv)
    */
   if (path_selected == FALSE) {
     for (me = mount_list; me; me = me->me_next) {
+
+      if (strcmp(me->me_type, "autofs") == 0 && show_local_fs) {
+        if (last_me == NULL)
+          mount_list = me;
+        else
+          last_me->me_next = me->me_next;
+        free_mount_entry (me);
+        continue;
+      }
+      if (skip_fake_fs &&
+          (strcmp(me->me_type, "sysfs") == 0 || strcmp(me->me_type, "proc") == 0
+        || strcmp(me->me_type, "debugfs") == 0 || strcmp(me->me_type, "tracefs") == 0
+        || strcmp(me->me_type, "fusectl") == 0 || strcmp(me->me_type, "fuse.gvfsd-fuse") == 0
+        || strcmp(me->me_type, "cgroup") == 0 || strstr(me->me_type, "tmpfs") != NULL))
+      {
+        if (last_me == NULL)
+          mount_list = me->me_next;
+        else
+          last_me->me_next = me->me_next;
+        free_mount_entry (me);
+        continue;
+      }
+
       if (! (path = np_find_parameter(path_select_list, me->me_mountdir))) {
         path = np_add_parameter(&path_select_list, me->me_mountdir);
       }
@@ -546,6 +572,10 @@ process_arguments (int argc, char **argv)
   char errbuf[MAX_INPUT_BUFFER];
   int fnd = 0;
 
+  enum {
+    SKIP_FAKE_FS = CHAR_MAX + 1
+  };
+
   int option = 0;
   static struct option longopts[] = {
     {"timeout", required_argument, 0, 't'},
@@ -575,6 +605,7 @@ process_arguments (int argc, char **argv)
     {"ignore-eregi-path", required_argument, 0, 'I'},
     {"ignore-eregi-partition", required_argument, 0, 'I'},
     {"local", no_argument, 0, 'l'},
+    {"skip-fake-fs", no_argument, 0, SKIP_FAKE_FS},
     {"stat-remote-fs", no_argument, 0, 'L'},
     {"mountpoint", no_argument, 0, 'M'},
     {"errors-only", no_argument, 0, 'e'},
@@ -705,6 +736,9 @@ process_arguments (int argc, char **argv)
       stat_remote_fs = 1;
     case 'l':
       show_local_fs = 1;
+      break;
+    case SKIP_FAKE_FS:
+      skip_fake_fs = 1;
       break;
     case 'p':                 /* select path */
       if (! (warn_freespace_units || crit_freespace_units || warn_freespace_percent ||
@@ -1030,10 +1064,14 @@ print_help (void)
   printf ("    %s\n", _("Don't account root-reserved blocks into freespace in perfdata"));
   printf (" %s\n", "-g, --group=NAME");
   printf ("    %s\n", _("Group paths. Thresholds apply to (free-)space of all partitions together"));
+  printf (" %s\n", "-H, --human");
+  printf ("    %s\n", _("Produce human-readable output."));
   printf (" %s\n", "-k, --kilobytes");
   printf ("    %s\n", _("Same as '--units kB'"));
   printf (" %s\n", "-l, --local");
   printf ("    %s\n", _("Only check local filesystems"));
+  printf (" %s\n", "    --skip-fake-fs");
+  printf ("    %s\n", _("Skip 'fake' mountpoints created by the system"));
   printf (" %s\n", "-L, --stat-remote-fs");
   printf ("    %s\n", _("Only check local filesystems against thresholds. Yet call stat on remote filesystems"));
   printf ("    %s\n", _("to test if they are accessible (e.g. to detect Stale NFS Handles)"));
@@ -1082,8 +1120,8 @@ print_usage (void)
 {
   printf ("%s\n", _("Usage:"));
   printf (" %s -w limit -c limit [-W limit] [-K limit] {-p path | -x device}\n", progname);
-  printf ("[-C] [-E] [-e] [-f] [-g group ] [-k] [-l] [-M] [-m] [-R path ] [-r path ]\n");
-  printf ("[-t timeout] [-u unit] [-v] [-X type] [-N type] [-n]\n");
+  printf ("[-C] [-E] [-e] [-f] [-g group ] [-H] [-k] [-l] [-M] [-m] [-R path ] [-r path ]\n");
+  printf ("[-t timeout] [-u unit] [-v] [-X type] [-N type] [-n] \n");
 }
 
 void
