@@ -1319,7 +1319,8 @@ check_http (void)
 
             status_code = strchr(status_line, ' ');
             if (status_code != NULL) 
-                status_code += sizeof(char);
+                /* Normally the following line runs once, but some servers put extra whitespace between the version number and status code. */
+                while (*status_code == ' ') { status_code += sizeof(char); }
 
             if (status_code == NULL || (strspn(status_code, "1234567890") != 3))
                 check_http_die (STATE_CRITICAL, _("Invalid Status Line (%s)\n"), status_line);
