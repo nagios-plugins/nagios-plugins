@@ -19,6 +19,7 @@
 #
 
 require 5.004;
+use utf8::all;
 use POSIX;
 use strict;
 use Getopt::Long;
@@ -35,7 +36,7 @@ sub print_usage ();
 $PROGNAME = "check_disk_smb";
 
 $ENV{'PATH'}='@TRUSTED_PATH@';
-$ENV{'BASH_ENV'}=''; 
+$ENV{'BASH_ENV'}='';
 $ENV{'ENV'}='';
 
 Getopt::Long::Configure('bundling');
@@ -70,15 +71,15 @@ $smbclient    || usage("check requires smbclient, smbclient not set\n");
 # Options checking
 
 ($opt_H) || ($opt_H = shift @ARGV) || usage("Host name not specified\n");
-my $host = $1 if ($opt_H =~ /^([-_.A-Za-z0-9 ]+\$?)$/);
+my $host = $1 if ($opt_H =~ /^([^":|<>\*\?\\\/]+)$/);
 ($host) || usage("Invalid host: $opt_H\n");
 
 ($opt_s) || ($opt_s = shift @ARGV) || usage("Share volume not specified\n");
-my $share = $1 if ($opt_s =~ /^([-_.A-Za-z0-9 ]+\$?)$/);
+my $share = $1 if ($opt_s =~ /^([^":|<>\*\?\\\/]+\$?)$/);
 ($share) || usage("Invalid share: $opt_s\n");
 
 defined($opt_u) || ($opt_u = shift @ARGV) || ($opt_u = "guest");
-my $user = $1 if ($opt_u =~ /^([-_.A-Za-z0-9\\]*)$/);
+my $user = $1 if ($opt_u =~ /^([^":|<>\*\?\/(?<!\)]+)$/);
 defined($user) || usage("Invalid user: $opt_u\n");
 
 defined($opt_p) || ($opt_p = shift @ARGV) || ($opt_p = "");
@@ -184,7 +185,7 @@ my $perfdata = "";
 my @lines = undef;
 
 # Just in case of problems, let's not hang Nagios
-$SIG{'ALRM'} = sub { 
+$SIG{'ALRM'} = sub {
 	print "No Answer from Client\n";
 	exit $ERRORS{"UNKNOWN"};
 };
@@ -218,7 +219,7 @@ alarm(0);
 $_ = $lines[$#lines-1];
 #print "$_\n";
 
-#Process the last line to get free space.  
+#Process the last line to get free space.
 #If line does not match required regexp, return an UNKNOWN error
 if (/\s*(\d*) blocks of size (\d*)\. (\d*) blocks available/) {
 
@@ -300,8 +301,8 @@ print "$state\n" if ($verbose);
 exit $ERRORS{$state};
 
 sub print_usage () {
-	print "Usage: $PROGNAME -H <host> -s <share> -u <user> 
-      -p <password> -w <warn> -c <crit> [-W <workgroup>] [-P <port>] 
+	print "Usage: $PROGNAME -H <host> -s <share> -u <user>
+      -p <password> -w <warn> -c <crit> [-W <workgroup>] [-P <port>]
       [-a <IP>] [-C <configfile>]\n";
 }
 
