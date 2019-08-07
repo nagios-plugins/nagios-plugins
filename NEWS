@@ -11,6 +11,7 @@ This file documents the major additions and syntax changes between releases.
 	check_disk: Add support for base-10 units kB, MB, GB, TB; rename base-2 units to KiB, MiB, GiB, TiB
 	check_disk_smb: Add configfile feature
 	check_disk_smb: added additional smb support
+	check_file_age: Use extended plugin output to show one file per line
 	check_http: New parameter `--verify-host` will check if -H hostname matches the SSL certificate
 	check_icmp: Add Jitter, MOS, Score (Alessandro Ren)
 	check_ldap: Add support for checking LDAP cert age (Guillaume Rousse)
@@ -36,6 +37,9 @@ This file documents the major additions and syntax changes between releases.
 	check_disk: autofs being mounted despite '-l'. Fixed, and also excluded some system "fake" mountpoints
 	check_dns: Fix for Bind 9.11.x AAAA records being reported with A record format (Troy Lea)
 	check_dns: reverse (PTR) check is now case insensitive
+	check_file_age: For multiple files, use the "worst" status instead of the "last" one
+	check_file_age: perfdata labels when using multiple files
+	check_file_age: For multiple files, don't exit immediately on first file not found
 	check_http: Additional header/status checking
 	check_http: Fix --no-body
 	check_http: When checking certificate, don't check content/status unless specified by --continue-after-certificate
