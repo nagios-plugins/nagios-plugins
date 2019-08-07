@@ -412,6 +412,7 @@ main (int argc, char **argv)
 		bzero(type, sizeof(type));
 
 		is_counter=0;
+		is_ticks = 0;
 		/* We strip out the datatype indicator for PHBs */
 		if (strstr (response, "Gauge: ")) {
 			show = strstr (response, "Gauge: ") + 7;
@@ -573,11 +574,6 @@ main (int argc, char **argv)
 			xasprintf (&outbuff, "%s%s%s%s%s", outbuff, (i == 0) ? " " : output_delim,
 				mark (iresult), show, mark (iresult));
 
-		/* Add a semicolon to separate multiple oids */
-		if(outbuff != NULL && line != chld_out.lines-1) {
-			xasprintf (&outbuff, "%s;", outbuff);
-		}
-				
 		/* Append a unit string for this OID if there is one */
 		if (nunits > (size_t)0 && (size_t)i < nunits && unitv[i] != NULL)
 			xasprintf (&outbuff, "%s %s", outbuff, unitv[i]);
