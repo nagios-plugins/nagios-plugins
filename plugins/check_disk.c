@@ -75,6 +75,9 @@ static int stat_remote_fs = 0;
 /* If nonzero, skip "fake" filesystems created by the system */
 static int skip_fake_fs = 0;
 
+/* If nonzero and -w/-c are set on both percentile and raw units, alert when either unit's threshold is crossed */
+static int combined_thresholds = 0;
+
 /* If positive, the units to use when printing sizes;
    if negative, the human-readable base.  */
 /* static int output_block_size; */
@@ -223,6 +226,7 @@ main (int argc, char **argv)
   double warning_high_tide;
   double critical_high_tide;
   int temp_result;
+  int temp_result2;
 
   struct mount_entry *me;
   struct mount_entry *last_me;
@@ -378,31 +382,58 @@ main (int argc, char **argv)
           me->me_mountdir, path->dused_pct, path->dfree_pct, (double)path->dused_units, (double)path->dfree_units, (double)path->dtotal_units, path->dused_inodes_percent, path->dfree_inodes_percent, fsp.fsu_blocksize, mult);
       }
 
-      /* Threshold comparisons */
+      /** Threshold comparisons
+       * If combined_thresholds is set, the "units" and "percent" will
+       * have their minimum state calculated, and the disk_result will be the
+       * maximum of these minima. 
+       * Note that both "units" and "percent" MUST be set, otherwise
+       * the check will always return OK.
+       *
+       * If combined_thresholds is not set, the maximum of all get_status() 
+       * calls will be used.
+       */
+
 
       temp_result = get_status(path->dfree_units, path->freespace_units);
       if (verbose_machine_output) printf("Freespace_units result=%d\n", temp_result);
-      disk_result = max_state( disk_result, temp_result );
+      temp_result2 = get_status(path->dfree_pct, path->freespace_percent);
+      if (verbose_machine_output) printf("Freespace%% result=%d\n", temp_result2);
 
-      temp_result = get_status(path->dfree_pct, path->freespace_percent);
-      if (verbose_machine_output) printf("Freespace%% result=%d\n", temp_result);
-      disk_result = max_state( disk_result, temp_result );
+      printf("dfree_units %d %d\n", temp_result, temp_result2);
+      if (combined_thresholds) {
+        temp_result = min_state(temp_result, temp_result2);
+      }
+      else {
+        temp_result = max_state(temp_result, temp_result2);
+      }
+      disk_result = max_state(disk_result, temp_result);
+      printf("disk_result is %d", disk_result);
 
       temp_result = get_status(path->dused_units, path->usedspace_units);
       if (verbose_machine_output) printf("Usedspace_units result=%d\n", temp_result);
-      disk_result = max_state( disk_result, temp_result );
+      temp_result2 = get_status(path->dused_pct, path->usedspace_percent);
+      if (verbose_machine_output) printf("Usedspace_percent result=%d\n", temp_result2);
 
-      temp_result = get_status(path->dused_pct, path->usedspace_percent);
-      if (verbose_machine_output) printf("Usedspace_percent result=%d\n", temp_result);
-      disk_result = max_state( disk_result, temp_result );
+      if (combined_thresholds) {
+        temp_result = min_state(temp_result, temp_result2);
+      }
+      else {
+        temp_result = max_state(temp_result, temp_result2);
+      }
+      disk_result = max_state(disk_result, temp_result);
 
       temp_result = get_status(path->dused_inodes_percent, path->usedinodes_percent);
       if (verbose_machine_output) printf("Usedinodes_percent result=%d\n", temp_result);
-      disk_result = max_state( disk_result, temp_result );
+      temp_result2 = get_status(path->dfree_inodes_percent, path->freeinodes_percent);
+      if (verbose_machine_output) printf("Freeinodes_percent result=%d\n", temp_result2);
 
-      temp_result = get_status(path->dfree_inodes_percent, path->freeinodes_percent);
-      if (verbose_machine_output) printf("Freeinodes_percent result=%d\n", temp_result);
-      disk_result = max_state( disk_result, temp_result );
+      if (combined_thresholds) {
+        temp_result = min_state(temp_result, temp_result2);
+      }
+      else {
+        temp_result = max_state(temp_result, temp_result2);
+      }
+      disk_result = max_state(disk_result, temp_result);
 
       result = max_state(result, disk_result);
 
@@ -576,7 +607,8 @@ process_arguments (int argc, char **argv)
   int fnd = 0;
 
   enum {
-    SKIP_FAKE_FS = CHAR_MAX + 1
+    SKIP_FAKE_FS = CHAR_MAX + 1,
+    COMBINED_THRESHOLDS
   };
 
   int option = 0;
@@ -584,6 +616,7 @@ process_arguments (int argc, char **argv)
     {"timeout", required_argument, 0, 't'},
     {"warning", required_argument, 0, 'w'},
     {"critical", required_argument, 0, 'c'},
+    {"combined-thresholds", no_argument, 0, COMBINED_THRESHOLDS},
     {"iwarning", required_argument, 0, 'W'},
     /* Dang, -C is taken. We might want to reshuffle this. */
     {"icritical", required_argument, 0, 'K'},
@@ -678,6 +711,10 @@ process_arguments (int argc, char **argv)
           xasprintf(&crit_freespace_units, "@%s", optarg);
         }
       }
+      break;
+
+    case COMBINED_THRESHOLDS:
+      combined_thresholds = 1;
       break;
 
     case 'W':			/* warning inode threshold */
@@ -1061,6 +1098,9 @@ print_help (void)
   printf ("    %s\n", _("Exit with CRITICAL status if less than INTEGER units of disk are free"));
   printf (" %s\n", "-c, --critical=PERCENT%");
   printf ("    %s\n", _("Exit with CRITICAL status if less than PERCENT of disk space is free"));
+  printf (" %s\n", "    --combined-thresholds");
+  printf ("    %s\n", _("Do not alert at a given level unless \"PERCENT\" AND \"INTEGER units\""));
+  printf ("    %s\n", _("thresholds are met. For an OR condition, don't use this flag."));
   printf (" %s\n", "-W, --iwarning=PERCENT%");
   printf ("    %s\n", _("Exit with WARNING status if less than PERCENT of inode space is free"));
   printf (" %s\n", "-K, --icritical=PERCENT%");
@@ -1136,7 +1176,7 @@ print_usage (void)
   printf ("%s\n", _("Usage:"));
   printf (" %s -w limit -c limit [-W limit] [-K limit] {-p path | -x device}\n", progname);
   printf ("[-C] [-E] [-e] [-f] [-g group ] [-H] [-k] [-l] [-M] [-m] [-R path ] [-r path ]\n");
-  printf ("[-t timeout] [-u unit] [-v] [-X type] [-N type] [-n] \n");
+  printf ("[-t timeout] [-u unit] [-v] [-X type] [-N type] [-n] [--combined-thresholds ]\n");
 }
 
 void
