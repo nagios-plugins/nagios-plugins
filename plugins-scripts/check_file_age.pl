@@ -25,6 +25,7 @@ use strict;
 use English;
 use Getopt::Long;
 use File::stat;
+use File::Basename;
 use vars qw($PROGNAME);
 use FindBin;
 use lib "$FindBin::Bin";
@@ -35,7 +36,7 @@ sub print_help ();
 sub print_usage ();
 
 my ($opt_c, $opt_f, $opt_w, $opt_C, $opt_W, $opt_h, $opt_V, $opt_i);
-my ($result, $message, $age, $size, $st, $perfdata, $output, @filelist, $filename, $counter, $summary, $high_water_mark, $this_level, $this_result);
+my ($result, $message, $age, $size, $st, $perfdata, $output, @filelist, $filename, $safe_filename, $counter, $summary, $high_water_mark, $this_level, $this_result);
 
 $PROGNAME="check_file_age";
 
@@ -120,7 +121,14 @@ foreach $filename (@filelist) {
 	$st = File::stat::stat($filename);
 	$age = time - $st->mtime;
 	$size = $st->size;
-	$perfdata = $perfdata . "age=${age}s;${opt_w};${opt_c} size=${size}B;${opt_W};${opt_C};0 ";
+	if (scalar @filelist == 1) {
+		$perfdata = $perfdata . "age=${age}s;${opt_w};${opt_c} size=${size}B;${opt_W};${opt_C};0 ";
+	}
+	else {
+		$safe_filename = basename($filename);
+		$safe_filename =~ s/[='"]/_/g;
+		$perfdata = $perfdata . "${safe_filename}_age=${age}s;${opt_w};${opt_c} ${safe_filename}_size=${size}B;${opt_W};${opt_C};0 ";
+	}
 
 	$this_result = 'OK';
 	$this_level = 0;
