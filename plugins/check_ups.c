@@ -80,6 +80,7 @@ int check_crit = FALSE;
 int check_variable = UPS_NONE;
 int supported_options = UPS_NONE;
 int status = UPSSTATUS_NONE;
+static int extended_units = 0;
 
 double ups_utility_voltage = 0.0;
 double ups_battery_percent = 0.0;
@@ -212,13 +213,13 @@ main (int argc, char **argv)
 				result = max_state (result, STATE_WARNING);
 			}
 			xasprintf (&data, "%s",
-			          perfdata ("voltage", (long)(1000*ups_utility_voltage), "mV",
-			                    check_warn, (long)(1000*warning_value),
-			                    check_crit, (long)(1000*critical_value),
+			          fperfdata ("voltage", ups_utility_voltage, (extended_units ? "V" : ""),
+			                    check_warn, warning_value,
+			                    check_crit, critical_value,
 			                    TRUE, 0, FALSE, 0));
 		} else {
 			xasprintf (&data, "%s",
-			          perfdata ("voltage", (long)(1000*ups_utility_voltage), "mV",
+			          fperfdata ("voltage", ups_utility_voltage, (extended_units ? "V" : ""),
 			                    FALSE, 0, FALSE, 0, TRUE, 0, FALSE, 0));
 		}
 	}
@@ -241,13 +242,13 @@ main (int argc, char **argv)
 				result = max_state (result, STATE_WARNING);
 			}
 			xasprintf (&data, "%s %s", data,
-			          perfdata ("battery", (long)ups_battery_percent, "%",
-			                    check_warn, (long)(1000*warning_value),
-			                    check_crit, (long)(1000*critical_value),
+			          fperfdata ("battery", ups_battery_percent, "%",
+			                    check_warn, warning_value,
+			                    check_crit, critical_value,
 			                    TRUE, 0, TRUE, 100));
 		} else {
 			xasprintf (&data, "%s %s", data,
-			          perfdata ("battery", (long)ups_battery_percent, "%",
+			          fperfdata ("battery", ups_battery_percent, "%",
 			                    FALSE, 0, FALSE, 0, TRUE, 0, TRUE, 100));
 		}
 	}
@@ -270,13 +271,13 @@ main (int argc, char **argv)
 				result = max_state (result, STATE_WARNING);
 			}
 			xasprintf (&data, "%s %s", data,
-			          perfdata ("load", (long)ups_load_percent, "%",
-			                    check_warn, (long)(1000*warning_value),
-			                    check_crit, (long)(1000*critical_value),
+			          fperfdata ("load", ups_load_percent, "%",
+			                    check_warn, warning_value,
+			                    check_crit, critical_value,
 			                    TRUE, 0, TRUE, 100));
 		} else {
 			xasprintf (&data, "%s %s", data,
-			          perfdata ("load", (long)ups_load_percent, "%",
+			          fperfdata ("load", ups_load_percent, "%",
 			                    FALSE, 0, FALSE, 0, TRUE, 0, TRUE, 100));
 		}
 	}
@@ -307,13 +308,13 @@ main (int argc, char **argv)
 				result = max_state (result, STATE_WARNING);
 			}
 			xasprintf (&data, "%s %s", data,
-			          perfdata ("temp", (long)ups_temperature, tunits,
-			                    check_warn, (long)(1000*warning_value),
-			                    check_crit, (long)(1000*critical_value),
+			          fperfdata ("temp", ups_temperature, (extended_units ? tunits : ""),
+			                    check_warn, warning_value,
+			                    check_crit, critical_value,
 			                    TRUE, 0, FALSE, 0));
 		} else {
 			xasprintf (&data, "%s %s", data,
-			          perfdata ("temp", (long)ups_temperature, tunits,
+			          fperfdata ("temp", ups_temperature, (extended_units ? tunits : ""),
 			                    FALSE, 0, FALSE, 0, TRUE, 0, FALSE, 0));
 		}
 	}
@@ -466,6 +467,7 @@ process_arguments (int argc, char **argv)
 		{"port", required_argument, 0, 'p'},
 		{"critical", required_argument, 0, 'c'},
 		{"warning", required_argument, 0, 'w'},
+		{"extended-units", no_argument, 0, 'e'},
 		{"timeout", required_argument, 0, 't'},
 		{"temperature", no_argument, 0, 'T'},
 		{"variable", required_argument, 0, 'v'},
@@ -535,6 +537,9 @@ process_arguments (int argc, char **argv)
 			else {
 				usage2 (_("Warning time must be a positive integer"), optarg);
 			}
+			break;
+		case 'e':
+			extended_units = 1;
 			break;
 		case 'v':									/* variable */
 			if (!strcmp (optarg, "LINE"))
@@ -615,6 +620,8 @@ print_help (void)
   printf ("    %s\n", _("Name of UPS"));
   printf (" %s\n", "-T, --temperature");
   printf ("    %s\n", _("Output of temperatures in Celsius"));
+  printf (" %s\n", "-e, --extended-units");
+  printf ("    %s\n", _("Allow nonstandard units in performance data (used for voltage an temperatures)."));
   printf (" %s\n", "-v, --variable=STRING");
   printf ("    %s %s\n", _("Valid values for STRING are"), "LINE, TEMP, BATTPCT or LOADPCT");
 
@@ -653,5 +660,5 @@ void
 print_usage (void)
 {
   printf ("%s\n", _("Usage:"));
-	printf ("%s -H host -u ups [-p port] [-v variable] [-w warn_value] [-c crit_value] [-to to_sec] [-T]\n", progname);
+	printf ("%s -H host -u ups [-p port] [-v variable] [-w warn_value] [-c crit_value] [-e] [-to to_sec] [-T]\n", progname);
 }
