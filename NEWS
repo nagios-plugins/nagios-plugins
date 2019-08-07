@@ -50,6 +50,7 @@ This file documents the major additions and syntax changes between releases.
 	check_snmp: Fix --authpasswd option
 	check_snmp: Fix perfdata not adhering to plugin dev guidelines
 	check_snmp: warning/critical perfdata is returned properly
+	check_ups: Change performance data units to match spec. (Temperature and voltage units can be accessed via -e)
 	check_wave: produces lots of errors if required arguments are not provided
 
 
