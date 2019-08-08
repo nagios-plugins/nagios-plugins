@@ -2,8 +2,7 @@ Nagios Plugins
 ==============
 
 * For instructions on installing these plugins for use with Nagios,
-  see below.  In addition, generic instructions for the GNU toolchain can be
-  found in the `INSTALL` file.
+  see below.
 
 * For major changes between releases, read the `NEWS` file.
 
