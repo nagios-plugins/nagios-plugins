@@ -515,7 +515,8 @@ print_help (void)
 	printf (" %s\n", "-l, --logname = STRING");
 	printf ("    %s\n", _("Login name of user"));
 	printf (" %s\n", "-p, --password = STRING");
-	printf ("    %s\n", _("Password (BIG SECURITY ISSUE)"));
+	printf ("    %s\n", _("The user's password. To avoid security issues, define this option using"));
+	printf ("    %s\n", _("--extra-opts when possible."))
 	printf (" %s\n", "-o, --option = STRING");
 	printf ("    %s\n", _("Connection parameters (keyword = value), see below"));
 
