@@ -621,7 +621,7 @@ print_help (void)
   printf (" %s\n", "-T, --temperature");
   printf ("    %s\n", _("Output of temperatures in Celsius"));
   printf (" %s\n", "-e, --extended-units");
-  printf ("    %s\n", _("Allow nonstandard units in performance data (used for voltage an temperatures)."));
+  printf ("    %s\n", _("Allow nonstandard units in performance data (used for voltage and temperatures)"));
   printf (" %s\n", "-v, --variable=STRING");
   printf ("    %s %s\n", _("Valid values for STRING are"), "LINE, TEMP, BATTPCT or LOADPCT");
 
