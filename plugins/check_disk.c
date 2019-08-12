@@ -256,6 +256,12 @@ main (int argc, char **argv)
 
   verbose_machine_output = (verbose >= 3 && !human_output);
 
+  /* Set signal handling and alarm timeout */
+  if (signal (SIGALRM, timeout_alarm_handler) == SIG_ERR) {
+    die (STATE_UNKNOWN, _("Cannot catch SIGALRM"));
+  }
+  (void) alarm ((unsigned) timeout_interval);
+
   /* If a list of paths has not been selected, find entire
      mount list and create list of paths
    */
