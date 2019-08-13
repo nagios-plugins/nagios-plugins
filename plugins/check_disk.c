@@ -208,6 +208,7 @@ char *group = NULL;
 struct stat *stat_buf;
 struct name_list *seen = NULL;
 int human_output = 0;
+int inode_perfdata_enabled = 0;
 
 int
 main (int argc, char **argv)
@@ -219,6 +220,8 @@ main (int argc, char **argv)
   char *perf;
   char *preamble;
   char *flag_header = NULL;
+  char *label_name;
+  char *inode_label_name, *raw_used_inodes_name, *raw_free_inodes_name;
   double inode_space_pct;
   double warning_high_tide;
   double critical_high_tide;
@@ -428,6 +431,7 @@ main (int argc, char **argv)
         critical_high_tide = fabs( min( (double) critical_high_tide, (double) (1.0 - path->freespace_percent->critical->end/100)*path->dtotal_units ));
       }
 
+
       if (human_output) {
           human_disk_entry_t* human_disk_entry = (human_disk_entry_t*)malloc(sizeof(struct human_disk_entry));
           human_disk_entry->mount_dir = me->me_mountdir;
@@ -460,14 +464,40 @@ main (int argc, char **argv)
           if (human_column_widths.type < strlen(me->me_type))            human_column_widths.type = strlen(me->me_type);
           if (human_column_widths.mount_dir < strlen(me->me_mountdir))   human_column_widths.mount_dir = strlen(me->me_mountdir);
       } else {
+          label_name = (!strcmp(me->me_mountdir, "none") || display_mntp) ? me->me_devname : me->me_mountdir;
           /* Nb: *_high_tide are unset when == ULONG_MAX */
           xasprintf (&perf, "%s %s", perf,
-                     perfdata ((!strcmp(me->me_mountdir, "none") || display_mntp) ? me->me_devname : me->me_mountdir,
+                     perfdata (label_name,
                                path->dused_units, units,
                                (warning_high_tide != ULONG_MAX ? TRUE : FALSE), warning_high_tide,
                                (critical_high_tide != ULONG_MAX ? TRUE : FALSE), critical_high_tide,
                                TRUE, 0,
                                TRUE, path->dtotal_units));
+
+          if (inode_perfdata_enabled) {
+
+            inode_label_name = calloc(strlen(label_name) + 1 + 14, 1);
+            inode_label_name = strcat(inode_label_name, label_name);
+            inode_label_name = strcat(inode_label_name, "_inode_percent");
+            xasprintf (&perf, "%s %s", perf,
+                       perfdata (inode_label_name,
+                                  path->dused_inodes_percent, "%",
+                                  (path->freeinodes_percent != NULL ? TRUE : FALSE), path->freeinodes_percent->warning->end,
+                                  (path->freeinodes_percent != NULL ? TRUE : FALSE), path->freeinodes_percent->critical->end,
+                                  TRUE, 0,
+                                  TRUE, 100));
+
+            raw_used_inodes_name = calloc(strlen(label_name) + 1 + 11, 1);
+            raw_used_inodes_name = strcat(raw_used_inodes_name, label_name);
+            raw_used_inodes_name = strcat(raw_used_inodes_name, "_inode_used");
+            xasprintf(&perf, "%s %s", perf, perfdata(raw_used_inodes_name, path->inodes_total - path->inodes_free, "", FALSE, 0, FALSE, 0, TRUE, 0, TRUE, path->inodes_total));
+
+            raw_free_inodes_name = calloc(strlen(label_name) + 1 + 11, 1);
+            raw_free_inodes_name = strcat(raw_free_inodes_name, label_name);
+            raw_free_inodes_name = strcat(raw_free_inodes_name, "_inode_free");
+            xasprintf(&perf, "%s %s", perf, perfdata(raw_free_inodes_name, path->inodes_free, "", FALSE, 0, FALSE, 0, TRUE, 0, TRUE, path->inodes_total));
+          }
+
       }
 
       if (disk_result==STATE_OK && erronly && !verbose)
@@ -576,7 +606,8 @@ process_arguments (int argc, char **argv)
   int fnd = 0;
 
   enum {
-    SKIP_FAKE_FS = CHAR_MAX + 1
+    SKIP_FAKE_FS = CHAR_MAX + 1,
+    INODE_PERFDATA_ENABLED,
   };
 
   int option = 0;
@@ -609,6 +640,7 @@ process_arguments (int argc, char **argv)
     {"ignore-eregi-partition", required_argument, 0, 'I'},
     {"local", no_argument, 0, 'l'},
     {"skip-fake-fs", no_argument, 0, SKIP_FAKE_FS},
+    {"inode-perfdata", no_argument, 0, INODE_PERFDATA_ENABLED},
     {"stat-remote-fs", no_argument, 0, 'L'},
     {"mountpoint", no_argument, 0, 'M'},
     {"errors-only", no_argument, 0, 'e'},
@@ -754,6 +786,9 @@ process_arguments (int argc, char **argv)
       break;
     case SKIP_FAKE_FS:
       skip_fake_fs = 1;
+      break;
+    case INODE_PERFDATA_ENABLED:
+      inode_perfdata_enabled = 1;
       break;
     case 'p':                 /* select path */
       if (! (warn_freespace_units || crit_freespace_units || warn_freespace_percent ||
@@ -1087,6 +1122,8 @@ print_help (void)
   printf ("    %s\n", _("Only check local filesystems"));
   printf (" %s\n", "    --skip-fake-fs");
   printf ("    %s\n", _("Skip 'fake' mountpoints created by the system"));
+  printf (" %s\n", "--inode-perfdata");
+  printf ("    %s\n", _("Enable performance data for inode-based statistics"));
   printf (" %s\n", "-L, --stat-remote-fs");
   printf ("    %s\n", _("Only check local filesystems against thresholds. Yet call stat on remote filesystems"));
   printf ("    %s\n", _("to test if they are accessible (e.g. to detect Stale NFS Handles)"));
