@@ -37,6 +37,7 @@ This file documents the major additions and syntax changes between releases.
 	build: fix configure.ac for FreeBSD SWAPFORMAT
 	build: Fix rpmbuild errors (Josh Coughlan)
 	check_disk: autofs being mounted despite '-l'. Fixed, and also excluded some system "fake" mountpoints
+	check_disk: Add missing timeout logic
 	check_dns: Fix for Bind 9.11.x AAAA records being reported with A record format (Troy Lea)
 	check_dns: reverse (PTR) check is now case insensitive
 	check_file_age: For multiple files, use the "worst" status instead of the "last" one
