@@ -68,6 +68,27 @@ max_state (int a, int b)
 }
 
 /* **************************************************************************
+ * min_state(STATE_x, STATE_y)
+ * does the opposite of max_state(): returns the minimum of both states using
+ * the ordder STATE_UNKNOWN < STATE_OK < STATE_WARNING < STATE_CRITICAL
+ ****************************************************************************/
+int min_state (int a, int b)
+{
+	if (a == STATE_UNKNOWN || b == STATE_UNKNOWN)
+		return STATE_UNKNOWN;
+	else if (a == STATE_OK || b == STATE_OK)
+		return STATE_OK;
+	else if (a == STATE_WARNING || b == STATE_WARNING)
+		return STATE_WARNING;
+	else if (a == STATE_CRITICAL || b == STATE_CRITICAL)
+		return STATE_CRITICAL;
+	else if (a == STATE_DEPENDENT || b == STATE_DEPENDENT)
+		return STATE_DEPENDENT;
+	else
+		return min(a, b);
+}
+
+/* **************************************************************************
  * max_state_alt(STATE_x, STATE_y)
  * compares STATE_x to  STATE_y and returns result based on the following
  * STATE_OK < STATE_DEPENDENT < STATE_UNKNOWN < STATE_WARNING < STATE_CRITICAL
