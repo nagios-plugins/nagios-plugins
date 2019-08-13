@@ -86,6 +86,7 @@ double tcrit = (double)DEFAULT_CRIT;
 char *pgquery = NULL;
 char *query_warning = NULL;
 char *query_critical = NULL;
+static int print_query = 0;
 thresholds *qthresholds = NULL;
 int verbose = 0;
 
@@ -286,6 +287,7 @@ process_arguments (int argc, char **argv)
 		{"query", required_argument, 0, 'q'},
 		{"query_critical", required_argument, 0, 'C'},
 		{"query_warning", required_argument, 0, 'W'},
+		{"print-query", no_argument, 0, 'r'},
 		{"verbose", no_argument, 0, 'v'},
 		{0, 0, 0, 0}
 	};
@@ -326,6 +328,9 @@ process_arguments (int argc, char **argv)
 			break;
 		case 'W':     /* warning query threshold */
 			query_warning = optarg;
+			break;
+		case 'r':
+			print_query = 1;
 			break;
 		case 'H':     /* host */
 			if ((*optarg != '/') && (!is_host (optarg)))
@@ -515,7 +520,8 @@ print_help (void)
 	printf (" %s\n", "-l, --logname = STRING");
 	printf ("    %s\n", _("Login name of user"));
 	printf (" %s\n", "-p, --password = STRING");
-	printf ("    %s\n", _("Password (BIG SECURITY ISSUE)"));
+	printf ("    %s\n", _("The user's password. To avoid security issues, define this option using"));
+	printf ("    %s\n", _("--extra-opts when possible."));
 	printf (" %s\n", "-o, --option = STRING");
 	printf ("    %s\n", _("Connection parameters (keyword = value), see below"));
 
@@ -529,6 +535,8 @@ print_help (void)
 	printf ("    %s\n", _("SQL query value to result in warning status (double)"));
 	printf (" %s\n", "-C, --query-critical=RANGE");
 	printf ("    %s\n", _("SQL query value to result in critical status (double)"));
+	printf (" %s\n", "-r,  --print-query");
+	printf ("    %s\n", _("Print the output of the entire query to extended plugin output."));
 
 	printf (UT_VERBOSE);
 
@@ -575,7 +583,7 @@ print_usage (void)
 	printf ("%s\n", _("Usage:"));
 	printf ("%s [-H <host>] [-P <port>] [-c <critical time>] [-w <warning time>]\n", progname);
 	printf (" [-t <timeout>] [-d <database>] [-l <logname>] [-p <password>]\n"
-			"[-q <query>] [-C <critical query range>] [-W <warning query range>]\n");
+			"[-q <query>] [-C <critical query range>] [-W <warning query range>] [-r]\n");
 }
 
 int
@@ -589,6 +597,9 @@ do_query (PGconn *conn, char *query)
 	char *endptr = NULL;
 
 	int my_status = STATE_UNKNOWN;
+
+	// Only used for print_query block at the end of this function
+	PQprintOpt po;
 
 	if (verbose)
 		printf ("Executing SQL query \"%s\".\n", query);
@@ -642,6 +653,23 @@ do_query (PGconn *conn, char *query)
 	printf ("|query=%f;%s;%s;;\n", value,
 			query_warning ? query_warning : "",
 			query_critical ? query_critical : "");
+
+	if (print_query) {
+		printf("\n");
+		po.header = 1;
+		po.align = 1;
+		po.standard = 1;
+		po.html3 = 0;
+		po.expanded = 0;
+		po.pager = 0;
+		po.fieldSep = "|";
+		po.tableOpt = NULL;
+		po.caption = NULL;
+		po.fieldName = NULL;
+
+		PQprint(stdout, res, &po);
+	}
+
 	return my_status;
 }
 
