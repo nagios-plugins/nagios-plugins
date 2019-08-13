@@ -7,6 +7,7 @@ This file documents the major additions and syntax changes between releases.
 	Added directory plugins-python containing three Python plugins
 	check_apt: Add --only-critical switch
 	check_apt: Add --packages-warning (Marc Sánchez)
+	check_disk: Add --inode-perfdata to get extra performance data from inode statistics
 	check_disk: Add -s option to show status for each path/partition
 	check_disk: Add support for base-10 units kB, MB, GB, TB; rename base-2 units to KiB, MiB, GiB, TiB
 	check_disk_smb: Add configfile feature
