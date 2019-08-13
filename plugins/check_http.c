@@ -577,6 +577,10 @@ enable_ssl:
     if (host_name == NULL && c < argc)
         host_name = strdup (argv[c++]);
 
+    if (use_sni && host_name == NULL) {
+        usage4(_("Server name indication requires that a host name is defined with -H"));
+    }
+
     if (server_address == NULL) {
         if (host_name == NULL)
             usage4 (_("You must specify a server address or host name"));
