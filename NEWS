@@ -7,6 +7,7 @@ This file documents the major additions and syntax changes between releases.
 	Added directory plugins-python containing three Python plugins
 	check_apt: Add --only-critical switch
 	check_apt: Add --packages-warning (Marc Sánchez)
+	check_disk: Add --combined-thresholds to alert on a percentage AND raw units. 
 	check_disk: Add --inode-perfdata to get extra performance data from inode statistics
 	check_disk: Add -s option to show status for each path/partition
 	check_disk: Add support for base-10 units kB, MB, GB, TB; rename base-2 units to KiB, MiB, GiB, TiB
@@ -23,6 +24,7 @@ This file documents the major additions and syntax changes between releases.
 	check_ntp_time: Add support for monitoring stratum of timesources
 	check_oracle: Add support for Oracle XE databases (Peter Athaks)
 	check_ping: plugin output will now include hostname and IP address
+	check_pgsql: Add --print-query flag
 	check_procs: Add FreeBSD jail support (Mathieu Arnold)
 	check_procs: Allow process to be excluded from check_procs (Marcel Klein)
 	check_radius: Add calling-station-id (cejkar)
