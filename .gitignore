@@ -275,5 +275,6 @@ plugins-python/check_ncpa.py
 /po/quot.sed
 /po/POTFILES
 /po/stamp-po
+/po/*~
 
 /tools/build_perl_modules
