@@ -26,6 +26,7 @@ This file documents the major additions and syntax changes between releases.
 	check_procs: Allow process to be excluded from check_procs (Marcel Klein)
 	check_radius: Add calling-station-id (cejkar)
 	check_smtp: Add --proxy flag for PROXY protocol (Patrick Uiterwijk)
+	check_snmp: Add --strict flag to ensure returned OID matches -o.
 	check_swap: Add --no-swap flag (Mario Trangoni)
 	lib: Added warning_string/critical_string to struct thresholds for storing originally parsed strings
 	ssl_utils: Added certificate expiry data in OK status (check_http, check_smtp, check_tcp) (Matt Capra)
