@@ -49,6 +49,7 @@ unsigned long incoming_warning_threshold = 0L;
 unsigned long incoming_critical_threshold = 0L;
 unsigned long outgoing_warning_threshold = 0L;
 unsigned long outgoing_critical_threshold = 0L;
+unsigned long max_interface_bandwidth = 0L;
 
 
 int
@@ -70,6 +71,8 @@ main (int argc, char **argv)
 	unsigned long outgoing_rate = 0L;
 	double adjusted_incoming_rate = 0.0;
 	double adjusted_outgoing_rate = 0.0;
+	double incoming_percent = 0.0;
+	double outgoing_percent = 0.0;
 	char incoming_speed_rating[8];
 	char outgoing_speed_rating[8];
 
@@ -205,7 +208,7 @@ main (int argc, char **argv)
 		result = STATE_WARNING;
 	}
 
-	xasprintf (&error_message, _("%s. In = %0.1f %s/s, %s. Out = %0.1f %s/s|%s %s\n"),
+	xasprintf (&error_message, _("%s. In = %0.1f %s/s, %s. Out = %0.1f %s/s|%s %s"),
 	          (use_average == TRUE) ? _("Avg") : _("Max"), adjusted_incoming_rate,
 	          incoming_speed_rating, (use_average == TRUE) ? _("Avg") : _("Max"),
 	          adjusted_outgoing_rate, outgoing_speed_rating,
@@ -217,6 +220,18 @@ main (int argc, char **argv)
 	                   (int)outgoing_warning_threshold, outgoing_warning_threshold,
 	                   (int)outgoing_critical_threshold, outgoing_critical_threshold,
 	                   TRUE, 0, FALSE, 0));
+	if (max_interface_bandwidth) {
+		incoming_percent = (incoming_rate * 100.0) / (double)max_interface_bandwidth;
+		outgoing_percent = (incoming_rate * 100.0) / (double)max_interface_bandwidth;
+		xasprintf(&error_message, "%s %s %s", error_message,
+			fperfdata("in_pct", incoming_percent, "%",
+					 FALSE, 0.0, FALSE, 0.0,
+					 TRUE, 0.0, TRUE, 100.0),
+			fperfdata("out_pct", outgoing_percent, "%",
+					 FALSE, 0.0, FALSE, 0.0,
+					 TRUE, 0.0, TRUE, 100.0));
+	}
+	xasprintf(&error_message, "%s\n", error_message,);
 
 	printf (_("Traffic %s - %s\n"), state_text(result), error_message);
 
@@ -239,6 +254,7 @@ process_arguments (int argc, char **argv)
 		{"critical", required_argument, 0, 'c'},
 		{"warning", required_argument, 0, 'w'},
 		{"verbose", no_argument, 0, 'v'},
+		{"interface-maximum", required_argument, 0, 'i'},
 		{"version", no_argument, 0, 'V'},
 		{"help", no_argument, 0, 'h'},
 		{0, 0, 0, 0}
@@ -282,6 +298,9 @@ process_arguments (int argc, char **argv)
 		case 'w':									/* critical threshold */
 			sscanf (optarg, "%lu,%lu", &incoming_warning_threshold,
 							&outgoing_warning_threshold);
+			break;
+		case 'i':                                   /* max interface bandwidth */
+			max_interface_bandwidth = strtoul(optarg, NULL, 0);
 			break;
 		case 'v':
 			verbose = true;
@@ -345,12 +364,12 @@ validate_arguments (void)
 void
 print_help (void)
 {
-	print_revision (progname, NP_VERSION);
+  print_revision (progname, NP_VERSION);
 
-	printf ("Copyright (c) 1999 Ethan Galstad <nagios@nagios.org>\n");
-	printf (COPYRIGHT, copyright, email);
+  printf ("Copyright (c) 1999 Ethan Galstad <nagios@nagios.org>\n");
+  printf (COPYRIGHT, copyright, email);
 
-	printf ("%s\n", _("This plugin will check the incoming/outgoing transfer rates of a router,"));
+  printf ("%s\n", _("This plugin will check the incoming/outgoing transfer rates of a router,"));
   printf ("%s\n", _("switch, etc recorded in an MRTG log.  If the newest log entry is older"));
   printf ("%s\n", _("than <expire_minutes>, a WARNING status is returned. If either the"));
   printf ("%s\n", _("incoming or outgoing rates exceed the <icl> or <ocl> thresholds (in"));
@@ -359,12 +378,12 @@ print_help (void)
 
   printf ("\n\n");
 
-	print_usage ();
+  print_usage ();
 
-	printf (UT_HELP_VRSN);
-	printf (UT_EXTRA_OPTS);
+  printf (UT_HELP_VRSN);
+  printf (UT_EXTRA_OPTS);
 
-	printf (" %s\n", "-F, --filename=STRING");
+  printf (" %s\n", "-F, --filename=STRING");
   printf ("    %s\n", _("File to read log from"));
   printf (" %s\n", "-e, --expires=INTEGER");
   printf ("    %s\n", _("Minutes after which log expires"));
@@ -375,7 +394,10 @@ print_help (void)
   printf (" %s\n", "-c, --critical");
   printf ("    %s\n", _("Critical threshold pair <incoming>,<outgoing>"));
   printf (" %s\n", _("-v, --verbose"));
-  printf ("    %s\n", _("Verbose output during plugin runtime."));
+  printf ("    %s\n", _("Verbose output during plugin runtime"));
+  printf (" %s\n", _("-i, --interface-maximum"));
+  printf ("    %s\n", _("Define the maximum bandwidth on the port being monitored (Bytes/sec)"));
+  printf ("    %s\n", _("This adds percentages to performance data output"));
 
   printf ("\n");
   printf ("%s\n", _("Notes:"));
@@ -387,7 +409,7 @@ print_help (void)
   printf (" %s\n", _("  reports.  I'm not sure why this is right now, but will look into it"));
   printf (" %s\n", _("  for future enhancements of this plugin."));
 
-	printf (UT_SUPPORT);
+  printf (UT_SUPPORT);
 }
 
 
