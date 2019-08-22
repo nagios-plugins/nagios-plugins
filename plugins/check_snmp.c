@@ -64,6 +64,7 @@ const char *email = "devel@nagios-plugins.org";
 #define L_RATE_MULTIPLIER CHAR_MAX+2
 #define L_INVERT_SEARCH CHAR_MAX+3
 #define L_OFFSET CHAR_MAX+4
+#define STRICT_MODE CHAR_MAX+5
 
 /* Gobble to string - stop incrementing c when c[0] match one of the
  * characters in s */
@@ -146,6 +147,7 @@ char *output_delim;
 char *miblist = NULL;
 int needmibs = FALSE;
 int calculate_rate = 0;
+static int strict_mode = 0;
 double offset = 0.0;
 int rate_multiplier = 1;
 state_data *previous_state;
@@ -406,6 +408,10 @@ main (int argc, char **argv)
 
 		if (verbose > 2) {
 			printf("Processing oid %i (line %i)\n  oidname: %s\n  response: %s\n", i+1, line+1, oidname, response);
+		}
+
+		if (strict_mode && strncmp(oids[i], oidname, strlen(oids[i]))) {
+			die( STATE_UNKNOWN, _("UNKNOWN - Expected OID %s did not match actual OID %s.\n"), oids[i], oidname);
 		}
 
 		/* Clean up type array - Sol10 does not necessarily zero it out */
@@ -758,6 +764,7 @@ process_arguments (int argc, char **argv)
 		{"authpasswd", required_argument, 0, 'A'},
 		{"privpasswd", required_argument, 0, 'X'},
 		{"next", no_argument, 0, 'n'},
+		{"strict", no_argument, 0, STRICT_MODE},
 		{"rate", no_argument, 0, L_CALCULATE_RATE},
 		{"rate-multiplier", required_argument, 0, L_RATE_MULTIPLIER},
 		{"offset", required_argument, 0, L_OFFSET},
@@ -985,6 +992,9 @@ process_arguments (int argc, char **argv)
 					unitv[nunits - 1] = ptr;
 			}
 			break;
+		case STRICT_MODE:
+			strict_mode = 1;
+			break;
 		case L_CALCULATE_RATE:
 			if(calculate_rate==0)
 				np_enable_state(NULL, 1);
@@ -1048,9 +1058,13 @@ validate_arguments ()
 {
 	/* check whether to load locally installed MIBS (CPU/disk intensive) */
 	if (miblist == NULL) {
-		if ( needmibs == TRUE ) {
+		if ( strict_mode == TRUE ) {
+			miblist = "";
+		}
+		else if ( needmibs == TRUE ) {
 			miblist = strdup (DEFAULT_MIBLIST);
-		}else{
+		}
+		else {
 			miblist = "";			/* don't read any mib files for numeric oids */
 		}
 	}
@@ -1291,6 +1305,9 @@ print_help (void)
 
 	printf (" %s\n", "-O, --perf-oids");
 	printf ("    %s\n", _("Label performance data with OIDs instead of --label's"));
+	printf (" %s\n", "--strict");
+	printf ("    %s\n", _("Enable strict mode: arguments to -o will be checked against the OID"));
+	printf ("    %s\n", _("returned by snmpget. If they don't match, the plugin returns UNKNOWN."));
 
 	printf (UT_VERBOSE);
 
@@ -1334,5 +1351,5 @@ print_usage (void)
 	printf ("[-C community] [-s string] [-r regex] [-R regexi] [-t timeout] [-e retries]\n");
 	printf ("[-l label] [-u units] [-p port-number] [-d delimiter] [-D output-delimiter]\n");
 	printf ("[-m miblist] [-P snmp version] [-N context] [-L seclevel] [-U secname]\n");
-	printf ("[-a authproto] [-A authpasswd] [-x privproto] [-X privpasswd]\n");
+	printf ("[-a authproto] [-A authpasswd] [-x privproto] [-X privpasswd] [--strict]\n");
 }
