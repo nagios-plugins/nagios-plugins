@@ -41,7 +41,7 @@ GNU getopt.
 
 Bu I would like to urge that all standard plugins contain
 validate_arguments(). I think this will help convey the idea that
-validations hould be done, even if we don't insist on the specific
+validations should be done, even if we don't insist on the specific
 extent that each plugin must do that validation.
 
 This is the set of standard options I envision:
@@ -53,15 +53,15 @@ Reserved:
 -v, --verbose
 -q, --quiet
 -t, --timeout = INTEGER (senonds)
--c, --critical = (INT|FLOAT|RANGE|LIST) 
+-c, --critical = (INT|FLOAT|RANGE|LIST)
 -w, --warning = (INT|FLOAT|RANGE|LIST)
 -H, --hostname = STRING
--F, --file = STRING (usually input) 
--O, --output = STRING (output file) 
+-F, --file = STRING (usually input)
+-O, --output = STRING (output file)
 -4, (Use IPv4)
 -6, (Use IPv6)
 
-Recommended, but not reserverd: 
+Recommended, but not reserved:
 
 -I, --ipaddress = STRING
 -C, --community = STRING
@@ -71,7 +71,7 @@ Recommended, but not reserverd:
 -P, --port = INT
 -u, --url = STRING (also --username if --url is not needed)
 
-I am suggesting that port alway be '-P' (uppercase) -- we are
+I am suggesting that port always be '-P' (uppercase) -- we are
 currently inconsistent in that regard.
 
 I am also adding '-q' for silent running. This is totally self
@@ -89,7 +89,7 @@ Programming:
   length character assignments, at least to the extent possible,
   from the C-based plugins. To that end, I have made strscpy and
   friends in utils.c -- I'd like to deploy them. I have comments 
-  that there is alot of duplicated code, and techniques used that
+  that there is a lot of duplicated code, and techniques used that
   should be cleaned up. Details in a separate thread.
 
 Remote checks:

@@ -1,6 +1,6 @@
 /* fsusage.c -- return space usage of mounted file systems
 
-   Copyright (C) 1991-1992, 1996, 1998-1999, 2002-2006, 2009-2013 Free Software
+   Copyright (C) 1991-1992, 1996, 1998-1999, 2002-2006, 2009-2015 Free Software
    Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
@@ -54,11 +54,6 @@
 # endif
 # include "full-read.h"
 #endif
-
-/* The results of open() in this file are not used with fchdir,
-   therefore save some unnecessary work in fchdir.c.  */
-#undef open
-#undef close
 
 /* Many space usage primitives use all 1 bits to denote a value that is
    not applicable or unknown.  Propagate this information by returning

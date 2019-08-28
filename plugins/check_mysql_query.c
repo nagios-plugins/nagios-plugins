@@ -45,6 +45,7 @@ char *db_user = NULL;
 char *db_host = NULL;
 char *db_socket = NULL;
 char *db_pass = NULL;
+char *db_char_set = NULL;
 char *db = NULL;
 char *opt_file = NULL;
 char *opt_group = NULL;
@@ -107,6 +108,12 @@ main (int argc, char **argv)
 			die (STATE_WARNING, "QUERY %s: %s\n", _("WARNING"), mysql_error (&mysql));
 		else
 			die (STATE_CRITICAL, "QUERY %s: %s\n", _("CRITICAL"), mysql_error (&mysql));
+	}
+
+	if (db_char_set != NULL && mysql_set_character_set(&mysql, db_char_set)) { // mysql_set_character_set() returns nonzero on error
+		error = strdup(mysql_error(&mysql));
+		mysql_close(&mysql);
+		die (STATE_CRITICAL, "QUERY %s: %s - %s\n", _("CRITICAL"), _("Could not set character set"), error);
 	}
 
 	if (mysql_query (&mysql, sql_query) != 0) {
@@ -189,6 +196,7 @@ process_arguments (int argc, char **argv)
 		{"database", required_argument, 0, 'd'},
 		{"username", required_argument, 0, 'u'},
 		{"password", required_argument, 0, 'p'},
+		{"character-set", required_argument, 0, 'a'},
 		{"file", required_argument, 0, 'f'},
 		{"group", required_argument, 0, 'g'},
 		{"port", required_argument, 0, 'P'},
@@ -205,12 +213,15 @@ process_arguments (int argc, char **argv)
 		return ERROR;
 
 	while (1) {
-		c = getopt_long (argc, argv, "hvVP:p:u:d:H:s:q:w:c:f:g:", longopts, &option);
+		c = getopt_long (argc, argv, "hvVP:p:u:d:H:s:q:w:c:f:g:a:", longopts, &option);
 
 		if (c == -1 || c == EOF)
 			break;
 
 		switch (c) {
+		case 'a':                                   /* character-set */
+			db_char_set = optarg;
+			break;
 		case 'H':									/* hostname */
 			if (is_host (optarg)) {
 				db_host = optarg;
@@ -322,6 +333,8 @@ print_help (void)
 	printf ("    %s\n", _("Use the specified socket (has no effect if -H is used)"));
 	printf (" -d, --database=STRING\n");
 	printf ("    %s\n", _("Database to check"));
+	printf (" -a, --character-set=STRING\n");
+	printf ("    %s\n", _("Use a specific character set when querying, e.g. latin1 or utf8"));
 	printf (" %s\n", "-f, --file=STRING");
 	printf ("    %s\n", _("Read from the specified client options file"));
 	printf (" %s\n", "-g, --group=STRING");
@@ -351,5 +364,5 @@ print_usage (void)
 {
   printf ("%s\n", _("Usage:"));
   printf (" %s -q SQL_query [-w warn] [-c crit] [-H host] [-P port] [-s socket]\n",progname);
-  printf ("       [-d database] [-u user] [-p password] [-f optfile] [-g group]\n");
+  printf ("       [-d database] [-u user] [-p password] [-f optfile] [-g group] [-a character-set]\n");
 }

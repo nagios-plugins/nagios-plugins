@@ -1,6 +1,6 @@
 /* mountlist.h -- declarations for list of mounted file systems
 
-   Copyright (C) 1991-1992, 1998, 2000-2005, 2009-2013 Free Software
+   Copyright (C) 1991-1992, 1998, 2000-2005, 2009-2015 Free Software
    Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
@@ -16,8 +16,8 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef NAGIOS_MOUNTLIST_H_INCLUDED
-# define NAGIOS_MOUNTLIST_H_INCLUDED
+#ifndef MOUNTLIST_H_
+# define MOUNTLIST_H_
 
 # include <stdbool.h>
 # include <sys/types.h>

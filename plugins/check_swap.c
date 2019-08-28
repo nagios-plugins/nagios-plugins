@@ -65,6 +65,7 @@ double warn_size_bytes = 0;
 double crit_size_bytes= 0;
 int verbose;
 int allswaps;
+int no_swap_state = STATE_CRITICAL;
 
 int
 main (int argc, char **argv)
@@ -378,6 +379,8 @@ main (int argc, char **argv)
 int
 check_swap (int usp, double free_swap_mb)
 {
+	if (!free_swap_mb) return no_swap_state;
+
 	int result = STATE_UNKNOWN;
 	double free_swap = free_swap_mb * (1024 * 1024);		/* Convert back to bytes as warn and crit specified in bytes */
 	if (usp >= 0 && crit_percent != 0 && usp >= (100.0 - crit_percent))
@@ -406,6 +409,7 @@ process_arguments (int argc, char **argv)
 		{"warning", required_argument, 0, 'w'},
 		{"critical", required_argument, 0, 'c'},
 		{"allswaps", no_argument, 0, 'a'},
+		{"no-swap", required_argument, 0, 'n'},
 		{"verbose", no_argument, 0, 'v'},
 		{"version", no_argument, 0, 'V'},
 		{"help", no_argument, 0, 'h'},
@@ -416,7 +420,7 @@ process_arguments (int argc, char **argv)
 		return ERROR;
 
 	while (1) {
-		c = getopt_long (argc, argv, "+?Vvhac:w:", longopts, &option);
+		c = getopt_long (argc, argv, "+?Vvhac:w:n:", longopts, &option);
 
 		if (c == -1 || c == EOF)
 			break;
@@ -467,6 +471,10 @@ process_arguments (int argc, char **argv)
 		case 'a':									/* all swap */
 			allswaps = TRUE;
 			break;
+		case 'n':									/* no-swap */
+			if ((no_swap_state = translate_state(optarg)) == ERROR) {
+				usage4 (_("no-swap result must be a valid state name (OK, WARNING, CRITICAL, UNKNOWN) or integer (0-3)."));
+			}
 		case 'v':									/* verbose */
 			verbose++;
 			break;
@@ -532,20 +540,20 @@ validate_arguments (void)
 void
 print_help (void)
 {
-	print_revision (progname, NP_VERSION);
+  print_revision (progname, NP_VERSION);
 
-	printf (_(COPYRIGHT), copyright, email);
+  printf (_(COPYRIGHT), copyright, email);
 
-	printf ("%s\n", _("Check swap space on local machine."));
+  printf ("%s\n", _("Check swap space on local machine."));
 
   printf ("\n\n");
 
-	print_usage ();
+  print_usage ();
 
-	printf (UT_HELP_VRSN);
-	printf (UT_EXTRA_OPTS);
+  printf (UT_HELP_VRSN);
+  printf (UT_EXTRA_OPTS);
 
-	printf (" %s\n", "-w, --warning=INTEGER");
+  printf (" %s\n", "-w, --warning=INTEGER");
   printf ("    %s\n", _("Exit with WARNING status if less than INTEGER bytes of swap space are free"));
   printf (" %s\n", "-w, --warning=PERCENT%%");
   printf ("    %s\n", _("Exit with WARNING status if less than PERCENT of swap space is free"));
@@ -555,22 +563,24 @@ print_help (void)
   printf ("    %s\n", _("Exit with CRITICAL status if less than PERCENT of swap space is free"));
   printf (" %s\n", "-a, --allswaps");
   printf ("    %s\n", _("Conduct comparisons for all swap partitions, one by one"));
-	printf (UT_VERBOSE);
+  printf (" %s\n", "-n, --no-swap=<ok|warning|critical|unknown>");
+  printf ("    %s %s\n", _("Resulting state when there is no swap regardless of thresholds. Default:"), state_text(no_swap_state));
 
-	printf ("\n");
+  printf (UT_VERBOSE);
+
+  printf ("\n");
   printf ("%s\n", _("Notes:"));
   printf (" %s\n", _("Both INTEGER and PERCENT thresholds can be specified, they are all checked."));
   printf (" %s\n", _("On AIX, if -a is specified, uses lsps -a, otherwise uses lsps -s."));
 
-	printf (UT_SUPPORT);
+  printf (UT_SUPPORT);
 }
-
 
 
 void
 print_usage (void)
 {
-	printf ("%s\n", _("Usage:"));
+  printf ("%s\n", _("Usage:"));
   printf (" %s [-av] -w <percent_free>%% -c <percent_free>%%\n",progname);
-  printf ("  -w <bytes_free> -c <bytes_free>\n");
+  printf ("  -w <bytes_free> -c <bytes_free> [-n <state>]\n");
 }

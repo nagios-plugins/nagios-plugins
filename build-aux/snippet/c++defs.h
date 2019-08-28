@@ -1,5 +1,5 @@
 /* C++ compatible function declaration macros.
-   Copyright (C) 2010-2013 Free Software Foundation, Inc.
+   Copyright (C) 2010-2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published
@@ -14,8 +14,8 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef NAGIOS_GL_CXXDEFS_H_INCLUDED
-#define NAGIOS_GL_CXXDEFS_H_INCLUDED
+#ifndef _GL_CXXDEFS_H
+#define _GL_CXXDEFS_H
 
 /* The three most frequent use cases of these macros are:
 
@@ -268,4 +268,4 @@
     _GL_EXTERN_C int _gl_cxxalias_dummy
 #endif
 
-#endif /* NAGIOS_GL_CXXDEFS_H_INCLUDED */
+#endif /* _GL_CXXDEFS_H */

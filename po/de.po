@@ -566,7 +566,7 @@ msgid ""
 msgstr ""
 
 #: plugins/check_disk.c:957
-msgid "Choose bytes, kB, MB, GB, TB (default: MB)"
+msgid "Choose bytes, kB, MB, GB, TB, KiB, MiB, GiB, TiB (default: MiB)"
 msgstr ""
 
 #: plugins/check_disk.c:960

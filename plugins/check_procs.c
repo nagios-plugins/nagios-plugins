@@ -71,6 +71,8 @@ int options = 0; /* bitmask of filter criteria to test against */
 #define ELAPSED 512
 #define EREG_ARGS 1024
 #define CGROUP_HIERARCHY 2048
+#define EXCLUDE_PROGS 4096
+#define JID 8192
 
 #define KTHREAD_PARENT "kthreadd" /* the parent process of kernel threads:
 							ppid of procs are compared to pid of this proc*/
@@ -94,6 +96,9 @@ int rss;
 float pcpu;
 char *statopts;
 char *prog;
+char *exclude_progs;
+char ** exclude_progs_arr = NULL;
+char exclude_progs_counter = 0; 
 char *cgroup_hierarchy;
 char *args;
 char *input_filename = NULL;
@@ -103,6 +108,7 @@ char *fails;
 char tmp[MAX_INPUT_BUFFER];
 int kthread_filter = 0;
 int usepid = 0; /* whether to test for pid or /proc/pid/exe */
+int jid;
 
 FILE *ps_input = NULL;
 
@@ -133,6 +139,7 @@ main (int argc, char **argv)
 	int procuid = 0;
 	pid_t procpid = 0;
 	pid_t procppid = 0;
+	int procjid = 0;
 	pid_t kthread_ppid = 0;
 	int procvsz = 0;
 	int total_procvsz = 0;
@@ -198,16 +205,17 @@ main (int argc, char **argv)
 	}
 	(void) alarm ((unsigned) timeout_interval);
 
-	if (verbose >= 2)
-		printf (_("CMD: %s\n"), PS_COMMAND);
-
 	if (input_filename == NULL) {
+	    if (verbose >= 2)
+		    printf (_("CMD: %s\n"), PS_COMMAND);
 		result = cmd_run( PS_COMMAND, &chld_out, &chld_err, 0);
 		if (chld_err.lines > 0) {
 			printf ("%s: %s", _("System call sent warnings to stderr"), chld_err.line[0]);
 			exit(STATE_WARNING);
 		}
 	} else {
+	    if (verbose >= 2)
+		    printf (_("INPUT FILE: %s\n"), input_filename);
 		result = cmd_file_read( input_filename, &chld_out, 0);
 	}
 
@@ -240,9 +248,9 @@ main (int argc, char **argv)
 			procseconds = convert_to_seconds(procetime);
 
 			if (verbose >= 3) {
-				printf ("proc#=%d uid=%d vsz=%d rss=%d pid=%d ppid=%d pcpu=%.2f stat=%s etime=%s prog=%s args=%s",
++				printf ("proc#=%d uid=%d vsz=%d rss=%d pid=%d ppid=%d jid=%d pcpu=%.2f stat=%s etime=%s prog=%s args=%s\n",
 					procs, procuid, procvsz, procrss,
-					procpid, procppid, procpcpu, procstat,
+					procpid, procppid, procjid, procpcpu, procstat,
 					procetime, procprog, procargs);
 				if (strstr(PS_COMMAND, "cgroup") != NULL) {
 					printf(" proc_cgroup_hierarchy=%s\n", proc_cgroup_hierarchy);
@@ -253,7 +261,7 @@ main (int argc, char **argv)
 
 			/* Ignore self */
 			if ((usepid && mypid == procpid) ||
-				(!usepid && ((ret = stat_exe(procpid, &statbuf) != -1) && statbuf.st_dev == mydev && statbuf.st_ino == myino) ||
+				((!usepid && ((ret = stat_exe(procpid, &statbuf) != -1) && statbuf.st_dev == mydev && statbuf.st_ino == myino)) ||
 				 (ret == -1 && errno == ENOENT))) {
 				if (verbose >= 3)
 					 printf("not considering - is myself or gone\n");
@@ -264,6 +272,26 @@ main (int argc, char **argv)
 				if (verbose >= 3)
 					 printf("not considering - is parent\n");
 				continue;
+			}
+
+			/* Ignore excluded processes by name */
+			if(options & EXCLUDE_PROGS) {
+			  int found = 0;
+			  int i = 0;
+			 
+			  
+			  for(i=0; i < (exclude_progs_counter); i++) {
+			    if(!strcmp(procprog, exclude_progs_arr[i])) {
+			      found = 1;
+			    }
+			  }
+			  if(found == 0) {
+			    resultsum |= EXCLUDE_PROGS;
+			  }else
+			  {
+                            if(verbose >= 3)
+			      printf("excluding - by ignorelist\n");
+                          }
 			}
 
 			/* filter kernel threads (childs of KTHREAD_PARENT)*/
@@ -291,6 +319,8 @@ main (int argc, char **argv)
 				resultsum |= PROG;
 			if ((options & PPID) && (procppid == ppid))
 				resultsum |= PPID;
+			if ((options & JID) && (procjid == jid))
+				resultsum |= JID;
 			if ((options & USER) && (procuid == uid))
 				resultsum |= USER;
 			if ((options & VSZ)  && (procvsz >= vsz))
@@ -319,9 +349,9 @@ main (int argc, char **argv)
 
 			procs++;
 			if (verbose >= 2) {
-				printf ("Matched: uid=%d vsz=%d rss=%d pid=%d ppid=%d pcpu=%.2f stat=%s etime=%s prog=%s args=%s",
++				printf ("Matched: uid=%d vsz=%d rss=%d pid=%d ppid=%d jid=%d pcpu=%.2f stat=%s etime=%s prog=%s args=%s\n",
 					procuid, procvsz, procrss,
-					procpid, procppid, procpcpu, procstat, 
+					procpid, procppid, procjid, procpcpu, procstat,
 					procetime, procprog, procargs);
 				if (strstr(PS_COMMAND, "cgroup") != NULL) {
 					printf(" cgroup_hierarchy=%s\n", cgroup_hierarchy);
@@ -456,6 +486,8 @@ process_arguments (int argc, char **argv)
 		{"no-kthreads", required_argument, 0, 'k'},
 		{"traditional-filter", no_argument, 0, 'T'},
 		{"cgroup-hierarchy", required_argument, 0, 'g'},
+		{"exclude-process", required_argument, 0, 'X'},
+		{"jid", required_argument, 0, 'j'},
 		{0, 0, 0, 0}
 	};
 
@@ -464,7 +496,7 @@ process_arguments (int argc, char **argv)
 			strcpy (argv[c], "-t");
 
 	while (1) {
-		c = getopt_long (argc, argv, "Vvhkt:c:w:p:s:u:C:a:z:r:m:P:Tg:",
+		c = getopt_long (argc, argv, "Vvhkt:c:w:p:s:u:C:a:z:r:m:P:Tg:X:j:",
 			longopts, &option);
 
 		if (c == -1 || c == EOF)
@@ -495,6 +527,12 @@ process_arguments (int argc, char **argv)
 				break;
 			}
 			usage4 (_("Parent Process ID must be an integer!"));
+		case 'j':                                   /* jail id */
+			if (sscanf (optarg, "%d%[^0-9]", &jid, tmp) == 1) {
+				xasprintf (&fmt, "%s%sJID = %d", (fmt ? fmt : "") , (options ? ", " : ""), jid);
+				options |= JID;
+				break;
+			}
 		case 's':									/* status */
 			if (statopts)
 				break;
@@ -533,6 +571,23 @@ process_arguments (int argc, char **argv)
 			xasprintf (&fmt, _("%s%scommand name '%s'"), (fmt ? fmt : ""), (options ? ", " : ""),
 			          prog);
 			options |= PROG;
+			break;
+		case 'X':
+		        if(exclude_progs)
+			  break;
+			else
+			  exclude_progs = optarg;
+			xasprintf (&fmt, _("%s%sexclude progs '%s'"), (fmt ? fmt : ""), (options ? ", " : ""),
+				   exclude_progs);
+			char *p = strtok(exclude_progs, ",");
+
+			while(p){
+			  exclude_progs_arr = realloc(exclude_progs_arr, sizeof(char*) * ++exclude_progs_counter);
+			  exclude_progs_arr[exclude_progs_counter-1] = p;
+			  p = strtok(NULL, ",");
+			}
+
+			options |= EXCLUDE_PROGS;
 			break;
 		case 'g':									/* cgroup hierarchy */
 			if (cgroup_hierarchy)
@@ -784,6 +839,8 @@ print_help (void)
   printf ("   %s\n", _("RSZDT, plus others based on the output of your 'ps' command)."));
   printf (" %s\n", "-p, --ppid=PPID");
   printf ("   %s\n", _("Only scan for children of the parent process ID indicated."));
+  printf (" %s\n", "-j, --jid=JID");
+  printf ("   %s\n", _("Only scan for process running in jail which ID is JID."));
   printf (" %s\n", "-z, --vsz=VSZ");
   printf ("   %s\n", _("Only scan for processes with VSZ higher than indicated."));
   printf (" %s\n", "-r, --rss=RSS");
@@ -798,13 +855,20 @@ print_help (void)
   printf ("   %s\n", _("Only scan for processes with args that contain the regex STRING."));
   printf (" %s\n", "-C, --command=COMMAND");
   printf ("   %s\n", _("Only scan for exact matches of COMMAND (without path)."));
+  printf (" %s\n", "-C, --exclude-process");
+  printf ("   %s\n", _("Exclude processes which match this comma separated list"));
   printf (" %s\n", "-k, --no-kthreads");
   printf ("   %s\n", _("Only scan for non kernel threads (works on Linux only)."));
   printf (" %s\n", "-g, --cgroup-hierarchy");
   printf ("   %s\n", _("Only scan for processes belonging to STRING hierarchy (works on Linux only)."));
 
+  printf ("\n");
+	printf ("%s\n", "Extra:");
+  printf (" %s\n", "--input-file=FILE");
+  printf ("   %s\n", _("Use FILE content instead of /bin/ps output."));
+
 	printf(_("\n\
-RANGEs are specified 'min:max' or 'min:' or ':max' (or 'max'). If\n\
+RANGEs are prefixed with @ and specified 'min:max' or 'min:' or ':max' (or 'max'). If\n\
 specified 'max:min', a warning status will be generated if the\n\
 count is inside the specified range\n\n"));
 
@@ -816,10 +880,10 @@ process owner, parent process PID, current state (e.g., 'Z'), or may\n\
 be the total number of running processes\n\n"));
 
 	printf ("%s\n", _("Examples:"));
-  printf (" %s\n", "check_procs -w 2:2 -c 2:1024 -C portsentry");
+  printf (" %s\n", "check_procs -w @2:2 -c 2:1024 -C portsentry");
   printf ("  %s\n", _("Warning if not two processes with command name portsentry."));
   printf ("  %s\n\n", _("Critical if < 2 or > 1024 processes"));
-  printf (" %s\n", "check_procs -c 1:1 -C bind -g /");
+  printf (" %s\n", "check_procs -c @1:1 -C bind -g /");
   printf ("  %s\n\n", _("Critical if not one processes with command name bind belonging to root cgroup."));
   printf (" %s\n", "check_procs -w 10 -a '/usr/local/bin/perl' -u root");
   printf ("  %s\n", _("Warning alert if > 10 processes with command arguments containing"));
@@ -836,7 +900,8 @@ void
 print_usage (void)
 {
   printf ("%s\n", _("Usage:"));
-	printf ("%s -w <range> -c <range> [-m metric] [-s state] [-p ppid]\n", progname);
+	printf ("%s -w <range> -c <range> [-m metric] [-s state] [-p ppid] [-j jid]\n", progname);
   printf (" [-u user] [-r rss] [-z vsz] [-P %%cpu] [-a argument-array]\n");
-  printf (" [-C command] [-k] [-t timeout] [-v]\n");
+  printf (" [-C command] [-X process_to_exclude] [-k] [-t timeout] [-v]\n");
 }
+

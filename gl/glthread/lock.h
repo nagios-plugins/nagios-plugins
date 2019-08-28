@@ -1,5 +1,5 @@
 /* Locking in multithreaded situations.
-   Copyright (C) 2005-2013 Free Software Foundation, Inc.
+   Copyright (C) 2005-2015 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -75,8 +75,8 @@
 */
 
 
-#ifndef NAGIOS_GL_LOCK_H_INCLUDED
-#define NAGIOS_GL_LOCK_H_INCLUDED
+#ifndef _LOCK_H
+#define _LOCK_H
 
 #include <errno.h>
 #include <stdlib.h>
@@ -924,4 +924,4 @@ typedef int gl_once_t;
 
 /* ========================================================================= */
 
-#endif /* NAGIOS_GL_LOCK_H_INCLUDED */
+#endif /* _LOCK_H */

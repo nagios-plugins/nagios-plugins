@@ -1,6 +1,6 @@
 /* mountlist.c -- return a list of mounted file systems
 
-   Copyright (C) 1991-1992, 1997-2013 Free Software Foundation, Inc.
+   Copyright (C) 1991-1992, 1997-2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -128,13 +128,25 @@
 # include <sys/mntent.h>
 #endif
 
+#ifdef MOUNTED_PROC_MOUNTINFO
+/* Use /proc/self/mountinfo instead of /proc/self/mounts (/etc/mtab)
+ * on Linux, if available */
+# include <libmount/libmount.h>
+#endif
+
 #ifndef HAVE_HASMNTOPT
 # define hasmntopt(mnt, opt) ((char *) 0)
 #endif
 
 #undef MNT_IGNORE
 #ifdef MNTOPT_IGNORE
-# define MNT_IGNORE(M) hasmntopt (M, MNTOPT_IGNORE)
+# if defined __sun && defined __SVR4
+/* Solaris defines hasmntopt(struct mnttab *, char *)
+   while it is otherwise hasmntopt(struct mnttab *, const char *).  */
+#  define MNT_IGNORE(M) hasmntopt (M, (char *) MNTOPT_IGNORE)
+# else
+#  define MNT_IGNORE(M) hasmntopt (M, MNTOPT_IGNORE)
+# endif
 #else
 # define MNT_IGNORE(M) 0
 #endif
@@ -143,15 +155,14 @@
 # include "unlocked-io.h"
 #endif
 
-/* The results of open() in this file are not used with fchdir,
-   therefore save some unnecessary work in fchdir.c.  */
-#undef open
-#undef close
-
 /* The results of opendir() in this file are not used with dirfd and fchdir,
    therefore save some unnecessary work in fchdir.c.  */
-#undef opendir
-#undef closedir
+#ifdef GNULIB_defined_opendir
+# undef opendir
+#endif
+#ifdef GNULIB_defined_closedir
+# undef closedir
+#endif
 
 #define ME_DUMMY_0(Fs_name, Fs_type)            \
   (strcmp (Fs_type, "autofs") == 0              \
@@ -176,10 +187,9 @@
    we grant an exception to any with "bind" in its list of mount options.
    I.e., those are *not* dummy entries.  */
 #ifdef MOUNTED_GETMNTENT1
-# define ME_DUMMY(Fs_name, Fs_type, Fs_ent)	\
+# define ME_DUMMY(Fs_name, Fs_type, Bind)	\
   (ME_DUMMY_0 (Fs_name, Fs_type)		\
-   || (strcmp (Fs_type, "none") == 0		\
-       && !hasmntopt (Fs_ent, "bind")))
+   || (strcmp (Fs_type, "none") == 0 && !Bind))
 #else
 # define ME_DUMMY(Fs_name, Fs_type)		\
   (ME_DUMMY_0 (Fs_name, Fs_type) || strcmp (Fs_type, "none") == 0)
@@ -428,32 +438,76 @@ read_file_system_list (bool need_fs_type)
 
 #ifdef MOUNTED_GETMNTENT1 /* GNU/Linux, 4.3BSD, SunOS, HP-UX, Dynix, Irix.  */
   {
-    struct mntent *mnt;
-    char const *table = MOUNTED;
-    FILE *fp;
+#ifdef MOUNTED_PROC_MOUNTINFO
+    struct libmnt_table *fstable = NULL;
 
-    fp = setmntent (table, "r");
-    if (fp == NULL)
-      return NULL;
+    fstable = mnt_new_table_from_file ("/proc/self/mountinfo");
 
-    while ((mnt = getmntent (fp)))
+    if (fstable != NULL)
       {
-        me = xmalloc (sizeof *me);
-        me->me_devname = xstrdup (mnt->mnt_fsname);
-        me->me_mountdir = xstrdup (mnt->mnt_dir);
-        me->me_type = xstrdup (mnt->mnt_type);
-        me->me_type_malloced = 1;
-        me->me_dummy = ME_DUMMY (me->me_devname, me->me_type, mnt);
-        me->me_remote = ME_REMOTE (me->me_devname, me->me_type);
-        me->me_dev = dev_from_mount_options (mnt->mnt_opts);
+        struct libmnt_fs *fs;
+        struct libmnt_iter *iter;
 
-        /* Add to the linked list. */
-        *mtail = me;
-        mtail = &me->me_next;
+        iter = mnt_new_iter (MNT_ITER_FORWARD);
+
+        while (iter && mnt_table_next_fs (fstable, iter, &fs) == 0)
+          {
+            me = xmalloc (sizeof *me);
+
+            me->me_devname = xstrdup (mnt_fs_get_source (fs));
+            me->me_mountdir = xstrdup (mnt_fs_get_target (fs));
+            me->me_type = xstrdup (mnt_fs_get_fstype (fs));
+            me->me_type_malloced = 1;
+            me->me_dev = mnt_fs_get_devno (fs);
+            /* Note we don't use mnt_fs_is_pseudofs() or mnt_fs_is_netfs() here
+               as libmount's classification is non-compatible currently.
+               Also we pass "false" for the "Bind" option as that's only
+               significant when the Fs_type is "none" which will not be
+               the case when parsing "/proc/self/mountinfo", and only
+               applies for static /etc/mtab files.  */
+            me->me_dummy = ME_DUMMY (me->me_devname, me->me_type, false);
+            me->me_remote = ME_REMOTE (me->me_devname, me->me_type);
+
+            /* Add to the linked list. */
+            *mtail = me;
+            mtail = &me->me_next;
+          }
+
+        mnt_free_iter (iter);
+        mnt_free_table (fstable);
       }
+    else /* fallback to /proc/self/mounts (/etc/mtab) if anything failed */
+#endif /* MOUNTED_PROC_MOUNTINFO */
+      {
+        FILE * fp;
+        struct mntent *mnt;
+        char const *table = MOUNTED;
 
-    if (endmntent (fp) == 0)
-      goto free_then_fail;
+        fp = setmntent (table, "r");
+        if (fp == NULL)
+          return NULL;
+
+        while ((mnt = getmntent (fp)))
+          {
+            bool bind = hasmntopt (mnt, "bind");
+
+            me = xmalloc (sizeof *me);
+            me->me_devname = xstrdup (mnt->mnt_fsname);
+            me->me_mountdir = xstrdup (mnt->mnt_dir);
+            me->me_type = xstrdup (mnt->mnt_type);
+            me->me_type_malloced = 1;
+            me->me_dummy = ME_DUMMY (me->me_devname, me->me_type, bind);
+            me->me_remote = ME_REMOTE (me->me_devname, me->me_type);
+            me->me_dev = dev_from_mount_options (mnt->mnt_opts);
+
+            /* Add to the linked list. */
+            *mtail = me;
+            mtail = &me->me_next;
+          }
+
+        if (endmntent (fp) == 0)
+          goto free_then_fail;
+      }
   }
 #endif /* MOUNTED_GETMNTENT1. */
 
@@ -946,6 +1000,7 @@ read_file_system_list (bool need_fs_type)
             mtail = &me->me_next;
           }
       }
+    closedir (dirp);
   }
 #endif /* MOUNTED_INTERIX_STATVFS */
 
