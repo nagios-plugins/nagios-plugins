@@ -142,9 +142,13 @@ main (int argc, char **argv)
 	int procjid = 0;
 	pid_t kthread_ppid = 0;
 	int procvsz = 0;
+	int total_procvsz = 0;
 	int procrss = 0;
+	int total_procrss = 0;
 	int procseconds = 0;
+	int total_procseconds = 0;
 	float procpcpu = 0;
+	float total_procpcpu = 0;
 	char procstat[8];
 	char procetime[MAX_INPUT_BUFFER] = { '\0' };
 	char *procargs;
@@ -356,16 +360,22 @@ main (int argc, char **argv)
 				}
 			}
 
-			if (metric == METRIC_VSZ)
+			if (metric == METRIC_VSZ) {
 				i = get_status ((double)procvsz, procs_thresholds);
-			else if (metric == METRIC_RSS)
+				total_procvsz += procvsz;
+			} else if (metric == METRIC_RSS) {
 				i = get_status ((double)procrss, procs_thresholds);
+				total_procrss += procrss;
+			}
 			/* TODO? float thresholds for --metric=CPU */
-			else if (metric == METRIC_CPU)
+			else if (metric == METRIC_CPU) {
 				i = get_status (procpcpu, procs_thresholds);
-			else if (metric == METRIC_ELAPSED)
+				total_procpcpu += procpcpu;
+			}
+			else if (metric == METRIC_ELAPSED) {
 				i = get_status ((double)procseconds, procs_thresholds);
-
+				total_procseconds += procseconds;
+			}
 			if (metric != METRIC_PROCS) {
 				if (i == STATE_WARNING) {
 					warn++;
@@ -424,6 +434,14 @@ main (int argc, char **argv)
 		printf (" | procs=%d;%s;%s;0;", procs,
 				warning_range ? warning_range : "",
 				critical_range ? critical_range : "");
+	else if (metric == METRIC_VSZ)
+		printf (" | procs=%d;;;0; procs_warn=%d;;;0; procs_crit=%d;;;0; procvsz=%d;", procs, warn, crit, total_procvsz);
+	else if (metric == METRIC_RSS)
+		printf (" | procs=%d;;;0; procs_warn=%d;;;0; procs_crit=%d;;;0; procrss=%d;", procs, warn, crit, total_procrss);
+	else if (metric == METRIC_CPU)
+		printf (" | procs=%d;;;0; procs_warn=%d;;;0; procs_crit=%d;;;0; procpcpu=%f;", procs, warn, crit, total_procpcpu);
+	else if (metric == METRIC_ELAPSED)
+		printf (" | procs=%d;;;0; procs_warn=%d;;;0; procs_crit=%d;;;0; procseconds=%d;", procs, warn, crit, total_procseconds);
 	else
 		printf (" | procs=%d;;;0; procs_warn=%d;;;0; procs_crit=%d;;;0;", procs, warn, crit);
 
@@ -886,3 +904,4 @@ print_usage (void)
   printf (" [-u user] [-r rss] [-z vsz] [-P %%cpu] [-a argument-array]\n");
   printf (" [-C command] [-X process_to_exclude] [-k] [-t timeout] [-v]\n");
 }
+
