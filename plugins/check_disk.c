@@ -408,7 +408,6 @@ main (int argc, char **argv)
       temp_result2 = get_status(path->dfree_pct, path->freespace_percent);
       if (verbose_machine_output) printf("Freespace%% result=%d\n", temp_result2);
 
-      printf("dfree_units %d %d\n", temp_result, temp_result2);
       if (combined_thresholds) {
         temp_result = min_state(temp_result, temp_result2);
       }
@@ -416,7 +415,6 @@ main (int argc, char **argv)
         temp_result = max_state(temp_result, temp_result2);
       }
       disk_result = max_state(disk_result, temp_result);
-      printf("disk_result is %d", disk_result);
 
       temp_result = get_status(path->dused_units, path->usedspace_units);
       if (verbose_machine_output) printf("Usedspace_units result=%d\n", temp_result);
