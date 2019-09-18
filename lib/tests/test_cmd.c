@@ -180,7 +180,7 @@ main (int argc, char **argv)
 	result = cmd_run (command, &chld_out, &chld_err, 0);
 
 	ok (chld_out.lines == 0,
-			"Non existant command, so no output");
+			"Non existent command, so no output");
 	ok (chld_err.lines == 0,
 			"No stderr either");
 	ok (result == 3, "Get return code 3 (?) for non-existant command");

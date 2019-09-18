@@ -1,6 +1,6 @@
 /* intprops.h -- properties of integer types
 
-   Copyright (C) 2001-2005, 2009-2013 Free Software Foundation, Inc.
+   Copyright (C) 2001-2005, 2009-2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -17,8 +17,8 @@
 
 /* Written by Paul Eggert.  */
 
-#ifndef NAGIOS_GL_INTPROPS_H_INCLUDED
-#define NAGIOS_GL_INTPROPS_H_INCLUDED
+#ifndef _GL_INTPROPS_H
+#define _GL_INTPROPS_H
 
 #include <limits.h>
 
@@ -89,7 +89,8 @@
 
 /* Return 1 if the __typeof__ keyword works.  This could be done by
    'configure', but for now it's easier to do it by hand.  */
-#if 2 <= __GNUC__ || defined __IBM__TYPEOF__ || 0x5110 <= __SUNPRO_C
+#if (2 <= __GNUC__ || defined __IBM__TYPEOF__ \
+     || (0x5110 <= __SUNPRO_C && !__STDC__))
 # define _GL_HAVE___TYPEOF__ 1
 #else
 # define _GL_HAVE___TYPEOF__ 0
@@ -316,4 +317,4 @@
                       _GL_INT_MINIMUM (0 * (b) + (a)),          \
                       _GL_INT_MAXIMUM (0 * (b) + (a)))
 
-#endif /* NAGIOS_GL_INTPROPS_H_INCLUDED */
+#endif /* _GL_INTPROPS_H */

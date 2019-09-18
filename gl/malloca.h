@@ -1,5 +1,5 @@
 /* Safe automatic memory allocation.
-   Copyright (C) 2003-2007, 2009-2013 Free Software Foundation, Inc.
+   Copyright (C) 2003-2007, 2009-2015 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2003.
 
    This program is free software; you can redistribute it and/or modify
@@ -15,8 +15,8 @@
    You should have received a copy of the GNU General Public License
    along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef NAGIOS_MALLOCA_H_INCLUDED
-#define NAGIOS_MALLOCA_H_INCLUDED
+#ifndef _MALLOCA_H
+#define _MALLOCA_H
 
 #include <alloca.h>
 #include <stddef.h>
@@ -130,4 +130,4 @@ enum
   sa_increment = ((sizeof (int) + sa_alignment_max - 1) / sa_alignment_max) * sa_alignment_max
 };
 
-#endif /* NAGIOS_MALLOCA_H_INCLUDED */
+#endif /* _MALLOCA_H */

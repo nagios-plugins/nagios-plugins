@@ -1,0 +1,143 @@
+language: c
+
+sudo: true
+
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      addons:
+        apt:
+          sources:
+            - sourceline: 'deb http://archive.ubuntu.com/ubuntu trusty-backports main restricted security universe multiverse'
+          update: true
+          packages:
+            - libdbi-dev
+            - libldap2-dev
+            - libpq-dev
+            - libmysqlclient-dev
+            - libfreeradius-client-dev
+            - libkrb5-dev
+            - libnet-snmp-perl
+            - procps
+            - fping
+            - libdbi0-dev
+            - libdbd-sqlite3
+            - libssl-dev
+            - libgnutls-dev
+            - dnsutils
+            - snmp-mibs-downloader
+            - libsnmp-perl
+            - snmpd
+            - iputils-ping
+            - fping
+            - snmp
+            - netcat
+            - smbclient
+            - fping
+            - pure-ftpd
+            - apache2
+            - postfix
+            - libhttp-daemon-ssl-perl
+            - slapd
+            - ldap-utils
+            - qstat
+      env:
+        - MATRIX_EVAL="CC=gcc && CXX=g++"
+
+    - os: linux
+      dist: trusty
+      addons:
+        apt:
+          sources:
+            - sourceline: 'deb http://archive.ubuntu.com/ubuntu trusty-backports main restricted security universe multiverse'
+            - ubuntu-toolchain-r-test
+          update: true
+          packages:
+            - libdbi-dev
+            - libldap2-dev
+            - libpq-dev
+            - libmysqlclient-dev
+            - libfreeradius-client-dev
+            - libkrb5-dev
+            - libnet-snmp-perl
+            - procps
+            - fping
+            - libdbi0-dev
+            - libdbd-sqlite3
+            - libssl-dev
+            - libgnutls-dev
+            - dnsutils
+            - snmp-mibs-downloader
+            - libsnmp-perl
+            - snmpd
+            - iputils-ping
+            - fping
+            - snmp
+            - netcat
+            - smbclient
+            - fping
+            - pure-ftpd
+            - apache2
+            - postfix
+            - libhttp-daemon-ssl-perl
+            - slapd
+            - ldap-utils
+            - qstat
+            - g++-8
+      env:
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+
+    - os: linux
+      dist: trusty
+      addons:
+        apt:
+          sources:
+            - sourceline: 'deb http://archive.ubuntu.com/ubuntu trusty-backports main restricted security universe multiverse'
+            - llvm-toolchain-trusty-6.0
+            - ubuntu-toolchain-r-test
+          update: true
+          packages:
+            - libdbi-dev
+            - libldap2-dev
+            - libpq-dev
+            - libmysqlclient-dev
+            - libfreeradius-client-dev
+            - libkrb5-dev
+            - libnet-snmp-perl
+            - procps
+            - fping
+            - libdbi0-dev
+            - libdbd-sqlite3
+            - libssl-dev
+            - libgnutls-dev
+            - dnsutils
+            - snmp-mibs-downloader
+            - libsnmp-perl
+            - snmpd
+            - iputils-ping
+            - fping
+            - snmp
+            - netcat
+            - smbclient
+            - fping
+            - pure-ftpd
+            - apache2
+            - postfix
+            - libhttp-daemon-ssl-perl
+            - slapd
+            - ldap-utils
+            - qstat
+            - clang-6.0
+            - g++-4.9
+      env:
+        - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
+
+before_install:
+  - eval "${MATRIX_EVAL}"
+
+script:
+  - ./autogen.sh --enable-libtap
+  - make
+  # This is not working. Should be fixed in another PR.
+  #- make test
