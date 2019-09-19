@@ -822,6 +822,7 @@ process_arguments (int argc, char **argv)
       break;
     case 'L':
       stat_remote_fs = 1;
+      break;
     case 'l':
       show_local_fs = 1;
       break;
