@@ -12,7 +12,8 @@ This file documents the major additions and syntax changes between releases.
 	check_disk: Add -s option to show status for each path/partition
 	check_disk: Add support for base-10 units kB, MB, GB, TB; rename base-2 units to KiB, MiB, GiB, TiB
 	check_disk_smb: Add configfile feature
-	check_disk_smb: added additional smb support
+	check_disk_smb: Added additional smb support
+	check_disk_smb: Allow non-latin characters in names (Konstantin Shalygin)
 	check_file_age: Use extended plugin output to show one file per line
 	check_http: New parameter `--verify-host` will check if -H hostname matches the SSL certificate
 	check_icmp: Add Jitter, MOS, Score (Alessandro Ren)
@@ -22,6 +23,7 @@ This file documents the major additions and syntax changes between releases.
 	check_mailq: Add support for opensmtpd
 	check_mysql_query: Add --character-set flag
 	check_ntp: Add --delay flag to circumvent DOS detection
+	check_ntp: Add --allow-zero-stratum flag
 	check_ntp_time: Add --delay flag to circumvent DOS detection
 	check_ntp_time: Add support for monitoring stratum of timesources
 	check_oracle: Add support for Oracle XE databases (Peter Athaks)
@@ -29,10 +31,13 @@ This file documents the major additions and syntax changes between releases.
 	check_pgsql: Add --print-query flag
 	check_procs: Add FreeBSD jail support (Mathieu Arnold)
 	check_procs: Allow process to be excluded from check_procs (Marcel Klein)
+	check_procs: Additional performance data metrics (azthec)
 	check_radius: Add calling-station-id (cejkar)
 	check_smtp: Add --proxy flag for PROXY protocol (Patrick Uiterwijk)
+	check_smtp: Add support for --sni (Arkadiusz Miśkiewicz)
 	check_snmp: Add --strict flag to ensure returned OID matches -o.
 	check_swap: Add --no-swap flag (Mario Trangoni)
+	check_ups: Add check for battery runtime left (gino0631)
 	lib: Added warning_string/critical_string to struct thresholds for storing originally parsed strings
 	ssl_utils: Added certificate expiry data in OK status (check_http, check_smtp, check_tcp) (Matt Capra)
 
