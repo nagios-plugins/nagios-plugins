@@ -75,6 +75,7 @@ NP-VERSION-FILE
 /gl/getopt.h
 /gl/glthread/.deps
 /gl/glthread/.dirstamp
+/gl/inttypes.h
 /gl/langinfo.h
 /gl/libgnu.a
 /gl/locale.h
