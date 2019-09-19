@@ -21,6 +21,8 @@ This file documents the major additions and syntax changes between releases.
 	check_mailq: Add option for opensmtpd (brigriffin)
 	check_mailq: Add support for opensmtpd
 	check_mysql_query: Add --character-set flag
+	check_ntp: Add --delay flag to circumvent DOS detection
+	check_ntp_time: Add --delay flag to circumvent DOS detection
 	check_ntp_time: Add support for monitoring stratum of timesources
 	check_oracle: Add support for Oracle XE databases (Peter Athaks)
 	check_ping: plugin output will now include hostname and IP address
