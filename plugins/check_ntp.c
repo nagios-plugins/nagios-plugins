@@ -108,6 +108,8 @@ typedef struct {
 	uint16_t status;
 } ntp_assoc_status_pair;
 
+static int allow_zero_stratum = 0;
+
 /* bits 1,2 are the leap indicator */
 #define LI_MASK 0xc0
 #define LI(x) ((x&LI_MASK)>>6)
@@ -307,7 +309,7 @@ int best_offset_server(const ntp_server_results *slist, int nservers){
 		/* Sort out servers that didn't respond or responede with a 0 stratum;
 		 * stratum 0 is for reference clocks so no NTP server should ever report
 		 * a stratum 0 */
-		if ( slist[cserver].stratum == 0){
+		if ( slist[cserver].stratum == 0 && !allow_zero_stratum){
 			if (verbose) printf("discarding peer %d: stratum=%d\n", cserver, slist[cserver].stratum);
 			continue;
 		}
@@ -680,6 +682,7 @@ int process_arguments(int argc, char **argv){
 		{"jcrit", required_argument, 0, 'k'},
 		{"timeout", required_argument, 0, 't'},
 		{"hostname", required_argument, 0, 'H'},
+		{"allow-zero-stratum", no_argument, 0, 'z'},
 		{0, 0, 0, 0}
 	};
 
@@ -730,6 +733,9 @@ int process_arguments(int argc, char **argv){
 			break;
 		case 't':
 			timeout_interval = parse_timeout_string(optarg);
+			break;
+		case 'z':
+			allow_zero_stratum = 1;
 			break;
 		case '4':
 			address_family = AF_INET;
@@ -879,6 +885,8 @@ void print_help(void){
 	printf ("    %s\n", _("Critical threshold for jitter"));
 	printf (" %s\n", "-d, --delay=INTEGER");
 	printf ("    %s\n", _("Delay between each packet (seconds)"));
+	printf (" %s\n", "-z, --allow-zero-stratum");
+	printf ("    %s\n", _("Do not discard DNS servers which report a stratum of zero (0)"));
 	printf (UT_CONN_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
 	printf (UT_VERBOSE);
 
