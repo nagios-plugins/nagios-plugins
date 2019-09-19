@@ -231,7 +231,6 @@ main (int argc, char **argv)
 					 FALSE, 0.0, FALSE, 0.0,
 					 TRUE, 0.0, TRUE, 100.0));
 	}
-	xasprintf(&error_message, "%s\n", error_message,);
 
 	printf (_("Traffic %s - %s\n"), state_text(result), error_message);
 
