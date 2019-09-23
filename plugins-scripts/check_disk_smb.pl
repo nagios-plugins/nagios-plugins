@@ -19,7 +19,6 @@
 #
 
 require 5.004;
-use utf8::all;
 use POSIX;
 use strict;
 use Getopt::Long;
@@ -29,6 +28,19 @@ use FindBin;
 use lib "$FindBin::Bin";
 use lib '@libexecdir@';
 use utils qw($TIMEOUT %ERRORS &print_revision &support &usage);
+
+# Use utf8::all if available or fall back to old behavior
+my $have_utf8_all = eval { require utf8::all; 1 };
+my ($opt_H_regexp, $opt_s_regexp, $opt_u_regexp);
+if ($have_utf8_all) {
+    $opt_H_regexp = qr/^([^":|<>\*\?\\\/]+)$/;
+    $opt_s_regexp = qr/^([^":|<>\*\?\\\/]+\$?)$/;
+    $opt_u_regexp = qr/^([^":|<>\*\?\/(?<!\)]+)$/;
+} else {
+    $opt_H_regexp = qr/^([-_.A-Za-z0-9 ]+\$?)$/;
+    $opt_s_regexp = qr/^([-_.A-Za-z0-9 ]+\$?)$/;
+    $opt_u_regexp = qr/^([-_.A-Za-z0-9\\]*)$/;
+}
 
 sub print_help ();
 sub print_usage ();
@@ -71,15 +83,15 @@ $smbclient    || usage("check requires smbclient, smbclient not set\n");
 # Options checking
 
 ($opt_H) || ($opt_H = shift @ARGV) || usage("Host name not specified\n");
-my $host = $1 if ($opt_H =~ /^([^":|<>\*\?\\\/]+)$/);
+my $host = $1 if ($opt_H =~ $opt_H_regexp);
 ($host) || usage("Invalid host: $opt_H\n");
 
 ($opt_s) || ($opt_s = shift @ARGV) || usage("Share volume not specified\n");
-my $share = $1 if ($opt_s =~ /^([^":|<>\*\?\\\/]+\$?)$/);
+my $share = $1 if ($opt_s =~ $opt_s_regexp);
 ($share) || usage("Invalid share: $opt_s\n");
 
 defined($opt_u) || ($opt_u = shift @ARGV) || ($opt_u = "guest");
-my $user = $1 if ($opt_u =~ /^([^":|<>\*\?\/(?<!\)]+)$/);
+my $user = $1 if ($opt_u =~ $opt_u_regexp);
 defined($user) || usage("Invalid user: $opt_u\n");
 
 defined($opt_p) || ($opt_p = shift @ARGV) || ($opt_p = "");
