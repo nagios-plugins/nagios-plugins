@@ -157,11 +157,23 @@ main (int argc, char **argv)
 		printf (_("Could not open stderr for %s\n"), PATH_TO_UPTIME);
 	}
 	fgets (input_buffer, MAX_INPUT_BUFFER - 1, child_process);
+
+	/* Some platforms include commas in load averages, some don't. */
+	/* Strip out any commas in the uptime output */
+	len = strlen(input_buffer);
+
+	for (i = 0, j = 0; i < len, j < len; i++, j++) {
+		if (input_buffer[j] == ',') {
+			j += 1;
+		}
+		input[i] = input[j];
+	}
+
     if(strstr(input_buffer, "load average:")) {
-	    sscanf (input_buffer, "%*[^l]load average: %lf, %lf, %lf", &la1, &la5, &la15);
+	    sscanf (input_buffer, "%*[^l]load average: %lf %lf %lf", &la1, &la5, &la15);
     }
     else if(strstr(input_buffer, "load averages:")) {
-	    sscanf (input_buffer, "%*[^l]load averages: %lf, %lf, %lf", &la1, &la5, &la15);
+	    sscanf (input_buffer, "%*[^l]load averages: %lf %lf %lf", &la1, &la5, &la15);
     }
     else {
 		printf (_("could not parse load %d from uptime: %s\n"), result, PATH_TO_UPTIME);
