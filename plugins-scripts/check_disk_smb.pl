@@ -19,7 +19,10 @@
 #
 
 require 5.004;
-use utf8::all;
+eval "use utf8::all";
+if ( $@ ) {
+    use utf8::all;
+}
 use POSIX;
 use strict;
 use Getopt::Long;
