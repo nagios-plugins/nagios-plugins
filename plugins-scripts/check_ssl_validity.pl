@@ -23,13 +23,25 @@ use POSIX qw(strftime);
 use Digest::MD5 qw(md5_hex);
 use LWP::Simple;
 
-getopts('p:t:H:dw:c:I:C:d');
+use Getopt::Long;
+Getopt::Long::Configure('bundling');
+GetOptions(
+    "h"   => \$opt_h,   "help"                  => \$opt_h,
+    "d"   => \$opt_d,   "debug"                 => \$opt_d,
+    "C=s" => \$opt_C,   "crl-cache-frequency=s" => \$opt_C,
+    "I=s" => \$opt_I,   "ip=s"                  => \$opt_I,
+    "p=i" => \$opt_p,   "port=i"                => \$opt_p,
+    "H=s" => \$opt_H,   "cert-hostname=s"       => \$opt_H,
+    "w=i" => \$opt_w,   "warning=i"             => \$opt_w,
+    "c=i" => \$opt_c,   "critical=i"            => \$opt_c,
+    "t"   => \$opt_t,   "timeout"               => \$opt_t
+);
 
 sub usage {
-        print "check_ssl_validity -H <cert hostname> [-I <IP/host>] [-p <port>]\n[-t <timeout>] [-w <expire warning (days)>] [-c <expire critical (dats)>]\n[-C (CRL update frequency in seconds)] [-d (debug)]\n";
-        print "\nWill look for hostname provided with -H in the certificate, but will contact\n";
-        print "server with host/IP provided by -I (optional)\n";
-        exit(1);
+    print "check_ssl_validity -H <cert hostname> [-I <IP/host>] [-p <port>]\n[-t <timeout>] [-w <expire warning (days)>] [-c <expire critical (dats)>]\n[-C (CRL update frequency in seconds)] [-d (debug)]\n";
+    print "\nWill look for hostname provided with -H in the certificate, but will contact\n";
+    print "server with host/IP provided by -I (optional)\n";
+    exit(1);
 }
 
 sub updatecrl {
@@ -108,10 +120,22 @@ if ($opt_c && $opt_c =~ /^\d+$/) {
 }
 
 sub doexit {
-        my $ret = shift;
-        my $txt = shift;
-        print "$txt\n";
-        exit($ret);
+    my $ret = shift;
+    my $txt = shift;
+    if ($ret == 0) {
+        print "OK: ";
+    }
+    elsif ($ret == 1) {
+        print "WARNING: ";
+    }
+    elsif ($ret == 2) {
+        print "CRITICAL: ";
+    }
+    else {
+        print "UNKNOWN: ";
+    }
+    print "$txt\n";
+    exit($ret);
 }
 
 $alldata = "";
@@ -164,14 +188,14 @@ $oktxt = "";
 $cn = $decoded->subject_cn;
 if ($opt_d) { print "Found CN: $cn\n"; }
 if ($vhost eq $decoded->subject_cn) {
-	$oktxt .= "Host $vhost matches CN $vhost on $hosttxt ";
-} elsif ($decoded->subject_cn =~ /^*\.(.*)$/) {
-	$wcdomain = $1;
-	$domain = $vhost;
-	$domain =~ s@^[\w\-]+\.@@;
-	if ($domain eq $wcdomain) {
-		$oktxt .= "Host $vhost matches wildcard CN " . $decoded->subject_cn . " on $hosttxt ";
-	}
+    $oktxt .= "Host $vhost matches CN $vhost on $hosttxt ";
+} elsif ($decoded->subject_cn =~ /^.*\.(.*)$/) {
+    $wcdomain = $1;
+    $domain = $vhost;
+    $domain =~ s@^[\w\-]+\.@@;
+    if ($domain eq $wcdomain) {
+        $oktxt .= "Host $vhost matches wildcard CN " . $decoded->subject_cn . " on $hosttxt ";
+    }
 }
 
 if ($oktxt eq "") {
@@ -205,7 +229,9 @@ $certtime = $decoded->not_after;
 $certdays = ($certtime-$uxtimegmt)/86400;
 $certdaysfmt = sprintf("%.1f", $certdays);
 
-if ($certdays < $crit) {
+if ($certdays < 0) {
+    doexit(2, "${oktxt}but it is expired ($certdaysfmt days)");
+} elsif ($certdays < $crit) {
     doexit(2, "${oktxt}but it is expiring in only $certdaysfmt days, critical limit is $crit.");
 } elsif ($certdays < $warn) {
     doexit(1, "${oktxt}but it is expiring in only $certdaysfmt days, warning limit is $warn.");
