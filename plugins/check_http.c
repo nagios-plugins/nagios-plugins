@@ -1419,7 +1419,7 @@ redir (char *pos, char *status_line)
   int i = 0;
   char *x;
   char xx[2];
-  char type[6];
+  char type[12];
   char *addr;
   char *url;
 
