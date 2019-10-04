@@ -102,12 +102,13 @@ int
 main (int argc, char **argv)
 {
 	int result;
-	int i;
+	int i, j;
 	long numcpus;
 
 	double la[3] = { 0.0, 0.0, 0.0 };	/* NetBSD complains about uninitialized arrays */
 #ifndef HAVE_GETLOADAVG
 	char input_buffer[MAX_INPUT_BUFFER];
+	int len;
 # ifdef HAVE_PROC_LOADAVG
 	FILE *fp;
 	char *str, *next;
@@ -163,11 +164,13 @@ main (int argc, char **argv)
 	len = strlen(input_buffer);
 
 	for (i = 0, j = 0; i < len, j < len; i++, j++) {
-		if (input_buffer[j] == ',') {
+		while (input_buffer[j] == ',') {
 			j += 1;
 		}
-		input[i] = input[j];
+		input_buffer[i] = input_buffer[j];
 	}
+
+	input_buffer[i] = '\0';
 
     if(strstr(input_buffer, "load average:")) {
 	    sscanf (input_buffer, "%*[^l]load average: %lf %lf %lf", &la1, &la5, &la15);
