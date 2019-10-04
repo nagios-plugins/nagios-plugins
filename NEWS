@@ -55,6 +55,7 @@ This file documents the major additions and syntax changes between releases.
 	check_http: Additional header/status checking
 	check_http: Fix --no-body
 	check_http: When checking certificate, don't check content/status unless specified by --continue-after-certificate
+	check_load: Fixed for operating systems which don't have commas in their load averages (like Mac OSX)
 	check_log does not check for "-O oldlog"
 	check_log lost ability to use regexes for query (-q) in 2.1.4
 	check_mysql_query & mysql_query: extra-opts causes crash
