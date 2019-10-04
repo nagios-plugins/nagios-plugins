@@ -1589,7 +1589,7 @@ redir (char *pos, char *status_line)
             if(use_ssl)
                 strcpy (type,"https");
             else
-                strcpy (type,"server_type");
+                strcpy (type,server_type);
             xasprintf(&url, "/%s", url);
             use_ssl = server_type_check (type);
             i = server_port_check (use_ssl);
