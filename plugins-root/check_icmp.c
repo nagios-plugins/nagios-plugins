@@ -1328,6 +1328,7 @@ static void finish(int sig) {
                                  "DEPENDENT"};
   int hosts_ok = 0;
   int hosts_warn = 0;
+  int this_status;
   double R;
 
   alarm(0);
@@ -1402,64 +1403,67 @@ static void finish(int sig) {
     /* Check which mode is on and do the warn / Crit stuff */
     if (rta_mode) {
       if (rta >= crit.rta) {
+        this_status = STATE_CRITICAL;
         status = STATE_CRITICAL;
         host->rta_status = STATE_CRITICAL;
       } else if (status != STATE_CRITICAL && (rta >= warn.rta)) {
+        this_status = (this_status <= STATE_WARNING ? STATE_WARNING : this_status);
         status = STATE_WARNING;
-        hosts_warn++;
         host->rta_status = STATE_WARNING;
-      } else {
-        hosts_ok++;
       }
     }
     if (pl_mode) {
       if (pl >= crit.pl) {
+        this_status = STATE_CRITICAL;
         status = STATE_CRITICAL;
         host->pl_status = STATE_CRITICAL;
       } else if (status != STATE_CRITICAL && (pl >= warn.pl)) {
+        this_status = (this_status <= STATE_WARNING ? STATE_WARNING : this_status);
         status = STATE_WARNING;
-        hosts_warn++;
         host->pl_status = STATE_WARNING;
-      } else {
-        hosts_ok++;
       }
     }
     if (jitter_mode) {
       if (host->jitter >= crit.jitter) {
+        this_status = STATE_CRITICAL;
         status = STATE_CRITICAL;
         host->jitter_status = STATE_CRITICAL;
       } else if (status != STATE_CRITICAL && (host->jitter >= warn.jitter)) {
+        this_status = (this_status <= STATE_WARNING ? STATE_WARNING : this_status);
         status = STATE_WARNING;
-        hosts_warn++;
         host->jitter_status = STATE_WARNING;
-      } else {
-        hosts_ok++;
       }
     }
     if (mos_mode) {
       if (host->mos <= crit.mos) {
+        this_status = STATE_CRITICAL;
         status = STATE_CRITICAL;
         host->mos_status = STATE_CRITICAL;
       } else if (status != STATE_CRITICAL && (host->mos <= warn.mos)) {
+        this_status = (this_status <= STATE_WARNING ? STATE_WARNING : this_status);
         status = STATE_WARNING;
-        hosts_warn++;
         host->mos_status = STATE_WARNING;
-      } else {
-        hosts_ok++;
       }
     }
     if (score_mode) {
       if (host->score <= crit.score) {
+        this_status = STATE_CRITICAL;
         status = STATE_CRITICAL;
         host->score_status = STATE_CRITICAL;
       } else if (status != STATE_CRITICAL && (host->score <= warn.score)) {
+        this_status = (this_status <= STATE_WARNING ? STATE_WARNING : this_status);
         status = STATE_WARNING;
-        score_mode++;
         host->score_status = STATE_WARNING;
-      } else {
-        hosts_ok++;
       }
     }
+
+    if (this_status == STATE_WARNING) {
+      hosts_warn++;
+    }
+    else if (this_status == STATE_OK) {
+      hosts_ok++;
+    }
+
     host = host->next;
   }
 
