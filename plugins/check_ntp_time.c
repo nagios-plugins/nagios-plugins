@@ -564,9 +564,9 @@ int process_arguments(int argc, char **argv){
 
 char *perfd_offset (double offset)
 {
-	return fperfdata ("offset", offset, "s",
-		TRUE, offset_thresholds->warning->end,
-		TRUE, offset_thresholds->critical->end,
+	return sperfdata ("offset", offset, "s",
+		offset_thresholds->warning_string,
+		offset_thresholds->critical_string,
 		FALSE, 0, FALSE, 0);
 }
 

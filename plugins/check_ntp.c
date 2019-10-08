@@ -763,17 +763,17 @@ int process_arguments(int argc, char **argv){
 
 char *perfd_offset (double offset)
 {
-	return fperfdata ("offset", offset, "s",
-		TRUE, offset_thresholds->warning->end,
-		TRUE, offset_thresholds->critical->end,
+	return sperfdata ("offset", offset, "s",
+		offset_thresholds->warning_string,
+		offset_thresholds->critical_string,
 		FALSE, 0, FALSE, 0);
 }
 
 char *perfd_jitter (double jitter)
 {
-	return fperfdata ("jitter", jitter, "s",
-		do_jitter, jitter_thresholds->warning->end,
-		do_jitter, jitter_thresholds->critical->end,
+	return sperfdata ("jitter", jitter, "s",
+		jitter_thresholds->warning_string,
+		jitter_thresholds->critical_string,
 		TRUE, 0, FALSE, 0);
 }
 
