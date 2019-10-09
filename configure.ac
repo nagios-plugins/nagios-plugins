@@ -1502,6 +1502,14 @@ else
 	AC_MSG_WARN([Tried $PERL - install Net::SNMP perl module if you want to use the perl snmp plugins])
 fi
 
+if ( $PERL -M"Crypt::X509" -M"Date::Parse" -M"LWP::Simple" -M "Text::Glob" -e 'exit' 2>/dev/null )
+then
+  AC_MSG_CHECKING(for Crypt::X509, Date::Parse, LWP::Simple, Text::Glob perl modules)
+  AC_MSG_RESULT([found])
+else
+  AC_MSG_WARN([Tried $PERL - install the Crypt::X509, Date::Parse, LWP::Simple, and Text::Glob perl modules if you want to use check_ssl_validity])
+fi
+
 AC_PATH_PROG(PATH_TO_QUAKESTAT,quakestat)
 AC_PATH_PROG(PATH_TO_QSTAT,qstat)
 AC_ARG_WITH(qstat_command,

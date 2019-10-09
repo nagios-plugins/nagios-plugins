@@ -253,6 +253,7 @@ NP-VERSION-FILE
 /plugins-scripts/check_oracle
 /plugins-scripts/check_rpc
 /plugins-scripts/check_sensors
+/plugins-scripts/check_ssl_validity
 /plugins-scripts/check_wave
 /plugins-scripts/check_file_age
 
