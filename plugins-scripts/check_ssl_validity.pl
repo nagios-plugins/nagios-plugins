@@ -17,8 +17,10 @@
 
 use Getopt::Std;
 use File::Temp qw(tempfile);
+use File::Basename;
 use Crypt::X509;
 use Date::Parse;
+use Date::Format qw(ctime);
 use POSIX qw(strftime);
 use Digest::MD5 qw(md5_hex);
 use LWP::Simple;
@@ -39,6 +41,8 @@ GetOptions(
     "c=i" => \$opt_c,   "critical=i"            => \$opt_c,
     "t"   => \$opt_t,   "timeout"               => \$opt_t
 );
+
+my $chainfh, $chainfile, $escaped_tempfile, $ocsp_status;
 
 sub usage {
     print "check_ssl_validity -H <cert hostname> [-I <IP/host>] [-p <port>]\n[-t <timeout>] [-w <expire warning (days)>] [-c <expire critical (dats)>]\n[-C (CRL update frequency in seconds)] [-d (debug)] [--ocsp] [--ocsp-host]\n";
@@ -248,11 +252,9 @@ if ($opt_d) {
 
 if ($opt_o) {
     # Do OCSP instead of CRL checking
+
     $ocsp_uri = `openssl x509 -noout -ocsp_uri -in $tempfile`;
     $ocsp_uri =~ s/\s+$//;
-
-    my $chainfh;
-    my $chainfile;
 
     ($chainfh,$chainfile) = tempfile(DIR=>'/tmp',UNLINK=>0);
     # Get the certificate chain
@@ -276,29 +278,62 @@ if ($opt_o) {
     $chainfh->print($chain_processed);
     $chainfh->close;
 
-    $cmd = "openssl ocsp -issuer $chainfile -verify_other $chainfile -cert $tempfile -url $ocsp_uri -text";
-    if ($opt_ocsp_host) {
-        $cmd .= " -header \"Host\" \"$opt_ocsp_host\""
+    $ocsp_cache = md5_hex($chain_processed);
+    $ocsp_cache_file = dirname(__FILE__) . "/ssl_validity_data_" . $ocsp_cache;
+
+    open(OCSP_CACHE, $ocsp_cache_file);
+    while (my $line = <OCSP_CACHE>) {
+        chomp $line;
+        if ($line =~ /[0-9]+/) {
+            $next_update_time = $line;
+        }
     }
-    open(CMD, $cmd . " 2>/dev/null |");
-    my $escaped_tempfile = $tempfile;
-    $escaped_tempfile =~ s/([\\\|\(\)\[\]\{\}\^\$\*\+\?\.])/\1/g;
-    my $ocsp_status = "unknown";
-    while (<CMD>) {
-        chomp;
-        if ($_ =~ s/$escaped_tempfile: (.*)/$1/) {
-            $ocsp_status = $_;
-            last;
+    close(OCSP_CACHE);
+
+    $current_time = time();
+
+    if ($current_time < $next_update_time) {
+        # Use cached result
+        $next_update_time_str = ctime($next_update_time);
+        chomp $next_update_time_str;
+        $ocsp_status = "good (cached until $next_update_time_str)";
+    }
+    else {
+        # Time to update
+        $cmd = "openssl ocsp -issuer $chainfile -verify_other $chainfile -cert $tempfile -url $ocsp_uri -text";
+        if ($opt_ocsp_host) {
+            $cmd .= " -header \"Host\" \"$opt_ocsp_host\"";
+        }
+        open(CMD, $cmd . " 2>/dev/null |");
+        $escaped_tempfile = $tempfile;
+        $escaped_tempfile =~ s/([\\\|\(\)\[\]\{\}\^\$\*\+\?\.])/\1/g;
+        $ocsp_status = "unknown";
+        while (<CMD>) {
+            chomp;
+            if ($_ =~ s/Next Update: (.*)/$1/) {
+                $next_update_time = str2time($_);
+            }
+
+            if ($_ =~ s/$escaped_tempfile: (.*)/$1/) {
+                $ocsp_status = $_;
+            }
+        }
+
+        if ($ocsp_status =~ /good/) {
+            open(OCSP_CACHE, ">", $ocsp_cache_file);
+            print OCSP_CACHE $next_update_time;
+            close(OCSP_CACHE);
         }
     }
 
     my $exit_code = 2;
-    if ($ocsp_status eq "good") {
+    if ($ocsp_status =~ /good/) {
         $exit_code = 0;
     }
-    doexit($exit_code, "$oktxt; OCSP responder says certificate is $ocsp_status");
+    doexit($exit_code, "$oktxt; OCSP responder ($ocsp_uri) says certificate is $ocsp_status");
 }
 else {
+    # Do CRL-based checking
 
     @crldps = @{$decoded->CRLDistributionPoints};
     $crlskip = 0;
