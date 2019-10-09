@@ -227,7 +227,15 @@ try_again:
         i--;
         continue;
       }
-      printf(" %s", args);
+
+      /* Remove newlines from args output - consistent with "normal" ps */
+      printf(" ");
+      for (j=0;j<strlen(args);j++) {
+        if (args[j] != '\n') {
+          printf("%c", args[j]);
+        }
+      }
+
     }
     free(args_vecs);
     free(args);

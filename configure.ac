@@ -682,7 +682,7 @@ elif test "$ac_cv_uname_s" = "SunOS"; then
                 pst3="$libexecdir/pst3"
         fi
         ac_cv_ps_command="$pst3"
-        ac_cv_ps_format="%s %d %d %d %d %d %f %s %n"
+        ac_cv_ps_format="%7s %d %d %d %d %d %f %s %n"
         ac_cv_ps_varlist="[procstat,&procuid,&procpid,&procppid,&procvsz,&procrss,&procpcpu,procprog,&pos]"
         ac_cv_ps_cols=9
         AC_MSG_RESULT([using nagios-plugins internal ps command (pst3) for solaris])
