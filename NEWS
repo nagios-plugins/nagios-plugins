@@ -63,6 +63,7 @@ This file documents the major additions and syntax changes between releases.
 	check_ntp/ntp_time/ntp_peer: Fix how thresholds are displayed in performance data
 	check_ntp_time calls `write` on a UDP socket without a successful call to `connect`
 	check_ntp_time: Periodically returns "Socket timeout" when one of several ntp server doesn't respond
+	check_ntp.pl: Fixed crash due to references to undefined variables
 	check_ping: FreeBSD ping working natively
 	check_procs: Prevent buffer overflow/crash on Solaris
 	check_radius: Fix for null pointer dereference (Vít Heřman)
