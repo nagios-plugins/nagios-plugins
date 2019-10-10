@@ -4,6 +4,7 @@ This file documents the major additions and syntax changes between releases.
 2.3.0 xxxx-xx-xx
 	ENHANCEMENTS
 	Added a plugin "remove_perfdata" to remove perfdata from another plugin's output
+	Added a plugin "check_ssl_validity" which verifies a certificate through CRL or OCSP
 	Added directory plugins-python containing three Python plugins
 	check_apt: Add --only-critical switch
 	check_apt: Add --packages-warning (Marc Sánchez)
@@ -59,9 +60,11 @@ This file documents the major additions and syntax changes between releases.
 	check_log does not check for "-O oldlog"
 	check_log lost ability to use regexes for query (-q) in 2.1.4
 	check_mysql_query & mysql_query: extra-opts causes crash
+	check_ntp/ntp_time/ntp_peer: Fix how thresholds are displayed in performance data
 	check_ntp_time calls `write` on a UDP socket without a successful call to `connect`
 	check_ntp_time: Periodically returns "Socket timeout" when one of several ntp server doesn't respond
 	check_ping: FreeBSD ping working natively
+	check_procs: Prevent buffer overflow/crash on Solaris
 	check_radius: Fix for null pointer dereference (Vít Heřman)
 	check_sensors: Fix fault test with --ignore-fault
 	check_snmp: Fix --authpasswd option
