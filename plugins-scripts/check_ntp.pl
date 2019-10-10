@@ -427,8 +427,11 @@ if ($ntpdate_error != $ERRORS{'OK'}) {
 
 foreach my $key (keys %ERRORS) {
 	if ($state==$ERRORS{$key}) {
-#		print ("NTP $key: $answer");
-		print ("NTP $key: $answer|offset=$offset, jitter=" . $jitter/1000 .	",peer_stratum=$stratum\n");
+		print ("NTP $key: $answer|offset=$offset");
+		if ($have_ntpq) {
+			print (", jitter=" . $jitter/1000 .	",peer_stratum=$stratum");
+		}
+		print ("\n");
 		last;
 	}
 }
