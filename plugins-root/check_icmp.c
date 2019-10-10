@@ -489,6 +489,7 @@ static int handle_random_icmp(unsigned char *packet,
 int main(int argc, char **argv) {
   int i;
   char *ptr;
+  char *bind_address = NULL;
   long int arg;
   int icmp_sockerrno, udp_sockerrno, tcp_sockerrno;
   int result;
@@ -654,7 +655,7 @@ int main(int argc, char **argv) {
 
       case 's':
         /* specify source IP address */
-        set_source_ip(optarg);
+        bind_address = optarg;
         break;
 
       case 'V':
@@ -709,6 +710,10 @@ int main(int argc, char **argv) {
     sockets |= HAVE_ICMP;
   } else {
     icmp_sockerrno = errno;
+  }
+
+  if (bind_address != NULL) {
+    set_source_ip(bind_address);
   }
 
   /* now drop privileges (no effect if not setsuid or geteuid() == 0) */
