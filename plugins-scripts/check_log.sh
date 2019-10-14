@@ -2,7 +2,6 @@
 #
 # Log file pattern detector plugin for Nagios
 # Written by Ethan Galstad (nagios@nagios.org)
-# Last Modified: 07-31-1999
 #
 # Usage: ./check_log <log_file> <old_log_file> <pattern>
 #
