@@ -225,6 +225,7 @@ main (int argc, char **argv)
   char *flag_header = NULL;
   char *label_name;
   char *inode_label_name, *raw_used_inodes_name, *raw_free_inodes_name;
+  int print_inode_perfdata_warning, print_inode_perfdata_critical;
   double inode_space_pct;
   double warning_high_tide;
   double critical_high_tide;
@@ -514,11 +515,22 @@ main (int argc, char **argv)
             inode_label_name = calloc(strlen(label_name) + 1 + 14, 1);
             inode_label_name = strcat(inode_label_name, label_name);
             inode_label_name = strcat(inode_label_name, "_inode_percent");
+
+            print_inode_perfdata_warning = FALSE;
+            if (path->freeinodes_percent != NULL && path->freeinodes_percent->warning != NULL) {
+              print_inode_perfdata_warning = TRUE;
+            }
+
+            print_inode_perfdata_critical = FALSE;
+            if (path->freeinodes_percent != NULL && path->freeinodes_percent->critical != NULL) {
+              print_inode_perfdata_critical = TRUE;
+            }
+
             xasprintf (&perf, "%s %s", perf,
                        perfdata (inode_label_name,
                                   path->dused_inodes_percent, "%",
-                                  (path->freeinodes_percent != NULL ? TRUE : FALSE), path->freeinodes_percent->warning->end,
-                                  (path->freeinodes_percent != NULL ? TRUE : FALSE), path->freeinodes_percent->critical->end,
+                                  print_inode_perfdata_warning, (print_inode_perfdata_warning ? path->freeinodes_percent->warning->end : 0),
+                                  print_inode_perfdata_critical, (print_inode_perfdata_critical ? path->freeinodes_percent->critical->end : 0),
                                   TRUE, 0,
                                   TRUE, 100));
 
