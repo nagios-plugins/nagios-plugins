@@ -10,7 +10,6 @@ This file documents the major additions and syntax changes between releases.
 	check_apt: Add --packages-warning (Marc Sánchez)
 	check_disk: Add --combined-thresholds to alert on a percentage AND raw units. 
 	check_disk: Add --inode-perfdata to get extra performance data from inode statistics
-	check_disk: Add -s option to show status for each path/partition
 	check_disk: Add support for base-10 units kB, MB, GB, TB; rename base-2 units to KiB, MiB, GiB, TiB
 	check_disk_smb: Add configfile feature
 	check_disk_smb: Added additional smb support
