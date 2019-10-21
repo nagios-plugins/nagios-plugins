@@ -832,8 +832,9 @@ process_arguments (int argc, char **argv)
         free(units);
       units = strdup ("MB");
       break;
-    case 'L':
+    case 'L': /* show local filesystems, but stat remote filesystems for accessibility */
       stat_remote_fs = 1;
+      show_local_fs = 1;
       break;
     case 'l':
       show_local_fs = 1;
