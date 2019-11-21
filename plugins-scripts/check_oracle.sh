@@ -166,7 +166,7 @@ case "$cmd" in
     }'
     ;;
 --db)
-    pmonchk=$(pgrep -f -c "(asm|ora|xe)_pmon_${2}$")
+    pmonchk=$(pgrep -f "(asm|ora|xe)_pmon_${2}$" | wc -l)
     if [ "${pmonchk}" -ge 1 ] ; then
         echo "${2} OK - ${pmonchk} PMON process(es) running"
         exit "$STATE_OK"
