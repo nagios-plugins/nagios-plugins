@@ -276,19 +276,18 @@ main (int argc, char **argv)
         }
 
         int tmp = error_scan(chld_out.line[i]);
-        result = (result == STATE_UNKNOWN)
-            ? tmp
-            : (result < tmp)
-                ? tmp : result;
-        if (result != STATE_OK) {
-            msg = strchr (chld_out.line[i], ':');
-            if(msg) {
-                msg++;
+        if (result == STATE_UNKNOWN || result < tmp) {
+            result = tmp;
+            if (result != STATE_OK) {
+                msg = strchr (chld_out.line[i], ':');
+                if (msg) {
+                    msg++;
+                }
+                else {
+                    msg = chld_out.line[i];
+                }
+                break;
             }
-            else {
-                msg = chld_out.line[i];
-            }
-            break;
         }
     }  /*This is the end of the scan stdout loop */
 
