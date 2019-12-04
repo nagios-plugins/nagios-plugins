@@ -1,7 +1,7 @@
 This file documents the major additions and syntax changes between releases.
 
 
-2.3.0 xxxx-xx-xx
+2.3.0 2019-12-04
 	ENHANCEMENTS
 	Added a plugin "remove_perfdata" to remove perfdata from another plugin's output
 	Added a plugin "check_ssl_validity" which verifies a certificate through CRL or OCSP
