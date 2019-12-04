@@ -1,6 +1,6 @@
 /* File names on MS-DOS/Windows systems.
 
-   Copyright (C) 2000-2001, 2004-2006, 2009-2013 Free Software Foundation, Inc.
+   Copyright (C) 2000-2001, 2004-2006, 2009-2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -17,8 +17,8 @@
 
    From Paul Eggert and Jim Meyering.  */
 
-#ifndef NAGIOS_GL_DOSNAME_H_INCLUDED
-#define NAGIOS_GL_DOSNAME_H_INCLUDED
+#ifndef _DOSNAME_H
+#define _DOSNAME_H
 
 #if (defined _WIN32 || defined __WIN32__ ||     \
      defined __MSDOS__ || defined __CYGWIN__ || \

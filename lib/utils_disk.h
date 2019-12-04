@@ -26,7 +26,7 @@ struct parameter_list
   struct parameter_list *name_next;
   uintmax_t total, available, available_to_root, used, inodes_free, inodes_total;
   double dfree_pct, dused_pct;
-  double dused_units, dfree_units, dtotal_units;
+  uintmax_t dused_units, dfree_units, dtotal_units;
   double dused_inodes_percent, dfree_inodes_percent;
 };
 

@@ -4,6 +4,7 @@ cscope.out
 nbproject/
 .kdev4/
 plugins.kdev4
+plugins.project
 
 # In all paths
 NP-VERSION-FILE
@@ -74,6 +75,7 @@ NP-VERSION-FILE
 /gl/getopt.h
 /gl/glthread/.deps
 /gl/glthread/.dirstamp
+/gl/inttypes.h
 /gl/langinfo.h
 /gl/libgnu.a
 /gl/locale.h
@@ -100,6 +102,7 @@ NP-VERSION-FILE
 /gl/warn-on-use.h
 /gl/wchar.h
 /gl/wctype.h
+/gl/*~
 
 # /lib/
 /lib/.deps
@@ -210,6 +213,7 @@ NP-VERSION-FILE
 /plugins/libnpcommon.a
 /plugins/negate
 /plugins/stamp-h*
+/plugins/remove_perfdata
 /plugins/urlize
 
 # /plugins/t/
@@ -249,6 +253,7 @@ NP-VERSION-FILE
 /plugins-scripts/check_oracle
 /plugins-scripts/check_rpc
 /plugins-scripts/check_sensors
+/plugins-scripts/check_ssl_validity
 /plugins-scripts/check_wave
 /plugins-scripts/check_file_age
 
@@ -272,5 +277,6 @@ plugins-python/check_ncpa.py
 /po/quot.sed
 /po/POTFILES
 /po/stamp-po
+/po/*~
 
 /tools/build_perl_modules

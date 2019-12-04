@@ -2,7 +2,6 @@
 #
 # Log file pattern detector plugin for Nagios
 # Written by Ethan Galstad (nagios@nagios.org)
-# Last Modified: 07-31-1999
 #
 # Usage: ./check_log <log_file> <old_log_file> <pattern>
 #
@@ -73,7 +72,7 @@ print_usage() {
     echo "Usage: $PROGNAME -F logfile -O oldlog -q query"
     echo "Usage: $PROGNAME --help"
     echo "Usage: $PROGNAME --version"
-    echo "     Aditional parameter:"
+    echo "     Additional parameter:"
     echo "        -w (--max_warning) If used, determines the maximum matching value to return as warning, when finding more matching lines than this parameter will return as critical. If not used, will consider as default 0 (any matching will consider as critical)"
     echo "Usage: $PROGNAME -F logfile -O oldlog -q query -w <number>"
 }
@@ -169,6 +168,16 @@ while test -n "$1"; do
     shift
 done
 
+if [ "$oldlog" = "" ]; then
+	echo "Log check error: You must supply an Old Log File name using '-O'!"
+	exit "$STATE_UNKNOWN"
+fi
+rc=`echo "$oldlog" | grep -q -- "^-"; echo $?`
+if [ $rc -eq 0 ]; then
+	echo "Log check error: You must supply an Old Log File name using '-O'!"
+	exit "$STATE_UNKNOWN"
+fi
+
 # If the source log file doesn't exist, exit
 
 if [ ! -e "$logfile" ]; then
@@ -204,11 +213,15 @@ fi
 
 diff "$logfile" "$oldlog" | grep -v "^>" > "$tempdiff"
 
-# Count the number of matching log entries we have
-count=$(grep -c "$query" "$tempdiff")
+# Count the number of matching log entries we have and handle errors when grep fails
+count=$(grep -c "$query" "$tempdiff" 2>&1)
+if [[ $? -gt 1 ]];then
+    echo "Log check error: $count"
+    exit "$STATE_UNKNOWN"
+fi
 
 # Get the last matching entry in the diff file
-lastentry=$(grep "$query" "$tempdiff" | tail -1)
+lastentry=$(egrep "$query" "$tempdiff" | tail -1)
 
 rm -f "$tempdiff"
 cat "$logfile" > "$oldlog"

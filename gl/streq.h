@@ -1,5 +1,5 @@
 /* Optimized string comparison.
-   Copyright (C) 2001-2002, 2007, 2009-2013 Free Software Foundation, Inc.
+   Copyright (C) 2001-2002, 2007, 2009-2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published
@@ -16,8 +16,8 @@
 
 /* Written by Bruno Haible <bruno@clisp.org>.  */
 
-#ifndef NAGIOS_GL_STREQ_H_INCLUDED
-#define NAGIOS_GL_STREQ_H_INCLUDED
+#ifndef _GL_STREQ_H
+#define _GL_STREQ_H
 
 #include <string.h>
 
@@ -173,4 +173,4 @@ streq0 (const char *s1, const char *s2, char s20, char s21, char s22, char s23, 
 
 #endif
 
-#endif /* NAGIOS_GL_STREQ_H_INCLUDED */
+#endif /* _GL_STREQ_H */

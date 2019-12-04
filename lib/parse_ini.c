@@ -79,10 +79,11 @@ static char* default_file_in_path(void);
 
 /* parse_locator decomposes a string of the form
  * 	[stanza][@filename]
- * into its seperate parts
+ * into its separate parts
  */
 static void parse_locator(const char *locator, const char *def_stanza, np_ini_info *i){
 	size_t locator_len=0, stanza_len=0;
+	char *dflt = NULL;
 
 	/* if locator is NULL we'll use default values */
 	if(locator){
@@ -102,7 +103,9 @@ static void parse_locator(const char *locator, const char *def_stanza, np_ini_in
 	}
 	/* if there is no @file part */
 	if(stanza_len==locator_len){
-		i->file=default_file();
+		dflt=default_file();
+		if (dflt)
+			i->file=strdup(dflt);
 	} else {
 		i->file=strdup(&(locator[stanza_len+1]));
 	}
@@ -184,7 +187,7 @@ static int read_defaults(FILE *f, const char *stanza, np_arg_list **opts){
 		/* gobble up leading whitespace */
 		if(isspace(c)) continue;
 		switch(c){
-			/* globble up coment lines */
+			/* globble up comment lines */
 			case ';':
 			case '#':
 				GOBBLE_TO(f, c, '\n');

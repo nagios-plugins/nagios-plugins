@@ -48,7 +48,12 @@ static int verbose=0;
 static int quiet=0;
 static char *owarn="60";
 static char *ocrit="120";
-static int time_offset=0;
+static char *swarn="16";
+static char *scrit="16";
+int time_offset=0;
+static int delay=2;
+
+int num_hosts;
 
 int process_arguments (int, char **);
 thresholds *offset_thresholds = NULL;
@@ -80,13 +85,18 @@ typedef struct {
 /* this structure holds data about results from querying offset from a peer */
 typedef struct {
 	time_t waiting;         /* ts set when we started waiting for a response */
-	int num_responses;      /* number of successfully recieved responses */
+	int connected;          /* don't try to "write()" if "connect()" fails */
+	int num_requests;
+	int num_responses;      /* number of successfully received responses */
 	uint8_t stratum;        /* copied verbatim from the ntp_message */
 	double rtdelay;         /* converted from the ntp_message */
 	double rtdisp;          /* converted from the ntp_message */
 	double offset[AVG_NUM]; /* offsets from each response */
 	uint8_t flags;       /* byte with leapindicator,vers,mode. see macros */
 } ntp_server_results;
+
+/* define this globally to be able to do other checks */
+ntp_server_results *servers=NULL;
 
 /* bits 1,2 are the leap indicator */
 #define LI_MASK 0xc0
@@ -301,15 +311,16 @@ int best_offset_server(const ntp_server_results *slist, int nservers){
  * - we also "manually" handle resolving host names and connecting, because
  *   we have to do it in a way that our lazy macros don't handle currently :( */
 double offset_request(const char *host, int *status){
-	int i=0, j=0, ga_result=0, num_hosts=0, *socklist=NULL, respnum=0;
+  int i=0, j=0, ga_result=0, *socklist=NULL, respnum=0;
 	int servers_completed=0, one_read=0, servers_readable=0, best_index=-1;
 	time_t now_time=0, start_ts=0;
 	ntp_message *req=NULL;
 	double avg_offset=0.;
+	num_hosts = 0;
 	struct timeval recv_time;
 	struct addrinfo *ai=NULL, *ai_tmp=NULL, hints;
 	struct pollfd *ufds=NULL;
-	ntp_server_results *servers=NULL;
+
 
 	/* setup hints to only return results from getaddrinfo that we'd like */
 	memset(&hints, 0, sizeof(struct addrinfo));
@@ -355,6 +366,7 @@ double offset_request(const char *host, int *status){
 			ufds[i].fd=socklist[i];
 			ufds[i].events=POLLIN;
 			ufds[i].revents=0;
+			servers[i].connected=1;
 		}
 		ai_tmp = ai_tmp->ai_next;
 	}
@@ -364,18 +376,23 @@ double offset_request(const char *host, int *status){
 	now_time=start_ts=time(NULL);
 	while(servers_completed<num_hosts && now_time-start_ts <= timeout_interval - 1){
 		/* loop through each server and find each one which hasn't
-		 * been touched in the past second or so and is still lacking
-		 * some responses. For each of these servers, send a new request,
-		 * and update the "waiting" timestamp with the current time. */
+		 * timed out yet and is still lacking some responses. For each
+		 * of these servers, send a new request, and update the
+		 * "waiting" timestamp with the current time. */
 		now_time=time(NULL);
 
 		for(i=0; i<num_hosts; i++){
+			if(servers[i].connected == 0)
+				continue;
 			if(servers[i].waiting<now_time && servers[i].num_responses<AVG_NUM){
-				if(verbose && servers[i].waiting != 0) printf("re-");
+				if(verbose && servers[i].num_requests != servers[i].num_responses) printf("re-");
 				if(verbose) printf("sending request to peer %d\n", i);
 				setup_request(&req[i]);
 				write(socklist[i], &req[i], sizeof(ntp_message));
-				servers[i].waiting=now_time;
+				servers[i].waiting=now_time+delay;
+				if(servers[i].num_requests == servers[i].num_responses) {
+					servers[i].num_requests++;
+				}
 				break;
 			}
 		}
@@ -405,7 +422,7 @@ double offset_request(const char *host, int *status){
 				servers[i].stratum=req[i].stratum;
 				servers[i].rtdisp=NTP32asDOUBLE(req[i].rtdisp);
 				servers[i].rtdelay=NTP32asDOUBLE(req[i].rtdelay);
-				servers[i].waiting=0;
+				servers[i].waiting--;
 				servers[i].flags=req[i].flags;
 				servers_readable--;
 				one_read = 1;
@@ -413,6 +430,9 @@ double offset_request(const char *host, int *status){
 			}
 		}
 		/* lather, rinse, repeat. */
+		/* break if we have one response but other ntp servers doesn't response */
+		/* greater than timeout_interval/2 */
+		if (servers_completed && now_time-start_ts > timeout_interval/2) break;
 	}
 
 	if (one_read == 0) {
@@ -435,7 +455,7 @@ double offset_request(const char *host, int *status){
 	for(j=0; j<num_hosts; j++){ close(socklist[j]); }
 	free(socklist);
 	free(ufds);
-	free(servers);
+
 	free(req);
 	freeaddrinfo(ai);
 
@@ -454,8 +474,11 @@ int process_arguments(int argc, char **argv){
 		{"use-ipv6", no_argument, 0, '6'},
 		{"quiet", no_argument, 0, 'q'},
 		{"time-offset", optional_argument, 0, 'o'},
+		{"delay", optional_argument, 0, 'd'},
 		{"warning", required_argument, 0, 'w'},
 		{"critical", required_argument, 0, 'c'},
+		{"stratum-warn", required_argument, 0, 'W'},
+		{"stratum-crit", required_argument, 0, 'C'},
 		{"timeout", required_argument, 0, 't'},
 		{"hostname", required_argument, 0, 'H'},
 		{"port", required_argument, 0, 'p'},
@@ -467,7 +490,7 @@ int process_arguments(int argc, char **argv){
 		usage ("\n");
 
 	while (1) {
-		c = getopt_long (argc, argv, "Vhv46qw:c:t:H:p:o:", longopts, &option);
+		c = getopt_long (argc, argv, "Vhv46qw:c:t:H:p:o:d:", longopts, &option);
 		if (c == -1 || c == EOF || c == 1)
 			break;
 
@@ -492,6 +515,12 @@ int process_arguments(int argc, char **argv){
 		case 'c':
 			ocrit = optarg;
 			break;
+		case 'W':
+			swarn = optarg;
+			break;
+		case 'C':
+			scrit = optarg;
+			break;
 		case 'H':
 			if(is_host(optarg) == FALSE)
 				usage2(_("Invalid hostname/address"), optarg);
@@ -505,7 +534,10 @@ int process_arguments(int argc, char **argv){
 			break;
 		case 'o':
 			time_offset=atoi(optarg);
-                        break;
+			break;
+		case 'd':
+			delay=atoi(optarg);
+			break;
 		case '4':
 			address_family = AF_INET;
 			break;
@@ -532,9 +564,9 @@ int process_arguments(int argc, char **argv){
 
 char *perfd_offset (double offset)
 {
-	return fperfdata ("offset", offset, "s",
-		TRUE, offset_thresholds->warning->end,
-		TRUE, offset_thresholds->critical->end,
+	return sperfdata ("offset", offset, "s",
+		offset_thresholds->warning_string,
+		offset_thresholds->critical_string,
 		FALSE, 0, FALSE, 0);
 }
 
@@ -570,6 +602,36 @@ int main(int argc, char *argv[]){
 		result = get_status(fabs(offset), offset_thresholds);
 	}
 
+	int i;
+	int servers_warn_stratum=0;
+	int servers_crit_stratum=0;
+	int servers_worst_stratum=0;
+	int servers_best_stratum=16;
+
+	for (i=0; i<num_hosts; i++) {
+	  // set best stratum
+	  if (servers[i].stratum < servers_best_stratum)
+	    servers_best_stratum = servers[i].stratum;
+
+	  // set worst stratum
+	  if (servers[i].stratum > servers_worst_stratum)
+	    servers_worst_stratum = servers[i].stratum;
+
+	  if (servers[i].stratum >= atoi(scrit))
+	    servers_crit_stratum++;
+
+	  if (servers[i].stratum >= atoi(swarn))
+	    servers_warn_stratum++;
+
+	    }
+
+	// adjust result for stratum check
+	if ((result == STATE_WARNING || result == STATE_OK) && servers_crit_stratum > 0)
+	  result = STATE_CRITICAL;
+
+	if (result == STATE_OK && servers_warn_stratum > 0)
+	  result = STATE_WARNING;
+
 	switch (result) {
 		case STATE_CRITICAL :
 			xasprintf(&result_line, _("NTP CRITICAL:"));
@@ -588,10 +650,12 @@ int main(int argc, char *argv[]){
 		xasprintf(&result_line, "%s %s", result_line, _("Offset unknown"));
 		xasprintf(&perfdata_line, "");
 	} else {
-		xasprintf(&result_line, "%s %s %.10g secs", result_line, _("Offset"), offset);
-		xasprintf(&perfdata_line, "%s", perfd_offset(offset));
+	  xasprintf(&result_line, "%s %s %.10g secs, stratum best:%d worst:%d", result_line, _("Offset"), offset, servers_best_stratum, servers_worst_stratum);
+	  xasprintf(&perfdata_line, "%s stratum_best=%d stratum_worst=%d num_warn_stratum=%d num_crit_stratum=%d", perfd_offset(offset), servers_best_stratum, servers_worst_stratum, servers_warn_stratum, servers_crit_stratum);
 	}
 	printf("%s|%s\n", result_line, perfdata_line);
+
+	free(servers);
 
 	if(server_address!=NULL) free(server_address);
 	return result;
@@ -620,6 +684,13 @@ void print_help(void){
 	printf ("    %s\n", _("Offset to result in critical status (seconds)"));
 	printf (" %s\n", "-o, --time_offset=INTEGER");
 	printf ("    %s\n", _("Expected offset of the ntp server relative to local server (seconds)"));
+	printf (" %s\n", "-d, --delay=INTEGER");
+	printf ("    %s\n", _("Delay between each packet (seconds)"));
+	printf (" %s\n", "-W, --stratum-warn=INTEGER");
+	printf ("    %s\n", _("Alert warning if stratum is worse (less) than specfied value"));
+	printf (" %s\n", "-C, --stratum-crit=INTEGER");
+	printf ("    %s\n", _("Alert critical if stratum is worse (less) than specfied value"));
+
 	printf (UT_CONN_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
 	printf (UT_VERBOSE);
 
@@ -632,8 +703,10 @@ void print_help(void){
 	printf("%s\n", _("Notes:"));
 	printf(" %s\n", _("If you'd rather want to monitor an NTP server, please use"));
 	printf(" %s\n", _("check_ntp_peer."));
-	printf(" %s\n", _("--time-offset is usefull for compensating for servers with known"));
+	printf(" %s\n", _("--time-offset is useful for compensating for servers with known"));
 	printf(" %s\n", _("and expected clock skew."));
+	printf(" %s\n", _("--delay is useful if you are triggering the anti-DOS for the"));
+	printf(" %s\n", _("NTP server and need to leave a bigger gap between queries"));
 	printf("\n");
 	printf(UT_THRESHOLDS_NOTES);
 
@@ -648,6 +721,6 @@ void
 print_usage(void)
 {
 	printf ("%s\n", _("Usage:"));
-	printf(" %s -H <host> [-4|-6] [-w <warn>] [-c <crit>] [-v verbose] [-o <time offset>]\n", progname);
+	printf(" %s -H <host> [-4|-6] [-w <warn>] [-c <crit>] [-v verbose] [-o <time offset>] [-d <delay>]\n", progname);
 }
 

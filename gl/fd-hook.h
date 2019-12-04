@@ -1,5 +1,5 @@
 /* Hook for making making file descriptor functions close(), ioctl() extensible.
-   Copyright (C) 2009-2013 Free Software Foundation, Inc.
+   Copyright (C) 2009-2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published
@@ -15,8 +15,8 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 
-#ifndef NAGIOS_FD_HOOK_H_INCLUDED
-#define NAGIOS_FD_HOOK_H_INCLUDED
+#ifndef FD_HOOK_H
+#define FD_HOOK_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -116,4 +116,4 @@ extern void unregister_fd_hook (struct fd_hook *link);
 }
 #endif
 
-#endif /* NAGIOS_FD_HOOK_H_INCLUDED */
+#endif /* FD_HOOK_H */

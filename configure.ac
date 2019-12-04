@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.59)
-AC_INIT(nagios-plugins,2.2.1)
+AC_INIT(nagios-plugins,2.3.0)
 AC_CONFIG_SRCDIR(NPTest.pm)
 AC_CONFIG_FILES([gl/Makefile
 	nagios-plugins.spec])
@@ -682,7 +682,7 @@ elif test "$ac_cv_uname_s" = "SunOS"; then
                 pst3="$libexecdir/pst3"
         fi
         ac_cv_ps_command="$pst3"
-        ac_cv_ps_format="%s %d %d %d %d %d %f %s %n"
+        ac_cv_ps_format="%7s %d %d %d %d %d %f %s %n"
         ac_cv_ps_varlist="[procstat,&procuid,&procpid,&procppid,&procvsz,&procrss,&procpcpu,procprog,&pos]"
         ac_cv_ps_cols=9
         AC_MSG_RESULT([using nagios-plugins internal ps command (pst3) for solaris])
@@ -783,6 +783,16 @@ then
 	ac_cv_ps_varlist="[procstat,&procuid,&procpid,&procppid,&procvsz,&procrss,&procpcpu,proc_cgroup_hierarchy,procprog,&pos]"
 	ac_cv_ps_command="$PATH_TO_PS -axwwo 'stat uid pid ppid vsz rss pcpu cgroup:256 comm args'"
 	ac_cv_ps_format="%s %d %d %d %d %d %f %s %s %n"
+	ac_cv_ps_cols=10
+	AC_MSG_RESULT([$ac_cv_ps_command])
+
+dnl jails on FreeBSD:
+elif ps -axwo 'stat comm vsz rss user uid pid ppid jid args' 2>/dev/null | \
+	egrep -i "^ *STAT +COMMAND +VSZ +RSS +USER +UID +PID +PPID +JID +COMMAND" > /dev/null
+then
+	ac_cv_ps_varlist="procstat,&procuid,&procpid,&procppid,&procjid,&procvsz,&procrss,&procpcpu,procprog,&pos"
+	ac_cv_ps_command="$PATH_TO_PS -axwo 'stat uid pid ppid jid vsz rss pcpu comm args'"
+	ac_cv_ps_format="%s %d %d %d %d %d %d %f %s %n"
 	ac_cv_ps_cols=10
 	AC_MSG_RESULT([$ac_cv_ps_command])
 
@@ -924,7 +934,7 @@ elif ps -Ao 's comm vsz rss uid user pid ppid args' 2>/dev/null | \
 then
 	ac_cv_ps_varlist="[procstat,&procuid,&procpid,&procppid,&procvsz,&procrss,&procpcpu,procprog,&pos]"
 	ac_cv_ps_command="$PATH_TO_PS -Ao 's uid pid ppid vsz rss pcpu comm args'"
-	# There must be no space between the %s and %n due to a wierd problem in sscanf where
+	# There must be no space between the %s and %n due to a weird problem in sscanf where
 	# it will return %n as longer than the line length
 	ac_cv_ps_format="%s %d %d %d %d %d %f %s%n"
 	ac_cv_ps_cols=9
@@ -1055,6 +1065,10 @@ if test -n "$ac_cv_ps_varlist" ; then
 		AC_DEFINE(PS_USES_PROCETIME,"yes",
 		          [Whether the ps utility uses the "procetime" field])
 	fi
+	if echo "$ac_cv_ps_varlist" | grep "procpcpu" >/dev/null; then
+		AC_DEFINE(PS_USES_PROCPCPU,"yes",
+		          [Whether the ps utility uses the "procpcpu" field])
+	fi
 fi
 
 AC_PATH_PROG(PATH_TO_PING,ping)
@@ -1064,6 +1078,12 @@ AC_ARG_WITH(ping_command,
 	ACX_HELP_STRING([--with-ping-command=SYNTAX],
 		[sets syntax for ICMP ping]),
 	with_ping_command=$withval,)
+
+dnl AS I WAS LOOKING INTO THIS... (Bryan Heden 09/2017)
+dnl Ping packets first was a bit confusing
+dnl it doesn't actually mean "packet count first"
+dnl it means packets come before specifying host
+dnl If a timeout is specified, that comes first
 
 AC_MSG_CHECKING(for ICMP ping syntax)
 ac_cv_ping_packets_first=no
@@ -1113,6 +1133,14 @@ then
 	with_ping_command="$PATH_TO_PING -n -U -c %d %s"
 	ac_cv_ping_packets_first=yes
 	AC_MSG_RESULT([$with_ping_command])
+
+elif $PATH_TO_PING -n -t 10 -c 1 127.0.0.1 2>/dev/null | \
+  egrep -i "^round-trip|^rtt" >/dev/null
+then
+  with_ping_command="$PATH_TO_PING -n -t %d -c %d %s"
+  ac_cv_ping_packets_first=yes
+  ac_cv_ping_has_timeout=yes
+  AC_MSG_RESULT([$with_ping_command])
 
 elif $PATH_TO_PING -n -c 1 127.0.0.1 2>/dev/null | \
 	egrep -i "^round-trip|^rtt" >/dev/null
@@ -1230,6 +1258,14 @@ elif test "x$PATH_TO_PING6" != "x"; then
 		ac_cv_ping6_packets_first=yes
 		AC_MSG_RESULT([$with_ping6_command])
 
+  elif $PATH_TO_PING6 -n -X 10 -c 1 ::1 2>/dev/null | \
+    egrep -i "^round-trip|^rtt" >/dev/null
+  then
+    with_ping6_command="$PATH_TO_PING6 -n -X %d -c %d %s"
+    ac_cv_ping6_packets_first=yes
+    ac_cv_ping_has_timeout=yes
+    AC_MSG_RESULT([$with_ping6_command])
+
 	elif $PATH_TO_PING6 -n -c 1 ::1 2>/dev/null | \
 		egrep -i "^round-trip|^rtt" >/dev/null
 	then
@@ -1266,7 +1302,7 @@ elif test "x$PATH_TO_PING6" != "x"; then
 	then
 		with_ping6_command="$PATH_TO_PING6 -n -s 56 -c %d %s"
 		ac_cv_ping6_packets_first=yes
-		AC_MSG_RESULT([$with_ping_command])
+		AC_MSG_RESULT([$with_ping6_command])
 
 	elif $PATH_TO_PING6 -n -c 1 ::1 2>/dev/null | \
 		egrep -i "^round-trip|^rtt" >/dev/null
@@ -1329,7 +1365,7 @@ elif test "x$PATH_TO_PING" != "x"; then
 	then
 		with_ping6_command="$PATH_TO_PING -A inet6 -n -s 56 -c %d %s"
 		ac_cv_ping6_packets_first=yes
-		AC_MSG_RESULT([$with_ping_command])
+		AC_MSG_RESULT([$with_ping6_command])
 
 	elif $PATH_TO_PING -A inet6 -n -c 1 ::1 2>/dev/null | \
 		egrep -i "^round-trip|^rtt" >/dev/null
@@ -1466,6 +1502,14 @@ else
 	AC_MSG_WARN([Tried $PERL - install Net::SNMP perl module if you want to use the perl snmp plugins])
 fi
 
+if ( $PERL -M"Crypt::X509" -M"Date::Parse" -M"LWP::Simple" -M "Text::Glob" -e 'exit' 2>/dev/null )
+then
+  AC_MSG_CHECKING(for Crypt::X509, Date::Parse, LWP::Simple, Text::Glob perl modules)
+  AC_MSG_RESULT([found])
+else
+  AC_MSG_WARN([Tried $PERL - install the Crypt::X509, Date::Parse, LWP::Simple, and Text::Glob perl modules if you want to use check_ssl_validity])
+fi
+
 AC_PATH_PROG(PATH_TO_QUAKESTAT,quakestat)
 AC_PATH_PROG(PATH_TO_QSTAT,qstat)
 AC_ARG_WITH(qstat_command,
@@ -1532,7 +1576,7 @@ if test -n "$PATH_TO_SUDO"
 then
 	AC_DEFINE_UNQUOTED(PATH_TO_SUDO,"$PATH_TO_SUDO",[path to sudo])
 else
-	AC_MSG_WARN([Could not find sudo or eqivalent])
+	AC_MSG_WARN([Could not find sudo or equivalent])
 fi
 
 AC_PATH_PROG(PATH_TO_MAILQ,mailq)
@@ -1543,7 +1587,7 @@ if test -n "$PATH_TO_MAILQ"
 then
 	AC_DEFINE_UNQUOTED(PATH_TO_MAILQ,"$PATH_TO_MAILQ",[path to mailq])
 else
-	AC_MSG_WARN([Could not find mailq or eqivalent])
+	AC_MSG_WARN([Could not find mailq or equivalent])
 fi
 
 AC_PATH_PROG(PATH_TO_QMAIL_QSTAT,qmail-qstat)
@@ -1555,6 +1599,17 @@ then
 	AC_DEFINE_UNQUOTED(PATH_TO_QMAIL_QSTAT,"$PATH_TO_QMAIL_QSTAT",[path to qmail-qstat])
 else
 	AC_MSG_WARN([Could not find qmail-qstat or equivalent])
+fi
+
+AC_PATH_PROG(PATH_TO_SMTPCTL,smtpctl)
+AC_ARG_WITH(smtpctl_command,
+            ACX_HELP_STRING([--with-smtpctl-command=PATH],
+                            [sets path to smtpctl]), PATH_TO_SMTPCTL=$withval)
+if test -n "$PATH_TO_SMTPCTL"
+then
+	AC_DEFINE_UNQUOTED(PATH_TO_SMTPCTL,"$PATH_TO_SMTPCTL",[path to smtpctl])
+else
+	AC_MSG_WARN([Could not find smtpctl or equivalent])
 fi
 
 dnl SWAP info required is amount allocated/available and amount free
@@ -1602,7 +1657,7 @@ then
 
 	if [$PATH_TO_SWAPINFO -k 2>/dev/null | egrep -i "^Device +1K-blocks +Used +Avail" >/dev/null]
 	then
-		ac_cv_swap_format=["%*s %f %*d %f"]
+		ac_cv_swap_format=["%*s %lf %*d %lf"]
 		ac_cv_swap_conv=1024
 		AC_MSG_RESULT([using FreeBSD format swapinfo])
 	fi
@@ -1815,7 +1870,7 @@ AM_GNU_GETTEXT([external], [need-ngettext])
 AM_GNU_GETTEXT_VERSION(0.15)
 
 dnl Check for Redhat spopen problem
-dnl Wierd problem where ECHILD is returned from a wait call in error
+dnl Weird problem where ECHILD is returned from a wait call in error
 dnl Only appears to affect nslookup and dig calls. Only affects redhat around
 dnl 2.6.9-11 (okay in 2.6.9-5). Redhat investigating root cause
 dnl We patch plugins/popen.c

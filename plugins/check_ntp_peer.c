@@ -86,7 +86,7 @@ typedef struct {
 	                        /* NB: not necessarily NULL terminated! */
 } ntp_control_message;
 
-/* this is an association/status-word pair found in control packet reponses */
+/* this is an association/status-word pair found in control packet responses */
 typedef struct {
 	uint16_t assoc;
 	uint16_t status;
@@ -245,7 +245,7 @@ int ntp_request(const char *host, double *offset, int *offset_result, double *ji
 		do {
 			/* Attempt to read the largest size packet possible */
 			req.count=htons(MAX_CM_SIZE);
-			DBG(printf("recieving READSTAT response"))
+			DBG(printf("receiving READSTAT response"))
 			if(read(conn, &req, SIZEOF_NTPCM(req)) == -1)
 				die(STATE_CRITICAL, "NTP CRITICAL: No response from NTP server\n");
 			DBG(print_ntp_control_message(&req));
@@ -306,7 +306,7 @@ int ntp_request(const char *host, double *offset, int *offset_result, double *ji
 				/* Putting the wanted variable names in the request
 				 * cause the server to provide _only_ the requested values.
 				 * thus reducing net traffic, guaranteeing us only a single
-				 * datagram in reply, and making intepretation much simpler
+				 * datagram in reply, and making interpretation much simpler
 				 */
 				/* Older servers doesn't know what jitter is, so if we get an
 				 * error on the first pass we redo it with "dispersion" */
@@ -529,33 +529,33 @@ int process_arguments(int argc, char **argv){
 
 char *perfd_offset (double offset)
 {
-	return fperfdata ("offset", offset, "s",
-		TRUE, offset_thresholds->warning->end,
-		TRUE, offset_thresholds->critical->end,
+	return sperfdata ("offset", offset, "s",
+		offset_thresholds->warning_string,
+		offset_thresholds->critical_string,
 		FALSE, 0, FALSE, 0);
 }
 
 char *perfd_jitter (double jitter)
 {
-	return fperfdata ("jitter", jitter, "",
-		do_jitter, jitter_thresholds->warning->end,
-		do_jitter, jitter_thresholds->critical->end,
+	return sperfdata ("jitter", jitter, "",
+		jitter_thresholds->warning_string,
+		jitter_thresholds->critical_string,
 		TRUE, 0, FALSE, 0);
 }
 
 char *perfd_stratum (int stratum)
 {
-	return perfdata ("stratum", stratum, "",
-		do_stratum, (int)stratum_thresholds->warning->end,
-		do_stratum, (int)stratum_thresholds->critical->end,
+	return sperfdata_int ("stratum", stratum, "",
+		stratum_thresholds->warning_string,
+		stratum_thresholds->critical_string,
 		TRUE, 0, TRUE, 16);
 }
 
 char *perfd_truechimers (int num_truechimers)
 {
-	return perfdata ("truechimers", num_truechimers, "",
-		do_truechimers, (int)truechimer_thresholds->warning->end,
-		do_truechimers, (int)truechimer_thresholds->critical->end,
+	return sperfdata_int ("truechimers", num_truechimers, "",
+		truechimer_thresholds->warning_string,
+		truechimer_thresholds->critical_string,
 		TRUE, 0, FALSE, 0);
 }
 
@@ -585,7 +585,7 @@ int main(int argc, char *argv[]){
 	/* set socket timeout */
 	alarm (timeout_interval);
 
-	/* This returns either OK or WARNING (See comment preceeding ntp_request) */
+	/* This returns either OK or WARNING (See comment preceding ntp_request) */
 	result = ntp_request(server_address, &offset, &offset_result, &jitter, &stratum, &num_truechimers);
 
 	if(offset_result == STATE_UNKNOWN) {

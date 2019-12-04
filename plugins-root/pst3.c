@@ -227,7 +227,15 @@ try_again:
         i--;
         continue;
       }
-      printf(" %s", args);
+
+      /* Remove newlines from args output - consistent with "normal" ps */
+      printf(" ");
+      for (j=0;j<strlen(args);j++) {
+        if (args[j] != '\n') {
+          printf("%c", args[j]);
+        }
+      }
+
     }
     free(args_vecs);
     free(args);
@@ -257,6 +265,6 @@ void usage() {
   printf("\tRSS      - Real memory usage (kilobytes)\n");
   printf("\t%%CPU     - CPU usage\n");
   printf("\tCOMMAND  - Command being run\n");
-  printf("\tARGS     - Full command line with arguements\n");
+  printf("\tARGS     - Full command line with arguments\n");
   return;
 }

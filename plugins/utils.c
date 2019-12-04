@@ -27,6 +27,7 @@
 #include "utils_base.h"
 #include <stdarg.h>
 #include <limits.h>
+#include <ctype.h>
 
 #include <arpa/inet.h>
 
@@ -64,6 +65,27 @@ max_state (int a, int b)
 		return STATE_DEPENDENT;
 	else
 		return max (a, b);
+}
+
+/* **************************************************************************
+ * min_state(STATE_x, STATE_y)
+ * does the opposite of max_state(): returns the minimum of both states using
+ * the ordder STATE_UNKNOWN < STATE_OK < STATE_WARNING < STATE_CRITICAL
+ ****************************************************************************/
+int min_state (int a, int b)
+{
+	if (a == STATE_UNKNOWN || b == STATE_UNKNOWN)
+		return STATE_UNKNOWN;
+	else if (a == STATE_OK || b == STATE_OK)
+		return STATE_OK;
+	else if (a == STATE_WARNING || b == STATE_WARNING)
+		return STATE_WARNING;
+	else if (a == STATE_CRITICAL || b == STATE_CRITICAL)
+		return STATE_CRITICAL;
+	else if (a == STATE_DEPENDENT || b == STATE_DEPENDENT)
+		return STATE_DEPENDENT;
+	else
+		return min(a, b);
 }
 
 /* **************************************************************************
@@ -204,31 +226,40 @@ int
 parse_timeout_string (char *timeout_str)
 {
 	char *seperated_str;
-        char *timeout_val = "";
+    char *timeout_val = "";
 	char *timeout_sta = NULL;
-        if ( strstr(timeout_str, ":" ) == NULL) {
+
+	if (strstr(timeout_str, ":") == NULL) {
 		timeout_val = timeout_str;
-        } else if ( strncmp(timeout_str, ":", 1 ) == 0) {
+	} 
+	else if (strncmp(timeout_str, ":", 1) == 0) {
 		seperated_str = strtok(timeout_str, ":");
-                if ( seperated_str != NULL ) {
-                	timeout_sta = seperated_str;
+
+		if (seperated_str != NULL) {
+			timeout_sta = seperated_str;
 		}
-        } else {
+	}
+	else {
 		seperated_str = strtok(timeout_str, ":");
-                timeout_val = seperated_str;
-                seperated_str = strtok(NULL, ":");
-                if (seperated_str != NULL) {
-                        timeout_sta = seperated_str;
-                }
-        }
-        if ( timeout_sta != NULL ) {
+		timeout_val = seperated_str;
+		seperated_str = strtok(NULL, ":");
+
+		if (seperated_str != NULL) {
+			timeout_sta = seperated_str;
+		}
+	}
+
+	if (timeout_sta != NULL) {
 		set_timeout_state(timeout_sta);
 	}
-	if (( timeout_val == NULL ) || ( timeout_val[0] == '\0' )) {
+
+	if ((timeout_val == NULL) || (timeout_val[0] == '\0')) {
 		return timeout_interval;
-	} else if (is_intpos(timeout_val)) {
+	} 
+	else if (is_intpos(timeout_val)) {
 		return atoi(timeout_val);
-	} else {
+	}
+	else {
 		usage4 (_("Timeout value must be a positive integer"));
 		exit (STATE_UNKNOWN);
 	}

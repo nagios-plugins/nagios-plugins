@@ -1,4 +1,4 @@
-# Copyright (C) 2002-2013 Free Software Foundation, Inc.
+# Copyright (C) 2002-2015 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 
 
 # Specification in the form of a command-line invocation:
-#   gnulib-tool --import --dir=. --lib=libgnu --source-base=gl --m4-base=gl/m4 --doc-base=doc --tests-base=tests --aux-dir=build-aux --no-conditional-dependencies --no-libtool --macro-prefix=gl --no-vc-files base64 crypto/sha1 dirname environ floorf fsusage getaddrinfo gethostname getloadavg getopt-gnu gettext idpriv-droptemp mountlist regex setenv strcase strcasestr strsep timegm unsetenv vasprintf vsnprintf
+#   gnulib-tool --import --dir=. --lib=libgnu --source-base=gl --m4-base=gl/m4 --doc-base=doc --tests-base=tests --aux-dir=build-aux --no-conditional-dependencies --no-libtool --macro-prefix=gl --no-vc-files base64 crypto/sha1 dirname environ floorf fsusage getaddrinfo gethostname getloadavg getopt-gnu gettext human idpriv-droptemp mountlist regex setenv strcase strcasestr strsep timegm unsetenv vasprintf vsnprintf
 
 # Specification in the form of a few gnulib-tool.m4 macro invocations:
 gl_LOCAL_DIR([])
@@ -43,6 +43,7 @@ gl_MODULES([
   getloadavg
   getopt-gnu
   gettext
+  human
   idpriv-droptemp
   mountlist
   regex

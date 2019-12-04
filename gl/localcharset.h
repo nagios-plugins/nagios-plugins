@@ -1,5 +1,5 @@
 /* Determine a canonical name for the current locale's character encoding.
-   Copyright (C) 2000-2003, 2009-2013 Free Software Foundation, Inc.
+   Copyright (C) 2000-2003, 2009-2015 Free Software Foundation, Inc.
    This file is part of the GNU CHARSET Library.
 
    This program is free software; you can redistribute it and/or modify
@@ -15,8 +15,8 @@
    You should have received a copy of the GNU General Public License along
    with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef NAGIOS_GL_LOCALCHARSET_H_INCLUDED
-#define NAGIOS_GL_LOCALCHARSET_H_INCLUDED
+#ifndef _LOCALCHARSET_H
+#define _LOCALCHARSET_H
 
 
 #ifdef __cplusplus
@@ -37,4 +37,4 @@ extern const char * locale_charset (void);
 #endif
 
 
-#endif /* NAGIOS_GL_LOCALCHARSET_H_INCLUDED */
+#endif /* _LOCALCHARSET_H */

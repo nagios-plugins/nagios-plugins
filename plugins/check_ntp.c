@@ -10,7 +10,7 @@
 * 
 * This file contains the check_ntp plugin
 * 
-* This plugin to check ntp servers independant of any commandline
+* This plugin to check ntp servers independent of any commandline
 * programs or external libraries.
 * 
 * 
@@ -46,6 +46,7 @@ static char *ocrit="120";
 static short do_jitter=0;
 static char *jwarn="5000";
 static char *jcrit="10000";
+static int delay=2;
 
 int process_arguments (int, char **);
 thresholds *offset_thresholds = NULL;
@@ -79,7 +80,8 @@ typedef struct {
 /* this structure holds data about results from querying offset from a peer */
 typedef struct {
 	time_t waiting;         /* ts set when we started waiting for a response */
-	int num_responses;      /* number of successfully recieved responses */
+	int num_requests;
+	int num_responses;      /* number of successfully received responses */
 	uint8_t stratum;        /* copied verbatim from the ntp_message */
 	double rtdelay;         /* converted from the ntp_message */
 	double rtdisp;          /* converted from the ntp_message */
@@ -100,11 +102,13 @@ typedef struct {
 	                        /* NB: not necessarily NULL terminated! */
 } ntp_control_message;
 
-/* this is an association/status-word pair found in control packet reponses */
+/* this is an association/status-word pair found in control packet responses */
 typedef struct {
 	uint16_t assoc;
 	uint16_t status;
 } ntp_assoc_status_pair;
+
+static int allow_zero_stratum = 0;
 
 /* bits 1,2 are the leap indicator */
 #define LI_MASK 0xc0
@@ -305,7 +309,7 @@ int best_offset_server(const ntp_server_results *slist, int nservers){
 		/* Sort out servers that didn't respond or responede with a 0 stratum;
 		 * stratum 0 is for reference clocks so no NTP server should ever report
 		 * a stratum 0 */
-		if ( slist[cserver].stratum == 0){
+		if ( slist[cserver].stratum == 0 && !allow_zero_stratum){
 			if (verbose) printf("discarding peer %d: stratum=%d\n", cserver, slist[cserver].stratum);
 			continue;
 		}
@@ -418,19 +422,21 @@ double offset_request(const char *host, int *status){
 	now_time=start_ts=time(NULL);
 	while(servers_completed<num_hosts && now_time-start_ts <= timeout_interval/2){
 		/* loop through each server and find each one which hasn't
-		 * been touched in the past second or so and is still lacking
-		 * some responses.  for each of these servers, send a new request,
-		 * and update the "waiting" timestamp with the current time. */
+		 * timed out yet and is still lacking some responses. For each
+		 * of these servers, send a new request, and update the
+		 * "waiting" timestamp with the current time. */
 		now_time=time(NULL);
 
 		for(i=0; i<num_hosts; i++){
 			if(servers[i].waiting<now_time && servers[i].num_responses<AVG_NUM){
-				if(verbose && servers[i].waiting != 0) printf("re-");
+				if(verbose && servers[i].num_requests != servers[i].num_responses) printf("re-");
 				if(verbose) printf("sending request to peer %d\n", i);
 				setup_request(&req[i]);
 				write(socklist[i], &req[i], sizeof(ntp_message));
-				if(servers[i].waiting == 0) now_time++;
-				servers[i].waiting=now_time;
+				servers[i].waiting=now_time+delay;
+				if(servers[i].num_requests == servers[i].num_responses) {
+					servers[i].num_requests++;
+				}
 				break;
 			}
 		}
@@ -460,6 +466,7 @@ double offset_request(const char *host, int *status){
 				servers[i].stratum=req[i].stratum;
 				servers[i].rtdisp=NTP32asDOUBLE(req[i].rtdisp);
 				servers[i].rtdelay=NTP32asDOUBLE(req[i].rtdelay);
+				servers[i].waiting--;
 				servers[i].flags=req[i].flags;
 				servers_readable--;
 				one_read = 1;
@@ -548,7 +555,7 @@ double jitter_request(const char *host, int *status){
 		DBG(print_ntp_control_message(&req));
 		/* Attempt to read the largest size packet possible */
 		req.count=htons(MAX_CM_SIZE);
-		DBG(printf("recieving READSTAT response"))
+		DBG(printf("receiving READSTAT response"))
 		read(conn, &req, SIZEOF_NTPCM(req));
 		DBG(print_ntp_control_message(&req));
 		/* Each peer identifier is 4 bytes in the data section, which
@@ -575,7 +582,7 @@ double jitter_request(const char *host, int *status){
 			}
 		}
 	}
-	if(verbose) printf("%d candiate peers available\n", num_candidates);
+	if(verbose) printf("%d candidate peers available\n", num_candidates);
 	if(verbose && syncsource_found) printf("synchronization source found\n");
 	if(! syncsource_found){
 		*status = STATE_UNKNOWN;
@@ -597,7 +604,7 @@ double jitter_request(const char *host, int *status){
 				/* By spec, putting the variable name "jitter"  in the request
 				 * should cause the server to provide _only_ the jitter value.
 				 * thus reducing net traffic, guaranteeing us only a single
-				 * datagram in reply, and making intepretation much simpler
+				 * datagram in reply, and making interpretation much simpler
 				 */
 				/* Older servers doesn't know what jitter is, so if we get an
 				 * error on the first pass we redo it with "dispersion" */
@@ -608,7 +615,7 @@ double jitter_request(const char *host, int *status){
 				DBG(print_ntp_control_message(&req));
 
 				req.count = htons(MAX_CM_SIZE);
-				DBG(printf("recieving READVAR response...\n"));
+				DBG(printf("receiving READVAR response...\n"));
 				read(conn, &req, SIZEOF_NTPCM(req));
 				DBG(print_ntp_control_message(&req));
 
@@ -668,12 +675,14 @@ int process_arguments(int argc, char **argv){
 		{"verbose", no_argument, 0, 'v'},
 		{"use-ipv4", no_argument, 0, '4'},
 		{"use-ipv6", no_argument, 0, '6'},
+		{"delay", optional_argument, 0, 'd'},
 		{"warning", required_argument, 0, 'w'},
 		{"critical", required_argument, 0, 'c'},
 		{"jwarn", required_argument, 0, 'j'},
 		{"jcrit", required_argument, 0, 'k'},
 		{"timeout", required_argument, 0, 't'},
 		{"hostname", required_argument, 0, 'H'},
+		{"allow-zero-stratum", no_argument, 0, 'z'},
 		{0, 0, 0, 0}
 	};
 
@@ -682,7 +691,7 @@ int process_arguments(int argc, char **argv){
 		usage ("\n");
 
 	while (1) {
-		c = getopt_long (argc, argv, "Vhv46w:c:j:k:t:H:", longopts, &option);
+		c = getopt_long (argc, argv, "Vhv46w:c:j:k:t:H:d:", longopts, &option);
 		if (c == -1 || c == EOF || c == 1)
 			break;
 
@@ -714,6 +723,9 @@ int process_arguments(int argc, char **argv){
 			do_jitter=1;
 			jcrit = optarg;
 			break;
+		case 'd':
+			delay=atoi(optarg);
+			break;
 		case 'H':
 			if(is_host(optarg) == FALSE)
 				usage2(_("Invalid hostname/address"), optarg);
@@ -721,6 +733,9 @@ int process_arguments(int argc, char **argv){
 			break;
 		case 't':
 			timeout_interval = parse_timeout_string(optarg);
+			break;
+		case 'z':
+			allow_zero_stratum = 1;
 			break;
 		case '4':
 			address_family = AF_INET;
@@ -748,17 +763,17 @@ int process_arguments(int argc, char **argv){
 
 char *perfd_offset (double offset)
 {
-	return fperfdata ("offset", offset, "s",
-		TRUE, offset_thresholds->warning->end,
-		TRUE, offset_thresholds->critical->end,
+	return sperfdata ("offset", offset, "s",
+		offset_thresholds->warning_string,
+		offset_thresholds->critical_string,
 		FALSE, 0, FALSE, 0);
 }
 
 char *perfd_jitter (double jitter)
 {
-	return fperfdata ("jitter", jitter, "s",
-		do_jitter, jitter_thresholds->warning->end,
-		do_jitter, jitter_thresholds->critical->end,
+	return sperfdata ("jitter", jitter, "s",
+		jitter_thresholds->warning_string,
+		jitter_thresholds->critical_string,
 		TRUE, 0, FALSE, 0);
 }
 
@@ -868,11 +883,17 @@ void print_help(void){
 	printf ("    %s\n", _("Warning threshold for jitter"));
 	printf (" %s\n", "-k, --jcrit=THRESHOLD");
 	printf ("    %s\n", _("Critical threshold for jitter"));
+	printf (" %s\n", "-d, --delay=INTEGER");
+	printf ("    %s\n", _("Delay between each packet (seconds)"));
+	printf (" %s\n", "-z, --allow-zero-stratum");
+	printf ("    %s\n", _("Do not discard DNS servers which report a stratum of zero (0)"));
 	printf (UT_CONN_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
 	printf (UT_VERBOSE);
 
 	printf("\n");
 	printf("%s\n", _("Notes:"));
+	printf(" %s\n", _("--delay is useful if you are triggering the anti-DOS for the"));
+	printf(" %s\n", _("NTP server and need to leave a bigger gap between queries"));
 	printf(UT_THRESHOLDS_NOTES);
 
 	printf("\n");
@@ -896,5 +917,5 @@ print_usage(void)
 	printf ("%s\n", _("WARNING: check_ntp is deprecated. Please use check_ntp_peer or"));
 	printf ("%s\n\n", _("check_ntp_time instead."));
 	printf ("%s\n", _("Usage:"));
-	printf(" %s -H <host> [-w <warn>] [-c <crit>] [-j <warn>] [-k <crit>] [-4|-6] [-v verbose]\n", progname);
+	printf(" %s -H <host> [-w <warn>] [-c <crit>] [-j <warn>] [-k <crit>] [-4|-6] [-v verbose] [-d <delay>]\n", progname);
 }

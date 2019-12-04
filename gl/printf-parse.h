@@ -1,5 +1,5 @@
 /* Parse printf format string.
-   Copyright (C) 1999, 2002-2003, 2005, 2007, 2010-2013 Free Software
+   Copyright (C) 1999, 2002-2003, 2005, 2007, 2010-2015 Free Software
    Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
@@ -15,8 +15,8 @@
    You should have received a copy of the GNU General Public License along
    with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef NAGIOS_PRINTF_PARSE_H_INCLUDED
-#define NAGIOS_PRINTF_PARSE_H_INCLUDED
+#ifndef _PRINTF_PARSE_H
+#define _PRINTF_PARSE_H
 
 /* This file can be parametrized with the following macros:
      ENABLE_UNISTDIO    Set to 1 to enable the unistdio extensions.
@@ -190,4 +190,4 @@ extern
 int printf_parse (const char *format, char_directives *d, arguments *a);
 #endif
 
-#endif /* NAGIOS_PRINTF_PARSE_H_INCLUDED */
+#endif /* _PRINTF_PARSE_H */
