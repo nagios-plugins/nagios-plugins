@@ -4,7 +4,9 @@ This file documents the major additions and syntax changes between releases.
 	FIXES
 	check_icmp: Fixed backwards compatibility issue with performance data (#480)
 
-2.3.0 xxxx-xx-xx
+2.3.0 2019-12-04
+	Note: nagios-plugins 2.3.0 introduced a backwards-compatibility issue for performance data graphs produced by check_icmp.
+	Anyone upgrading from an older version of nagios-plugins should upgrade directly to >=2.3.1.
 	ENHANCEMENTS
 	Added a plugin "remove_perfdata" to remove perfdata from another plugin's output
 	Added a plugin "check_ssl_validity" which verifies a certificate through CRL or OCSP
