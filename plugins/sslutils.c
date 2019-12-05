@@ -68,7 +68,10 @@ int np_net_ssl_init_with_hostname_version_and_cert(int sd, char *host_name, int 
 		return STATE_UNKNOWN;
 #else
 		method = SSLv3_client_method();
-		options = SSL_OP_NO_SSLv2 | SSL_OP_NO_TLSv1;
+		options = SSL_OP_NO_TLSv1;
+#if defined(SSL_OP_NO_SSLv2)
+		options |= SSL_OP_NO_SSLv2;
+#endif
 		break;
 #endif
 	case MP_TLSv1: /* TLSv1 protocol */
