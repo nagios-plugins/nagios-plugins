@@ -1593,16 +1593,18 @@ static void finish(int sig) {
       puts("");
     }
     if (rta_mode && host->pl < 100) {
-      printf("%srta=%0.3fms;%0.3f;%0.3f;0; %srtmax=%0.3fms;;;; "
-             "%srtmin=%0.3fms;;;; ",
+      printf("%srta=%0.3fms;%0.3f;%0.3f;0; ",
              (targets > 1) ? host->name : "", (float)host->rta / 1000,
-             (float)warn.rta / 1000, (float)crit.rta / 1000,
-             (targets > 1) ? host->name : "", (float)host->rtmax / 1000,
-             (targets > 1) ? host->name : "", (float)host->rtmin / 1000);
+             (float)warn.rta / 1000, (float)crit.rta / 1000);
     }
     if (pl_mode) {
       printf("%spl=%u%%;%u;%u;0;100 ", (targets > 1) ? host->name : "",
              host->pl, warn.pl, crit.pl);
+    }
+    if (rta_mode && host->pl < 100) {
+      printf("%srtmax=%0.3fms;;;; %srtmin=%0.3fms;;;; ",
+             (targets > 1) ? host->name : "", (float)host->rtmax / 1000,
+             (targets > 1) ? host->name : "", (float)host->rtmin / 1000);
     }
     if (jitter_mode && host->pl < 100) {
       printf("%sjitter_avg=%0.3fms;%0.3f;%0.3f;0; %sjitter_max=%0.3fms;;;; "
