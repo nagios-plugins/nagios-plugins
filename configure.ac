@@ -1134,10 +1134,10 @@ then
 	ac_cv_ping_packets_first=yes
 	AC_MSG_RESULT([$with_ping_command])
 
-elif $PATH_TO_PING -n -t 10 -c 1 127.0.0.1 2>/dev/null | \
+elif $PATH_TO_PING -n -W 10000 -c 1 127.0.0.1 2>/dev/null | \
   egrep -i "^round-trip|^rtt" >/dev/null
 then
-  with_ping_command="$PATH_TO_PING -n -t %d -c %d %s"
+  with_ping_command="$PATH_TO_PING -n -W %d000 -c %d %s"
   ac_cv_ping_packets_first=yes
   ac_cv_ping_has_timeout=yes
   AC_MSG_RESULT([$with_ping_command])
@@ -1258,10 +1258,10 @@ elif test "x$PATH_TO_PING6" != "x"; then
 		ac_cv_ping6_packets_first=yes
 		AC_MSG_RESULT([$with_ping6_command])
 
-  elif $PATH_TO_PING6 -n -X 10 -c 1 ::1 2>/dev/null | \
+  elif $PATH_TO_PING6 -n -x 10000 -c 1 ::1 2>/dev/null | \
     egrep -i "^round-trip|^rtt" >/dev/null
   then
-    with_ping6_command="$PATH_TO_PING6 -n -X %d -c %d %s"
+    with_ping6_command="$PATH_TO_PING6 -n -x %d000 -c %d %s"
     ac_cv_ping6_packets_first=yes
     ac_cv_ping_has_timeout=yes
     AC_MSG_RESULT([$with_ping6_command])

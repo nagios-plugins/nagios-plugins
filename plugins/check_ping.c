@@ -124,7 +124,11 @@ main (int argc, char **argv)
 		/* does the host address of number of packets argument come first? */
 #ifdef PING_PACKETS_FIRST
 # ifdef PING_HAS_TIMEOUT
-		xasprintf (&cmd, rawcmd, timeout_interval, max_packets, addresses[i]);
+        // ping's -W timeout argument is the timeout for the _last_ packet sent.
+        // Packets are sent every second, so we deduct the number of packets from
+        // the timeout set in the command.
+        unsigned int ping_timeout = timeout_interval > max_packets ? timeout_interval - max_packets : 1;
+		xasprintf (&cmd, rawcmd, ping_timeout, max_packets, addresses[i]);
 # else
 		xasprintf (&cmd, rawcmd, max_packets, addresses[i]);
 # endif
