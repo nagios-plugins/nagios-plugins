@@ -139,7 +139,6 @@ main (int argc, char **argv)
 		this_result = run_ping (cmd, addresses[i]);
 
 		if (pl == UNKNOWN_PACKET_LOSS || rta < 0.0) {
-			printf ("%s\n", cmd);
 			die (STATE_UNKNOWN,
 			           _("CRITICAL - Could not interpret output from ping command\n"));
 		}
