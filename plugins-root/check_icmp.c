@@ -1361,6 +1361,7 @@ static void finish(int sig) {
   status = STATE_OK;
   host = list;
   while (host) {
+    this_status = STATE_OK;
     if (!host->icmp_recv) {
       /* rta 0 is ofcourse not entirely correct, but will still show up
        * conspicuosly as missing entries in perfparse and cacti */
