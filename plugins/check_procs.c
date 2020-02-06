@@ -855,7 +855,7 @@ print_help (void)
   printf ("   %s\n", _("Only scan for processes with args that contain the regex STRING."));
   printf (" %s\n", "-C, --command=COMMAND");
   printf ("   %s\n", _("Only scan for exact matches of COMMAND (without path)."));
-  printf (" %s\n", "-C, --exclude-process");
+  printf (" %s\n", "-X, --exclude-process");
   printf ("   %s\n", _("Exclude processes which match this comma separated list"));
   printf (" %s\n", "-k, --no-kthreads");
   printf ("   %s\n", _("Only scan for non kernel threads (works on Linux only)."));
