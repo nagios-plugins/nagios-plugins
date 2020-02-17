@@ -608,9 +608,11 @@ enable_ssl:
 
 
 
-/* Returns 1 if we're done processing the document body; 0 to keep going */
+/* Returns 0 if we're still retrieving the headers.
+ * Otherwise, returns the length of the header (not including the final newlines)
+ */
 static int
-document_headers_done (char *full_page)
+document_headers_done (const char *full_page)
 {
     const char *body;
 
@@ -622,8 +624,7 @@ document_headers_done (char *full_page)
     if (!*body)
         return 0;  /* haven't read end of headers yet */
 
-    full_page[body - full_page] = 0;
-    return 1;
+    return body - full_page;
 }
 
 static time_t
@@ -1013,6 +1014,10 @@ check_http (void)
     char *page;
     char *auth;
     int http_status;
+    int header_end;
+    int content_length;
+    int content_start;
+    int seen_length;
     int i = 0;
     size_t pagesize = 0;
     char *full_page;
@@ -1195,11 +1200,40 @@ check_http (void)
         full_page = full_page_new;
         pagesize += i;
 
-        if (no_body && document_headers_done (full_page)) {
+        header_end = document_headers_done(full_page);
+        if (header_end) {
             i = 0;
             break;
         }
     }
+
+    if (no_body) {
+        full_page[header_end] = '\0';
+    }
+    else {
+        content_length = get_content_length(full_page);
+
+        content_start = header_end + 1;
+        while (full_page[content_start] == '\n' || full_page[content_start] == '\r') {
+            content_start += 1;
+        }
+        seen_length = pagesize - content_start;
+        /* Continue receiving the body until content-length is met */
+        while (seen_length < content_length
+            && (i = my_recv(buffer, MAX_INPUT_BUFFER-1) > 0)) {
+
+            buffer[i] = '\0';
+
+            if ((full_page_new = realloc(full_page, pagesize + i + 1)) == NULL)
+                die (STATE_UNKNOWN, _("HTTP UNKNOWN - Could not allocate memory for full_page\n"));
+            memmove(&full_page_new[pagesize], buffer, i);
+            full_page = full_page_new;
+
+            pagesize += i;
+            seen_length = pagesize - content_start;
+        }
+    }
+
     microsec_transfer = deltime (tv_temp);
     elapsed_time_transfer = (double)microsec_transfer / 1.0e6;
 

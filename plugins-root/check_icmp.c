@@ -1593,7 +1593,7 @@ static void finish(int sig) {
     if (debug) {
       puts("");
     }
-    if (rta_mode && host->pl < 100) {
+    if (rta_mode) {
       printf("%srta=%0.3fms;%0.3f;%0.3f;0; ",
              (targets > 1) ? host->name : "", (float)host->rta / 1000,
              (float)warn.rta / 1000, (float)crit.rta / 1000);
@@ -1602,12 +1602,12 @@ static void finish(int sig) {
       printf("%spl=%u%%;%u;%u;0;100 ", (targets > 1) ? host->name : "",
              host->pl, warn.pl, crit.pl);
     }
-    if (rta_mode && host->pl < 100) {
+    if (rta_mode) {
       printf("%srtmax=%0.3fms;;;; %srtmin=%0.3fms;;;; ",
              (targets > 1) ? host->name : "", (float)host->rtmax / 1000,
              (targets > 1) ? host->name : "", (float)host->rtmin / 1000);
     }
-    if (jitter_mode && host->pl < 100) {
+    if (jitter_mode) {
       printf("%sjitter_avg=%0.3fms;%0.3f;%0.3f;0; %sjitter_max=%0.3fms;;;; "
              "%sjitter_min=%0.3fms;;;; ",
              (targets > 1) ? host->name : "", (float)host->jitter,
@@ -1615,11 +1615,11 @@ static void finish(int sig) {
              (targets > 1) ? host->name : "", (float)host->jitter_max / 1000,
              (targets > 1) ? host->name : "", (float)host->jitter_min / 1000);
     }
-    if (mos_mode && host->pl < 100) {
+    if (mos_mode) {
       printf("%smos=%0.1f;%0.1f;%0.1f;0;5 ", (targets > 1) ? host->name : "",
              (float)host->mos, (float)warn.mos, (float)crit.mos);
     }
-    if (score_mode && host->pl < 100) {
+    if (score_mode) {
       printf("%sscore=%u;%u;%u;0;100 ", (targets > 1) ? host->name : "",
              (int)host->score, (int)warn.score, (int)crit.score);
     }
