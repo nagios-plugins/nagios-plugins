@@ -3,6 +3,7 @@ This file documents the major additions and syntax changes between releases.
 2.3.2 2020-??-??
 	FIXES
 	check_http: Fix host:port syntax when using -H (Isaac White)
+	perl dependencies: updated the included Module::Build to work with newer versions of perl (#505)
 
 2.3.1 2019-12-09
 	FIXES
