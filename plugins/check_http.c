@@ -426,13 +426,17 @@ enable_ssl:
             break;
             /* Note: H, I, and u must be malloc'd or will fail on redirects */
         case 'H': /* Host Name (virtual host) */
-            host_name = strdup (optarg);
-            if (host_name[0] == '[') {
-                if ((p = strstr (host_name, "]:")) != NULL) /* [IPv6]:port */
+            host_name = strdup(optarg);
+            if (*host_name == '[') {
+                if ((p = strstr (host_name, "]:")) != NULL) /* [IPv6]:port */ {
                     server_port = atoi (p + 2);
+                    *++p = '\0'; // Set The host_name sans ":port"
+                }
             } else if ((p = strchr (host_name, ':')) != NULL
-                       && strchr (++p, ':') == NULL) /* IPv4:port or host:port */
+                       && strchr (++p, ':') == NULL) /* IPv4:port or host:port */ {
                 server_port = atoi (p);
+                *--p = '\0'; // Set The host_name sans ":port"
+            }
             break;
         case 'I': /* Server IP-address */
             server_address = strdup (optarg);
