@@ -3,6 +3,7 @@ This file documents the major additions and syntax changes between releases.
 2.3.2 2020-??-??
 	FIXES
 	check_http: Fix host:port syntax when using -H (Isaac White)
+	check_icmp: Fix incorrect status when run against multiple hosts (#520)
 	build: Fix broken builds on some systems, including Homebrew (#508)
 	perl dependencies: updated the included Module::Build to work with newer versions of perl (#505)
 	check_icmp: All performance data tags should show when packet loss is 100% (#510)
