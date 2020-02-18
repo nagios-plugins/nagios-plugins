@@ -786,16 +786,16 @@ process_arguments (int argc, char **argv)
         mult = (uintmax_t)1;
         units = strdup ("B");
       } else if (! strcmp (optarg, "kB")) {
-        mult = (uintmax_t)1000;
+        mult = (uintmax_t)1024;
         units = strdup ("kB");
       } else if (! strcmp (optarg, "MB")) {
-        mult = (uintmax_t)1000 * 1000;
+        mult = (uintmax_t)1024 * 1024;
         units = strdup ("MB");
       } else if (! strcmp (optarg, "GB")) {
-        mult = (uintmax_t)1000 * 1000 * 1000;
+        mult = (uintmax_t)1024 * 1024 * 1024;
         units = strdup ("GB");
       } else if (! strcmp (optarg, "TB")) {
-        mult = (uintmax_t)1000 * 1000 * 1000 * 1000;
+        mult = (uintmax_t)1024 * 1024 * 1024 * 1024;
         units = strdup ("TB");
       } else if (! strcmp (optarg, "KiB")) {
         mult = (uintmax_t)1024;
@@ -1202,6 +1202,8 @@ print_help (void)
   printf (UT_PLUG_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
   printf (" %s\n", "-u, --units=STRING");
   printf ("    %s\n", _("Choose bytes, kB, MB, GB, TB, KiB, MiB, GiB, TiB (default: MiB)"));
+  printf ("    %s\n", _("Note: kB/MB/GB/TB are still calculated as their respective binary"));
+  printf ("    %s\n", _("units due to backward compatibility issues."));
   printf (UT_VERBOSE);
   printf (" %s\n", "-X, --exclude-type=TYPE");
   printf ("    %s\n", _("Ignore all filesystems of indicated type (may be repeated)"));

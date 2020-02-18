@@ -3,6 +3,7 @@ This file documents the major additions and syntax changes between releases.
 2.3.2 2020-??-??
 	FIXES
 	check_http: Fix host:port syntax when using -H (Isaac White)
+	check_disk: Change unit calculations to always use binary units for backward compatibility (#518)
 	check_ntp_peer: Fixed improper performance data by setting LC_NUMERIC to 'C' (#526)
 	check_ntp_time: Fixed improper performance data by setting LC_NUMERIC to 'C' (#526)
 	check_mailq: Fix nullmailer regular expression to recognize minutes and seconds properly (#522)
