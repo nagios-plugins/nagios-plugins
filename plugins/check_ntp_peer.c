@@ -565,6 +565,7 @@ int main(int argc, char *argv[]){
 	char *result_line, *perfdata_line;
 
 	setlocale (LC_ALL, "");
+	setlocale (LC_NUMERIC, "C");
 	bindtextdomain (PACKAGE, LOCALEDIR);
 	textdomain (PACKAGE);
 
