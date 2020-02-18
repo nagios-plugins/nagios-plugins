@@ -12,6 +12,7 @@ This file documents the major additions and syntax changes between releases.
 	perl dependencies: updated the included Module::Build to work with newer versions of perl (#505)
 	check_icmp: All performance data tags should show when packet loss is 100% (#510)
 	check_dns: Improve error messaging for "connection timed out" and "connected refused" cases (#503) (Barak Shohat)
+	check_ping: Fixed inconsistent timeout behavior (#323, #419) (Barak Shohat)
 
 2.3.1 2019-12-09
 	FIXES
