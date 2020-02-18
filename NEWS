@@ -3,6 +3,8 @@ This file documents the major additions and syntax changes between releases.
 2.3.2 2020-??-??
 	FIXES
 	check_http: Fix host:port syntax when using -H (Isaac White)
+	check_ntp_peer: Fixed improper performance data by setting LC_NUMERIC to 'C' (#526)
+	check_ntp_time: Fixed improper performance data by setting LC_NUMERIC to 'C' (#526)
 
 2.3.1 2019-12-09
 	FIXES
