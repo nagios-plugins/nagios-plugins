@@ -423,13 +423,15 @@ main (int argc, char **argv)
 int
 error_scan (char *input_buffer)
 {
-
-    /* the DNS lookup timed out */
     if (strstr (input_buffer, _("Note: nslookup is deprecated and may be removed from future releases.")) ||
         strstr (input_buffer, _("Consider using the `dig' or `host' programs instead.  Run nslookup with")) ||
         strstr (input_buffer, _("the `-sil[ent]' option to prevent this message from appearing.")))
     {
         return STATE_OK;
+    }
+    /* the DNS lookup timed out */
+    else if (strcasestr (input_buffer, "connection timed out")) {
+        die (STATE_CRITICAL, "%s %s %s\n", _("Connection to DNS"), (strlen(dns_server)==0)?tmp_dns_server:dns_server, _("timed out"));
     }
     /* DNS server is not running... */
     else if (strstr (input_buffer, "No response from server")) {
@@ -440,7 +442,7 @@ error_scan (char *input_buffer)
         die (STATE_CRITICAL, "%s %s %s\n", _("DNS"), (strlen(dns_server)==0)?tmp_dns_server:dns_server, _("has no records"));
     }
     /* Connection was refused */
-    else if (strstr (input_buffer, "Connection refused") ||
+    else if (strcasestr (input_buffer, "Connection refused") ||
              strstr (input_buffer, "Couldn't find server") ||
              strstr (input_buffer, "Refused") ||
              (strstr (input_buffer, "** server can't find") &&
