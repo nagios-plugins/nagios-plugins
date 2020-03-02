@@ -939,7 +939,7 @@ int
 get_content_length (const char *headers)
 {
     const char *s;
-    int content_length = 0;
+    int content_length = -1;
 
     s = headers;
     while (*s) {
@@ -1219,7 +1219,7 @@ check_http (void)
         }
         seen_length = pagesize - content_start;
         /* Continue receiving the body until content-length is met */
-        while (seen_length < content_length
+        while ((content_length < 0 || seen_length < content_length)
             && ((i = my_recv(buffer, MAX_INPUT_BUFFER-1)) > 0)) {
 
             buffer[i] = '\0';
