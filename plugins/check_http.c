@@ -1220,7 +1220,7 @@ check_http (void)
         seen_length = pagesize - content_start;
         /* Continue receiving the body until content-length is met */
         while (seen_length < content_length
-            && (i = my_recv(buffer, MAX_INPUT_BUFFER-1) > 0)) {
+            && (i = my_recv(buffer, MAX_INPUT_BUFFER-1)) > 0) {
 
             buffer[i] = '\0';
 
