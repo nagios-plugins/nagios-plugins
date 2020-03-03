@@ -1,5 +1,9 @@
 This file documents the major additions and syntax changes between releases.
 
+2.3.2 2020-03-??
+	FIXES
+	check_icmp: fix issues when not running in debug mode (#530)
+
 2.3.2 2020-02-20
 	FIXES
 	build: Fix broken builds on some systems, including Homebrew (#508)
