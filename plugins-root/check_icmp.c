@@ -1018,8 +1018,8 @@ static int wait_for_reply(int sock, u_int t) {
       return n;
     }
 
+    ip = (union ip_hdr *)buf;
     if (debug > 1) {
-      ip = (union ip_hdr *)buf;
       char address[address_length(address_family)];
       parse_address_string(address_family, &resp_addr, address,
                            sizeof(address));
