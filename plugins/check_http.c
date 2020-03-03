@@ -1195,7 +1195,7 @@ check_http (void)
         if ((full_page_new = realloc(full_page, pagesize + i + 1)) == NULL)
             die (STATE_UNKNOWN, _("HTTP UNKNOWN - Could not allocate memory for full_page\n"));
 
-        memmove(&full_page_new[pagesize], buffer, i);
+        memmove(&full_page_new[pagesize], buffer, i + 1);
         /*free (full_page);*/
         full_page = full_page_new;
         pagesize += i;
@@ -1226,7 +1226,7 @@ check_http (void)
 
             if ((full_page_new = realloc(full_page, pagesize + i + 1)) == NULL)
                 die (STATE_UNKNOWN, _("HTTP UNKNOWN - Could not allocate memory for full_page\n"));
-            memmove(&full_page_new[pagesize], buffer, i);
+            memmove(&full_page_new[pagesize], buffer, i + 1);
             full_page = full_page_new;
 
             pagesize += i;
