@@ -2,6 +2,7 @@ This file documents the major additions and syntax changes between releases.
 
 2.3.2 2020-03-??
 	FIXES
+	check_http: Fix several issues related to page length calculation (#535, #533, #536)
 	check_icmp: fix issues when not running in debug mode (#530)
 
 2.3.2 2020-02-20
