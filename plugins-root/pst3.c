@@ -121,7 +121,7 @@ int main (int argc, char **argv)
     int ps_fd;
     int as_fd;
     off_t argoff;
-    int i;
+    int i, j;
     char *args;
     char *procname;
     char *ptr;
