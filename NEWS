@@ -2,6 +2,7 @@ This file documents the major additions and syntax changes between releases.
 
 2.3.4 ????-??-??
 	pst3.c: Fix build issue on Solaris (#537)
+	check_log: Fix error message for systems that don't use bash (#539)
 
 2.3.3 2020-03-11
 	FIXES
