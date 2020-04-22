@@ -1059,6 +1059,13 @@ check_http (void)
         asprintf (&buf, "%s %s:%d HTTP/1.1\r\n%s\r\n", http_method, host_name, HTTPS_PORT, user_agent);
         asprintf (&buf, "%sProxy-Connection: keep-alive\r\n", buf);
         asprintf (&buf, "%sHost: %s\r\n", buf, host_name);
+        
+        /* Authenticate to proxy if CONNECT is done using SSL */
+        if (strlen(proxy_auth)) {
+            base64_encode_alloc (proxy_auth, strlen (proxy_auth), &auth);
+            asprintf (&buf, "%sProxy-Authorization: Basic %s\r\n", buf, auth);
+        }
+
         /* we finished our request, send empty line with CRLF */
         asprintf (&buf, "%s%s", buf, CRLF);
         if (verbose) printf ("%s\n", buf);
