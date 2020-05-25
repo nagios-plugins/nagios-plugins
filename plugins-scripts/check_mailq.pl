@@ -638,7 +638,12 @@ elsif ( $mailq eq "opensmtp" ) {
 
 
 # Perfdata support
-print "$msg|unsent=$msg_q;$opt_w;$opt_c;0\n";
+if (defined $opt_W) {
+	print "$msg|unsent=$msg_q;$opt_w;$opt_c;$opt_W;$opt_C;0\n";
+}
+else {
+	print "$msg|unsent=$msg_q;$opt_w;$opt_c;0\n";
+}
 exit $state;
 
 
@@ -647,6 +652,8 @@ exit $state;
 
 
 sub process_arguments(){
+	Getopt::Long::Configure("no_ignore_case");
+
 	GetOptions
 		("V"   => \$opt_V, "version"	=> \$opt_V,
 		 "v"   => \$opt_v, "verbose"	=> \$opt_v,
@@ -654,6 +661,8 @@ sub process_arguments(){
 		 "M:s" => \$opt_M, "mailserver:s" => \$opt_M, # mailserver (default	sendmail)
 		 "w=i" => \$opt_w, "warning=i"  => \$opt_w,   # warning if above this number
 		 "c=i" => \$opt_c, "critical=i" => \$opt_c,	  # critical if above this number
+		 "W=i" => \$opt_W, "Warning=i"  => \$opt_W,   # warning if above this number for the same domain
+		 "C=i" => \$opt_C, "Critical=i" => \$opt_C,   # critical if above this number for the same domain
 		 "t=i" => \$opt_t, "timeout=i"  => \$opt_t,
 		 "s"   => \$opt_s, "sudo"       => \$opt_s,
 		 "d:s" => \$opt_d, "configdir:s" => \$opt_d
@@ -687,7 +696,7 @@ sub process_arguments(){
 		exit $ERRORS{'UNKNOWN'};
 	}
 
-	if (defined $opt_W && ! defined !$opt_C) {
+	if (defined $opt_W && !defined $opt_C) {
 		print "Need -C if using -W\n";
 		exit $ERRORS{'UNKNOWN'};
 	}elsif(defined $opt_W && defined $opt_C) {
