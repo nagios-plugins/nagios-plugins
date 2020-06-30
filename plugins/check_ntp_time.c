@@ -46,6 +46,7 @@ static char *server_address=NULL;
 static char *port="123";
 static int verbose=0;
 static int quiet=0;
+static int ntp_version=4;
 static char *owarn="60";
 static char *ocrit="120";
 static char *swarn="16";
@@ -238,7 +239,7 @@ void setup_request(ntp_message *p){
 
 	memset(p, 0, sizeof(ntp_message));
 	LI_SET(p->flags, LI_ALARM);
-	VN_SET(p->flags, 4);
+	VN_SET(p->flags, ntp_version);
 	MODE_SET(p->flags, MODE_CLIENT);
 	p->poll=4;
 	p->precision=(int8_t)0xfa;
@@ -482,6 +483,7 @@ int process_arguments(int argc, char **argv){
 		{"timeout", required_argument, 0, 't'},
 		{"hostname", required_argument, 0, 'H'},
 		{"port", required_argument, 0, 'p'},
+		{"ntp-version", required_argument, 0, 'N'},
 		{0, 0, 0, 0}
 	};
 
@@ -490,7 +492,7 @@ int process_arguments(int argc, char **argv){
 		usage ("\n");
 
 	while (1) {
-		c = getopt_long (argc, argv, "Vhv46qw:c:t:H:p:o:d:", longopts, &option);
+		c = getopt_long (argc, argv, "Vhv46qw:c:t:H:p:o:d:N:", longopts, &option);
 		if (c == -1 || c == EOF || c == 1)
 			break;
 
@@ -537,6 +539,11 @@ int process_arguments(int argc, char **argv){
 			break;
 		case 'd':
 			delay=atoi(optarg);
+			break;
+		case 'N':
+			ntp_version=atoi(optarg);
+			if (ntp_version < 1 || ntp_version > 4)
+				usage2(_("Invalid version"), optarg);
 			break;
 		case '4':
 			address_family = AF_INET;
@@ -679,6 +686,8 @@ void print_help(void){
 	printf (UT_HOST_PORT, 'p', "123");
 	printf (" %s\n", "-q, --quiet");
 	printf ("    %s\n", _("Returns UNKNOWN instead of CRITICAL if offset cannot be found"));
+	printf (" %s\n", "-N, --ntp-version=INTEGER");
+	printf ("    %s\n", _("Set NTP protocol version (default: 4)"));
 	printf (" %s\n", "-w, --warning=THRESHOLD");
 	printf ("    %s\n", _("Offset to result in warning status (seconds)"));
 	printf (" %s\n", "-c, --critical=THRESHOLD");
@@ -722,6 +731,6 @@ void
 print_usage(void)
 {
 	printf ("%s\n", _("Usage:"));
-	printf(" %s -H <host> [-4|-6] [-w <warn>] [-c <crit>] [-v verbose] [-o <time offset>] [-d <delay>]\n", progname);
+	printf(" %s -H <host> [-4|-6] [-w <warn>] [-c <crit>] [-v verbose] [-o <time offset>] [-d <delay>] [-N <version>] \n", progname);
 }
 
