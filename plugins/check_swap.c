@@ -360,7 +360,7 @@ main (int argc, char **argv)
 		status = "- Swap is either disabled, not present, or of zero size. ";
 	}
 
-	result = max_state (result, check_swap (percent, dskfree_mb, (dsktotal_mb==0)));
+	result = max_state (result, check_swap (percent_used, free_swap_mb, (dsktotal_mb==0)));
 	printf (_("SWAP %s - %d%% free (%d MB out of %d MB) %s|"),
 			state_text (result),
 			(100 - percent_used), (int) free_swap_mb, (int) total_swap_mb, status);
