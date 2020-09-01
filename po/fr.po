@@ -4984,12 +4984,12 @@ msgstr "SSL n'est pas disponible - installer OpenSSL et recompilez"
 
 #: plugins/check_smtp.c:717
 msgid "Set either -s/--ssl or -S/--starttls"
-msgstr ""
+msgstr "Définissez -s/--ssl ou -S/--starttls"
 
 #: plugins/check_smtp.c:721
 msgid ""
 "PROXY protocol (-r/--proxy) is not implemented with SSL/TLS (-s/--ssl), yet."
-msgstr ""
+msgstr "Le protocole PROXY (-r/--proxy) n'est implémenté avec SSL/TLS (-s/--ssl)."
 
 #: plugins/check_smtp.c:746 plugins/check_smtp.c:751
 #, c-format

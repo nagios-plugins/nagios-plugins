@@ -4900,12 +4900,12 @@ msgstr ""
 
 #: plugins/check_smtp.c:717
 msgid "Set either -s/--ssl or -S/--starttls"
-msgstr ""
+msgstr "Setze entweder -s/--ssl oder -S/--starttls"
 
 #: plugins/check_smtp.c:721
 msgid ""
 "PROXY protocol (-r/--proxy) is not implemented with SSL/TLS (-s/--ssl), yet."
-msgstr ""
+msgstr "PROXY-Protokoll (-r/--proxy) ist bei SSL/TLS (-s/--ssl) noch nicht implementiert."
 
 #: plugins/check_smtp.c:746 plugins/check_smtp.c:751
 #, c-format
