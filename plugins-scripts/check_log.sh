@@ -188,6 +188,20 @@ elif [ ! -r "$logfile" ] ; then
     exit "$STATE_UNKNOWN"
 fi
 
+# Copy the logfile to a temporary file, to prevent diff from 
+# never finishing when $logfile continues to be written to
+# during the diff
+
+templog="/tmp/temp_check_log.tmp"
+if [ -x /bin/mktemp ]; then
+    templog=$(/bin/mktemp /tmp/temp_check_log.XXXXXXXXXX)
+else
+    templogdate=$(/bin/date '+%H%M%S')
+    templog="/tmp/temp_check_log.${templogdate}"
+fi
+cp "$logfile" "$templog"
+logfile="$templog"
+
 # If the old log file doesn't exist, this must be the first time
 # we're running this test, so copy the original log file over to
 # the old diff file and exit
@@ -225,6 +239,7 @@ lastentry=$(egrep "$query" "$tempdiff" | tail -1)
 
 rm -f "$tempdiff"
 cat "$logfile" > "$oldlog"
+rm -f "$templog"
 
 if [ "$count" = "0" ]; then # no matches, exit with no error
     echo "Log check ok - 0 pattern matches found|match=$count;;;0"
