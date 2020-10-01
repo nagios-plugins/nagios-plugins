@@ -85,17 +85,10 @@ main (int argc, char **argv)
 	} else {
 		result = cmd_run_array (command_line, &chld_out, &chld_err, 0);
 	}
-	if (chld_err.lines > 0) {
-		printf ("Error output from command:\n");
-		for (i = 0; i < chld_err.lines; i++) {
-			printf ("%s\n", chld_err.line[i]);
-		}
-		exit (STATE_WARNING);
-	}
 
-	/* Return UNKNOWN or worse if no output is returned */
-	if (chld_out.lines == 0)
-		die (max_state_alt (result, STATE_UNKNOWN), _("No data returned from command\n"));
+	for (i = 0; i < chld_err.lines; i++) {
+		fprintf (stderr, "%s\n", chld_err.line[i]);
+	}
 
 	for (i = 0; i < chld_out.lines; i++) {
 		if (subst_text && result >= 0 && result <= 3 && result != state[result])  {
