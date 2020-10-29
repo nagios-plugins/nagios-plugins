@@ -155,6 +155,7 @@ double *previous_value;
 size_t previous_size = OID_COUNT_STEP;
 int perf_labels = 1;
 char* ip_version = "";
+char *transform = NULL;
 
 static char *fix_snmp_range(char *th)
 {
@@ -175,6 +176,142 @@ static char *fix_snmp_range(char *th)
 	sprintf(ret, "@%s:%s", colon + 1, th);
 	free(th);
 	return ret;
+}
+
+/**
+ * Swaps 4 bytes
+ *
+ * @param i Swap the last 4 bytes of this integer
+ * @return The last 4 bytes swapped
+ */
+int swap4byte(int i)
+{
+	return ((i & 0x000000FF) << 24)
+		+ ((i & 0x0000FF00) << 8)
+		+ ((i & 0x00FF0000) >> 8)
+		+ ((i & 0xFF000000) >> 24);
+}
+
+/**
+ * Converts a IEEE754-float stored in an integer into a native float rounded by 2 decimals
+ *
+ * @param i A IEEE754-float stored in an integer
+ * @return A native float
+ */
+float int2float(int i)
+{
+	union {
+		unsigned char bytes[4];
+		float f;
+	} un;
+	un.bytes[0] = (i & 0x000000FF);
+	un.bytes[1] = ((i & 0x0000FF00) >> 8);
+	un.bytes[2] = ((i & 0x00FF0000) >> 16);
+	un.bytes[3] = ((i & 0xFF000000) >> 24);
+
+	return 	un.f;
+}
+
+/**
+ * Converts a swapped integer into a float
+ */
+float swappedInt2float(int i)
+{
+	union {
+		unsigned char bytes[4];
+		float f;
+	} un;
+
+	un.bytes[1] = ((i & 0xFF000000) >> 24);
+	un.bytes[0] = ((i & 0x00FF0000) >> 16);
+	un.bytes[3] = ((i & 0x0000FF00) >> 8);
+	un.bytes[2] = ((i & 0x000000FF));
+
+	return  un.f;
+}
+
+/**
+ * Reads a float number until an invalid char is found
+ *
+ * @param str Read the number from this string
+ * @param ir A reference to the current position in the string
+ * @return The found number
+ */
+double readNumber(char* str, int* ir)
+{
+	int i = *ir, j;
+	size_t len = strlen(str);
+	char buf[len];
+	memset(buf, 0, len);
+
+	for (j = 0, i++; i < len; i++)
+	{
+		if ((str[i] != '-' || j != 0) && str[i] != '.' && (str[i] < 48 || str[i] > 57))
+			break;
+		buf[j++] = str[i];
+	}
+
+	double num = strtod(buf, NULL);
+	*ir = i - 1;
+	return num;
+}
+
+/**
+ * Transforms the given value with the stored transform informations (parameter '-T')
+ */
+double doTransform(double value)
+{
+	if (transform != NULL)
+	{
+		if (verbose > 2)
+			printf("Transforming %f with %s\n", value, transform);
+
+		size_t len = strlen(transform);
+
+		int i;
+		for (i = 0; i < len; i++)
+		{
+			if (transform[i] == '+')
+			{
+				value += readNumber(transform, &i);
+			}
+			else if (transform[i] == '-')
+			{
+				value -= readNumber(transform, &i);
+			}
+			else if (transform[i] == '*')
+			{
+				value *= readNumber(transform, &i);
+			}
+			else if (transform[i] == '/')
+			{
+				value /= readNumber(transform, &i);
+			}
+			else if (len > i+3 && transform[i] == 's' && transform[i+1] == 'i' && transform[i+2] == '2' && transform[i+3] == 'f')
+			{
+				i += 3;
+				value = swappedInt2float(value);
+			}
+			else if (len > i+2 && transform[i] == 'i' && transform[i+1] == '2' && transform[i+2] == 'f')
+			{
+				i += 2;
+				value = int2float(value);
+			}
+			else if (len > i+2 && transform[i] == 's' && transform[i+1] == '4' && transform[i+2] == 'b')
+			{
+				i += 2;
+				value = swap4byte(value);
+			}
+			else
+			{
+				die (STATE_UNKNOWN, _("Invalid transform operator %c given\n"), transform[i]);
+			}
+		}
+
+		if (verbose > 2)
+			printf("Transform result: %f\n", value);
+	}
+	return value;
 }
 
 int
@@ -211,7 +348,8 @@ main (int argc, char **argv)
 	int is_counter=0;
 	int command_interval;
 	int is_ticks= 0;
-
+	char *showPerf = NULL;
+	
 	setlocale (LC_ALL, "");
 	bindtextdomain (PACKAGE, LOCALEDIR);
 	textdomain (PACKAGE);
@@ -491,19 +629,36 @@ main (int argc, char **argv)
 
 		iresult = STATE_DEPENDENT;
 
-		/* Process this block for numeric comparisons */
-		/* Make some special values,like Timeticks numeric only if a threshold is defined */
-		if (thlds[i]->warning || thlds[i]->critical || calculate_rate || is_ticks || offset != 0.0) {
-			ptr = strpbrk (show, "-0123456789");
-
-			if (ptr == NULL)
-				die (STATE_UNKNOWN,_("No valid data returned (%s)\n"), show);
+		ptr = strpbrk (show, "-0123456789");
+		if (ptr != NULL) {
 			while (i >= response_size) {
 				response_size += OID_COUNT_STEP;
 				response_value = realloc(response_value, response_size * sizeof(*response_value));
 			}
-			response_value[i] = strtod (ptr, NULL) + offset;
+			response_value[i] = doTransform(strtod (ptr, NULL) + offset);
+			if(is_ticks) {
+				xasprintf (&show, "%s", response);
+				xasprintf (&showPerf, conv, response_value[i]);
+			}
+			else { 
+				xasprintf (&show, conv, response_value[i]);
+				if(transform){
+					xasprintf (&showPerf, "%.3f", response_value[i]);
+				}
+				else {
+					showPerf = show;
+				}
+			}			
+		}
+		else {
+			showPerf = show;			
+		}
 
+		/* Process this block for numeric comparisons */
+		/* Make some special values,like Timeticks numeric only if a threshold is defined */
+		if (thlds[i]->warning || thlds[i]->critical || calculate_rate || is_ticks || offset != 0.0) {
+			if (ptr == NULL)
+				die (STATE_UNKNOWN,_("No valid data returned (%s)\n"), show);
 			if(calculate_rate) {
 				if (previous_state!=NULL) {
 					duration = current_time-previous_state->time;
@@ -521,15 +676,10 @@ main (int argc, char **argv)
 					temp_double = temp_double/duration*rate_multiplier;
 					iresult = get_status(temp_double, thlds[i]);
 					xasprintf (&show, conv, temp_double);
+					showPerf = show;					
 				}
 			} else {
 				iresult = get_status(response_value[i], thlds[i]);
-				if(is_ticks) {
-					xasprintf (&show, "%s", response);
-				}
-				else { 
-					xasprintf (&show, conv, response_value[i]);
-				}
 			}
 		}
 
@@ -631,8 +781,8 @@ main (int argc, char **argv)
 			len = sizeof(perfstr) - strlen(perfstr) - 1;
 
 			/* and then the data itself from the response */
-			strncat(perfstr, show, (len > ptr - show) ? ptr - show : len);
-
+			strncat(perfstr, showPerf, (len > ptr - showPerf) ? ptr - showPerf : len);
+			
 			/* now append the unit of measurement */
 			if ((nunits > (size_t)0) 
 				&& ((size_t)i < nunits) 
@@ -772,6 +922,7 @@ process_arguments (int argc, char **argv)
 		{"perf-oids", no_argument, 0, 'O'},
 		{"ipv4", no_argument, 0, '4'},
 		{"ipv6", no_argument, 0, '6'},
+		{"transform", required_argument, 0, 'T'},		
 		{0, 0, 0, 0}
 	};
 
@@ -789,8 +940,8 @@ process_arguments (int argc, char **argv)
 	}
 
 	while (1) {
-		c = getopt_long (argc, argv, "nhvVO46t:c:w:H:C:o:e:E:d:D:s:t:R:r:l:u:p:m:P:N:L:U:a:x:A:X:",
-									 longopts, &option);
+		c = getopt_long (argc, argv, "nhvVO46t:c:w:H:C:o:e:E:d:D:s:t:R:r:l:u:p:m:P:N:L:U:a:x:A:X:T:",
+				longopts, &option);
 
 		if (c == -1 || c == EOF)
 			break;
@@ -1020,6 +1171,9 @@ process_arguments (int argc, char **argv)
 			if(verbose>2)
 				printf("IPv6 detected! Will pass \"udp6:\" to snmpget.\n");
 			break;
+		case 'T':
+			transform = optarg;
+			break;			
 		}
 	}
 
@@ -1281,6 +1435,9 @@ print_help (void)
 	printf (" %s\n", "--offset=OFFSET");
 	printf ("    %s\n", _("Add/subtract the specified OFFSET to numeric sensor data"));
 
+	printf (" %s\n", "-T, --transform=TRANSFORM");
+	printf ("    %s\n", _("Transform the result with this formula (+X,-X,*X,/X,si2f,i2f,s4b: eg. i2f*10-5 for IEEE754 float conversion, times 10, minus 5)"));
+	
 	/* Tests Against Strings */
 	printf (" %s\n", "-s, --string=STRING");
 	printf ("    %s\n", _("Return OK state (for that OID) if STRING is an exact match"));
@@ -1352,4 +1509,5 @@ print_usage (void)
 	printf ("[-l label] [-u units] [-p port-number] [-d delimiter] [-D output-delimiter]\n");
 	printf ("[-m miblist] [-P snmp version] [-N context] [-L seclevel] [-U secname]\n");
 	printf ("[-a authproto] [-A authpasswd] [-x privproto] [-X privpasswd] [--strict]\n");
+	printf ("[-T transform]\n");	
 }
