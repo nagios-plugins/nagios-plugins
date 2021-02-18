@@ -31,6 +31,7 @@
 #include "netutils.h"
 
 int check_hostname = 0;
+int allow_tls_shutdown = 0;
 #ifdef HAVE_SSL
 static SSL_CTX *c=NULL;
 static SSL *s=NULL;
@@ -184,7 +185,8 @@ int np_net_ssl_init_with_hostname_version_and_cert(int sd, char *host_name, int 
 			SSL_set_tlsext_host_name(s, host_name);
 #endif
 		SSL_set_fd(s, sd);
-		if (SSL_connect(s) == 1) {
+		int ssl_connect_return = SSL_connect(s);
+		if ( ssl_connect_return == 1 || ( allow_tls_shutdown && ssl_connect_return == 0 ) ) {
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L
 			if (check_hostname && host_name && *host_name) {
 				X509 *certificate=SSL_get_peer_certificate(s);
