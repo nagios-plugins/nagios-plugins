@@ -94,6 +94,8 @@ static int match_flags = NP_MATCH_EXACT;
 #define FLAG_HIDE_OUTPUT 0x10
 static size_t flags;
 
+extern int allow_tls_shutdown;
+
 int
 main (int argc, char **argv)
 {
@@ -402,6 +404,10 @@ process_arguments (int argc, char **argv)
 	int escape = 0;
 	char *temp;
 
+    enum {
+        ALLOW_TLS_SHUTDOWN
+    };
+
 	int option = 0;
 	static struct option longopts[] = {
 		{"hostname", required_argument, 0, 'H'},
@@ -429,6 +435,7 @@ process_arguments (int argc, char **argv)
 		{"help", no_argument, 0, 'h'},
 		{"ssl", no_argument, 0, 'S'},
 		{"certificate", required_argument, 0, 'D'},
+        {"allow-tls-shutdown", no_argument, 0, ALLOW_TLS_SHUTDOWN},
 		{0, 0, 0, 0}
 	};
 
@@ -607,6 +614,9 @@ process_arguments (int argc, char **argv)
 		case 'N':                 /* Server Name Indication */
 			server_name = optarg;
 			break;
+        case ALLOW_TLS_SHUTDOWN:
+            allow_tls_shutdown = 1;
+            break;
 		}
 	}
 
@@ -671,6 +681,8 @@ print_help (void)
   printf ("    %s\n", _("1st is #days for warning, 2nd is critical (if not specified - 0)."));
   printf (" %s\n", "-S, --ssl");
   printf ("    %s\n", _("Use SSL for the connection."));
+  printf (" %s\n", "--allow-tls-shutdown");
+  printf ("    %s\n", _("Allow shut down of TLS/SSL. Controlled and by the specifications of the TLS/SSL protocol."));
 #endif
 
 	printf (UT_WARN_CRIT);
