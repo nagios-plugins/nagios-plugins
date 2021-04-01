@@ -675,8 +675,7 @@ print_help (void)
     printf ("%s\n", " -a, --expected-address=IP-ADDRESS|HOST");
     printf ("    %s\n", _("Optional IP-ADDRESS you expect the DNS server to return. HOST must end with"));
     printf ("    %s\n", _("a dot (.). This option can be repeated multiple times (Returns OK if any"));
-    printf ("    %s\n", _("value match). If multiple addresses are returned at once, you have to match"));
-    printf ("    %s\n", _("the whole string of addresses separated with commas (sorted alphabetically)."));
+    printf ("    %s\n", _("value match)."));
     printf ("    %s\n", _("If you would like to test for the presence of a cname, combine with -n param."));
     printf ("%s\n", " -A, --expect-authority");
     printf ("    %s\n", _("Optionally expect the DNS server to be authoritative for the lookup"));
