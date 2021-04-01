@@ -119,6 +119,7 @@ main (int argc, char **argv)
     int parse_address = FALSE; /* This flag scans for Address: but only after Name: */
     output chld_out, chld_err;
     size_t i;
+    size_t j;
 
     setlocale (LC_ALL, "");
     bindtextdomain (PACKAGE, LOCALEDIR);
@@ -334,9 +335,12 @@ main (int argc, char **argv)
         result = STATE_CRITICAL;
         temp_buffer = "";
         for (i=0; i<expected_address_cnt; i++) {
-            /* check if we get a match and prepare an error string */
-            if (strcasecmp(address, expected_address[i]) == 0) result = STATE_OK;
-            xasprintf(&temp_buffer, "%s%s; ", temp_buffer, expected_address[i]);
+            /* loop through each returned address/record to compare individually */
+            for(j=0; j < n_addresses; j++) {
+                /* check if we get a match and prepare an error string */
+                if (strcasecmp(addresses[j], expected_address[i]) == 0) result = STATE_OK;
+                xasprintf(&temp_buffer, "%s%s; ", temp_buffer, expected_address[i]);
+            }
         }
         if (result == STATE_CRITICAL) {
             /* Strip off last semicolon... */
