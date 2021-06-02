@@ -1,0 +1,41 @@
+Source: nagios-plugins
+Section: nagios-plugins
+Priority: optional
+Maintainer: local <local@localhost>
+Uploaders: local <local@localhost>
+Build-Depends: 
+  file,
+  gawk,
+  gettext,
+  libcroco3,
+  libfakeroot,
+  libglib2.0-0,
+  libicu63,
+  libidn2-0,
+  libmagic-mgc,
+  libmagic1,
+  libnettle6,
+  libperl5.28,
+  libpython2.7-minimal,
+  libsigsegv2,
+  libssl-dev,
+  libssl1.1,
+  libunistring2,
+  libxml2,
+  locales,
+  mime-support,
+  perl-modules-5.28,
+  python2.7-minimal,
+  tzdata
+Standards-Version: 4.4.6
+
+Package: nagios-plugins
+Architecture: all
+Depends: 
+  nagios
+Recommends: 
+Suggests: 
+Provides: 
+Conflicts: 
+Replaces: 
+Description: nagios
