@@ -18,7 +18,7 @@
 #
 # you should have received a copy of the GNU General Public License
 # along with this program (or with Nagios);  if not, write to the
-# Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+# Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 # Boston, MA 02110-1301, USA
 
 use strict;
@@ -41,7 +41,7 @@ my ($result, $message, $age, $size, $st, $perfdata, $output, @filelist, $filenam
 $PROGNAME="check_file_age";
 
 $ENV{'PATH'}='@TRUSTED_PATH@';
-$ENV{'BASH_ENV'}=''; 
+$ENV{'BASH_ENV'}='';
 $ENV{'ENV'}='';
 
 $opt_w = 240;
@@ -86,6 +86,11 @@ $output = "";
 @filelist = glob($opt_f);
 $counter = 0;
 $high_water_mark = 0;
+
+if (! $opt_i && scalar @filelist == 0) {
+	print "FILE_AGE UNKNOWN: No files found for $opt_f\n";
+	exit $ERRORS{'UNKNOWN'};
+}
 
 $result = "OK";
 foreach $filename (@filelist) {
