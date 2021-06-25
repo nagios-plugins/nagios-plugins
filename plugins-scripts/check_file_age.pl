@@ -56,7 +56,7 @@ GetOptions(
 	"h"   => \$opt_h, "help"	=> \$opt_h,
 	"i"   => \$opt_i, "ignore-missing"	=> \$opt_i,
 	"I=s" => \$opt_I, "ignore=s"	=> \$opt_I,
-	"f=s" => \$opt_f, "file"	=> \$opt_f,
+	"f=s" => \$opt_f, "file=s"	=> \$opt_f,
 	"w=f" => \$opt_w, "warning-age=f" => \$opt_w,
 	"W=f" => \$opt_W, "warning-size=f" => \$opt_W,
 	"c=f" => \$opt_c, "critical-age=f" => \$opt_c,
