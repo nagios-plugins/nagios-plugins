@@ -1486,7 +1486,7 @@ msgstr ""
 
 #: plugins/check_http.c:1390
 msgid "This plugin will attempt to open an HTTP connection with the host."
-msgstr "Ce plugin va essayer d'ouvrir un connexion SMTP avec l'hôte."
+msgstr "Ce plugin va essayer d'ouvrir un connexion HTTP avec l'hôte."
 
 #: plugins/check_http.c:1391
 msgid ""
