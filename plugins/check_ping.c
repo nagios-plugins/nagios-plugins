@@ -569,7 +569,7 @@ error_scan (char buf[MAX_INPUT_BUFFER], const char *addr)
 		return (STATE_WARNING);
 	}
 
-	if strstr (buf, "BAD CHECKSUM") {
+	if (strstr (buf, "(BAD CHECKSUM!)")) {
 		if (warn_text == NULL)
 			warn_text = strdup (_(WARN_ICMP_CHECKSUM));
 		else if (! strstr (warn_text, _(WARN_ICMP_CHECKSUM)) &&
