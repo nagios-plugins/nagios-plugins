@@ -469,6 +469,7 @@ run_ping (const char *cmd, const char *addr)
 		if((sscanf(buf,"%*d packets transmitted, %*d packets received, +%*d errors, %d%% packet loss%n",&pl,&match) && match) ||
 			 (sscanf(buf,"%*d packets transmitted, %*d packets received, +%*d duplicates, %d%% packet loss%n",&pl,&match) && match) ||
 			 (sscanf(buf,"%*d packets transmitted, %*d received, +%*d duplicates, %d%% packet loss%n",&pl,&match) && match) ||
+			 (sscanf(buf,"%*d packets transmitted, %*d received, +%*d corrupted, %d%% packet loss, time%n",&pl,&match) && match) ||
 			 (sscanf(buf,"%*d packets transmitted, %*d packets received, %d%% packet loss%n",&pl,&match) && match) ||
 			 (sscanf(buf,"%*d packets transmitted, %*d packets received, %d%% loss, time%n",&pl,&match) && match) ||
 			 (sscanf(buf,"%*d packets transmitted, %*d received, %d%% loss, time%n",&pl,&match) && match) ||
