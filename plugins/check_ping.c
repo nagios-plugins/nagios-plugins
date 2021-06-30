@@ -38,6 +38,7 @@ const char *email = "devel@nagios-plugins.org";
 #include "utils.h"
 
 #define WARN_DUPLICATES "DUPLICATES FOUND! "
+#define WARN_ICMP_CHECKSUM "BAD CHECKSUM! "
 #define UNKNOWN_TRIP_TIME -1.0	/* -1 seconds */
 
 enum {
@@ -563,6 +564,15 @@ error_scan (char buf[MAX_INPUT_BUFFER], const char *addr)
 			warn_text = strdup (_(WARN_DUPLICATES));
 		else if (! strstr (warn_text, _(WARN_DUPLICATES)) &&
 		         xasprintf (&warn_text, "%s %s", warn_text, _(WARN_DUPLICATES)) == -1)
+			die (STATE_UNKNOWN, _("Unable to realloc warn_text\n"));
+		return (STATE_WARNING);
+	}
+
+	if strstr (buf, "BAD CHECKSUM") {
+		if (warn_text == NULL)
+			warn_text = strdup (_(WARN_ICMP_CHECKSUM));
+		else if (! strstr (warn_text, _(WARN_ICMP_CHECKSUM)) &&
+		         xasprintf (&warn_text, "%s %s", warn_text, _(WARN_ICMP_CHECKSUM)) == -1)
 			die (STATE_UNKNOWN, _("Unable to realloc warn_text\n"));
 		return (STATE_WARNING);
 	}
