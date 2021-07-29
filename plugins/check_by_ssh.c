@@ -107,9 +107,10 @@ main (int argc, char **argv)
 
 	/* UNKNOWN or worse if (non-skipped) output found on stderr */
 	if(chld_err.lines > skip_stderr) {
-		printf (_("Remote command execution failed: %s\n"),
-		        chld_err.line[skip_stderr]);
-		return max_state_alt(result, STATE_UNKNOWN);
+		result = max_state_alt(result, STATE_UNKNOWN);
+		printf (_("%s - check_by_ssh: Remote command execution failed: %s\n"),
+		        state_text(result), chld_err.line[skip_stderr]);
+		return result;
 	}
 
 	/* this is simple if we're not supposed to be passive.
