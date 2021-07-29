@@ -116,13 +116,16 @@ main (int argc, char **argv)
 	/* this is simple if we're not supposed to be passive.
 	 * Wrap up quickly and keep the tricks below */
 	if(!passive) {
+		/* UNKNOWN if result exceed nagios plugins conventions,
+		 * such as ssh or other remote execution error */
+		result = min(result, STATE_UNKNOWN);
 		if (chld_out.lines > skip_stdout)
 			for (i = skip_stdout; i < chld_out.lines; i++)
 				puts (chld_out.line[i]);
 		else
 			printf (_("%s - check_by_ssh: Remote command '%s' returned status %d\n"),
 			        state_text(result), remotecmd, result);
-		return result; 	/* return error status from remote command */
+		return result;
 	}
 
 
