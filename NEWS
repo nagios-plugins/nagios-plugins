@@ -3,6 +3,7 @@ This file documents the major additions and syntax changes between releases.
 2.3.4 ????-??-??
 	pst3.c: Fix build issue on Solaris (#537)
 	check_disk: Fix false DISK CRITICAL alerts on btrfs systems (#569) (George Hansper)
+	check_http: Add -o option (Append page body as performance data) (#615) (Tobias Leich)
 	check_log: Fix error message for systems that don't use bash (#539)
 	check_log: Fix linebreaks in documentation (#621) (Matt Capra)
 	check_icmp: Add -f and -F perfdata options (#567)

@@ -1508,7 +1508,7 @@ check_http (void)
     /* check elapsed time */
     if (show_extended_perfdata) {
         xasprintf (&msg,
-                   _("%s - %d bytes in %.3f second response time %s|%s %s %s %s %s %s %s%s"),
+                   _("%s - %d bytes in %.3f second response time %s|%s %s %s %s %s %s %s %s"),
                    msg, page_len, elapsed_time,
                    (display_html ? "</A>" : ""),
                    perfd_time (elapsed_time),
@@ -1522,7 +1522,7 @@ check_http (void)
     }
     else {
         xasprintf (&msg,
-                   _("%s - %d bytes in %.3f second response time %s|%s %s%s"),
+                   _("%s - %d bytes in %.3f second response time %s|%s %s %s"),
                    msg, page_len, elapsed_time,
                    (display_html ? "</A>" : ""),
                    perfd_time (elapsed_time),
