@@ -5,6 +5,7 @@ This file documents the major additions and syntax changes between releases.
 	check_disk: Fix false DISK CRITICAL alerts on btrfs systems (#569) (George Hansper)
 	check_log: Fix error message for systems that don't use bash (#539)
 	check_icmp: Add -f and -F perfdata options (#567)
+	check_smtp: Add support for SMTP over TLS (#565) (Franz Schwartau)
 	negate: Errors are now printed directly to stderr instead of being redirected to stdout (#571) (Geert Hendrickx)
 
 2.3.3 2020-03-11
