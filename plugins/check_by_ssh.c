@@ -118,13 +118,14 @@ main (int argc, char **argv)
 	if(!passive) {
 		/* UNKNOWN if result exceed nagios plugins conventions,
 		 * such as ssh or other remote execution error */
+		int chld_return_code = result;
 		result = min(result, STATE_UNKNOWN);
 		if (chld_out.lines > skip_stdout)
 			for (i = skip_stdout; i < chld_out.lines; i++)
 				puts (chld_out.line[i]);
 		else
 			printf (_("%s - check_by_ssh: Remote command '%s' returned status %d\n"),
-			        state_text(result), remotecmd, result);
+			        state_text(result), remotecmd, chld_return_code);
 		return result;
 	}
 
