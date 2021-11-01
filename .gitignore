@@ -9,8 +9,9 @@ plugins.project
 # In all paths
 NP-VERSION-FILE
 *.o
-*.swp
 *.rej
+*.swp
+*~
 
 # /
 /aclocal.m4
@@ -102,7 +103,6 @@ NP-VERSION-FILE
 /gl/warn-on-use.h
 /gl/wchar.h
 /gl/wctype.h
-/gl/*~
 
 # /lib/
 /lib/.deps
