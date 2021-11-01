@@ -248,7 +248,7 @@ main (int argc, char **argv)
 			procseconds = convert_to_seconds(procetime);
 
 			if (verbose >= 3) {
-+				printf ("proc#=%d uid=%d vsz=%d rss=%d pid=%d ppid=%d jid=%d pcpu=%.2f stat=%s etime=%s prog=%s args=%s\n",
+				printf ("proc#=%d uid=%d vsz=%d rss=%d pid=%d ppid=%d jid=%d pcpu=%.2f stat=%s etime=%s prog=%s args=%s\n",
 					procs, procuid, procvsz, procrss,
 					procpid, procppid, procjid, procpcpu, procstat,
 					procetime, procprog, procargs);
@@ -349,7 +349,7 @@ main (int argc, char **argv)
 
 			procs++;
 			if (verbose >= 2) {
-+				printf ("Matched: uid=%d vsz=%d rss=%d pid=%d ppid=%d jid=%d pcpu=%.2f stat=%s etime=%s prog=%s args=%s\n",
+				printf ("Matched: uid=%d vsz=%d rss=%d pid=%d ppid=%d jid=%d pcpu=%.2f stat=%s etime=%s prog=%s args=%s\n",
 					procuid, procvsz, procrss,
 					procpid, procppid, procjid, procpcpu, procstat,
 					procetime, procprog, procargs);
