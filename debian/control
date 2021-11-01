@@ -32,7 +32,6 @@ Standards-Version: 4.4.6
 Package: nagios-plugins
 Architecture: all
 Depends: 
-  nagios
 Recommends: 
 Suggests: 
 Provides: 
