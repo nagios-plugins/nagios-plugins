@@ -187,7 +187,7 @@ foreach $key (keys %ifStatus) {
 				#counter for matching descriptions
 				my $match_descr = 0;
 				foreach my $description (@exclude_descriptions) {
-					if ($ifStatus{$key}{$snmpLocIfDescr} =~ /^$description/) { $match_descr = 1; }
+					if (defined ($ifStatus{$key}{$snmpLocIfDescr}) && $ifStatus{$key}{$snmpLocIfDescr} =~ /^$description/) { $match_descr = 1; }
 				}
 				if ($match_descr == 0) {
 					# check only if interface type is not listed in %excluded
