@@ -7,6 +7,7 @@ This file documents the major additions and syntax changes between releases.
 	check_http: Add -o option (Append page body as performance data) (#615) (Tobias Leich)
 	check_log: Fix error message for systems that don't use bash (#539)
 	check_log: Fix linebreaks in documentation (#621) (Matt Capra)
+	check_mysql_query: Fix use-after-free (#602) (Simon F)
 	check_icmp: Add -f and -F perfdata options (#567)
 	check_ifstatus: Add -d option (exclude interfaces by description regexp) (#548) (Alexandre Anriot)
 	check_smtp: Add support for SMTP over TLS (#565) (Franz Schwartau)
