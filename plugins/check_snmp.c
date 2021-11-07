@@ -65,6 +65,7 @@ const char *email = "devel@nagios-plugins.org";
 #define L_INVERT_SEARCH CHAR_MAX+3
 #define L_OFFSET CHAR_MAX+4
 #define STRICT_MODE CHAR_MAX+5
+#define L_MULTIPLIER CHAR_MAX+6
 
 /* Gobble to string - stop incrementing c when c[0] match one of the
  * characters in s */
@@ -149,6 +150,7 @@ int needmibs = FALSE;
 int calculate_rate = 0;
 static int strict_mode = 0;
 double offset = 0.0;
+double multiplier = 1.0;
 int rate_multiplier = 1;
 state_data *previous_state;
 double *previous_value;
@@ -493,7 +495,7 @@ main (int argc, char **argv)
 
 		/* Process this block for numeric comparisons */
 		/* Make some special values,like Timeticks numeric only if a threshold is defined */
-		if (thlds[i]->warning || thlds[i]->critical || calculate_rate || is_ticks || offset != 0.0) {
+		if (thlds[i]->warning || thlds[i]->critical || calculate_rate || is_ticks || offset != 0.0 || multiplier != 1.0) {
 			ptr = strpbrk (show, "-0123456789");
 
 			if (ptr == NULL)
@@ -503,6 +505,8 @@ main (int argc, char **argv)
 				response_value = realloc(response_value, response_size * sizeof(*response_value));
 			}
 			response_value[i] = strtod (ptr, NULL) + offset;
+			// This defaults to 1.0 so it's safe to multiply
+			response_value[i] *= multiplier;
 
 			if(calculate_rate) {
 				if (previous_state!=NULL) {
@@ -768,6 +772,7 @@ process_arguments (int argc, char **argv)
 		{"rate", no_argument, 0, L_CALCULATE_RATE},
 		{"rate-multiplier", required_argument, 0, L_RATE_MULTIPLIER},
 		{"offset", required_argument, 0, L_OFFSET},
+		{"multiplier", required_argument, 0, L_MULTIPLIER},
 		{"invert-search", no_argument, 0, L_INVERT_SEARCH},
 		{"perf-oids", no_argument, 0, 'O'},
 		{"ipv4", no_argument, 0, '4'},
@@ -1006,6 +1011,10 @@ process_arguments (int argc, char **argv)
 			break;
 		case L_OFFSET:
                         offset=strtod(optarg,NULL);
+			break;
+		case L_MULTIPLIER:
+			multiplier=strtod(optarg,NULL);
+
 			break;
 		case L_INVERT_SEARCH:
 			invert_search=1;
@@ -1280,6 +1289,8 @@ print_help (void)
 	printf ("    %s\n", _("Converts rate per second. For example, set to 60 to convert to per minute"));
 	printf (" %s\n", "--offset=OFFSET");
 	printf ("    %s\n", _("Add/subtract the specified OFFSET to numeric sensor data"));
+	printf (" %s\n", "--multiplier=MULTIPLIER");
+	printf ("    %s\n", _("Multiply the numeric sensor data by MULTIPLIER before doing comparisons"));
 
 	/* Tests Against Strings */
 	printf (" %s\n", "-s, --string=STRING");

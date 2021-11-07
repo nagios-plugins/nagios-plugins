@@ -242,7 +242,8 @@ extern char **environ;
 /* global variables */
 static struct rta_host **table, *cursor, *list;
 static threshold crit = {80, 500000}, warn = {40, 200000};
-static int mode, protocols, sockets, debug = 0, timeout = 10;
+static int mode, protocols, sockets, debug = 0, timeout = 10, perfdata_num=-1;
+static char *perfdata_sep = NULL;
 static unsigned short icmp_data_size = DEFAULT_PING_DATA_SIZE;
 static unsigned short icmp_pkt_size = DEFAULT_PING_DATA_SIZE + ICMP_MINLEN;
 
@@ -571,7 +572,7 @@ int main(int argc, char **argv) {
   /* parse the arguments */
   for (i = 1; i < argc; i++) {
     while ((arg = getopt(argc, argv,
-                         "vhVw:c:n:p:t:H:s:i:b:I:l:m:P:R:J:S:M:O:64")) != EOF) {
+                         "vhVw:c:n:p:t:H:s:i:b:f:F:I:l:m:P:R:J:S:M:O:64")) != EOF) {
       long size;
       switch (arg) {
       case 'v':
@@ -589,6 +590,14 @@ int main(int argc, char **argv) {
                    sizeof(struct icmp) + sizeof(struct icmp_ping_data),
                    MAX_PING_DATA - 1);
         }
+        break;
+
+      case 'f':
+        perfdata_sep = optarg;
+        break;
+
+      case 'F':
+        perfdata_num = strtoul(optarg, NULL, 0);
         break;
 
       case 'i':
@@ -1590,37 +1599,56 @@ static void finish(int sig) {
   i = 0;
   host = list;
   while (host) {
+    i++;
+    if (i > perfdata_num && perfdata_num > -1)
+      break;
     if (debug) {
       puts("");
     }
     if (rta_mode) {
-      printf("%srta=%0.3fms;%0.3f;%0.3f;0; ",
-             (targets > 1) ? host->name : "", (float)host->rta / 1000,
-             (float)warn.rta / 1000, (float)crit.rta / 1000);
+      printf("%s%srta=%0.3fms;%0.3f;%0.3f;0; ",
+             (targets > 1 || perfdata_sep != NULL) ? host->name : "",
+             (perfdata_sep != NULL) ? perfdata_sep : "",
+             (float)host->rta / 1000, (float)warn.rta / 1000, (float)crit.rta / 1000);
     }
     if (pl_mode) {
-      printf("%spl=%u%%;%u;%u;0;100 ", (targets > 1) ? host->name : "",
+      printf("%s%spl=%u%%;%u;%u;0;100 ",
+             (targets > 1 || perfdata_sep != NULL) ? host->name : "",
+             (perfdata_sep != NULL) ? perfdata_sep : "",
              host->pl, warn.pl, crit.pl);
     }
     if (rta_mode) {
-      printf("%srtmax=%0.3fms;;;; %srtmin=%0.3fms;;;; ",
-             (targets > 1) ? host->name : "", (float)host->rtmax / 1000,
-             (targets > 1) ? host->name : "", (float)host->rtmin / 1000);
+      printf("%s%srtmax=%0.3fms;;;; %s%srtmin=%0.3fms;;;; ",
+             (targets > 1 || perfdata_sep != NULL) ? host->name : "",
+             (perfdata_sep != NULL) ? perfdata_sep : "",
+             (float)host->rtmax / 1000,
+             (targets > 1 || perfdata_sep != NULL) ? host->name : "",
+             (perfdata_sep != NULL) ? perfdata_sep : "",
+             (float)host->rtmin / 1000);
     }
     if (jitter_mode) {
-      printf("%sjitter_avg=%0.3fms;%0.3f;%0.3f;0; %sjitter_max=%0.3fms;;;; "
-             "%sjitter_min=%0.3fms;;;; ",
-             (targets > 1) ? host->name : "", (float)host->jitter,
-             (float)warn.jitter, (float)crit.jitter,
-             (targets > 1) ? host->name : "", (float)host->jitter_max / 1000,
-             (targets > 1) ? host->name : "", (float)host->jitter_min / 1000);
+      printf("%s%sjitter_avg=%0.3fms;%0.3f;%0.3f;0; %s%sjitter_max=%0.3fms;;;; "
+             "%s%sjitter_min=%0.3fms;;;; ",
+             (targets > 1 || perfdata_sep != NULL) ? host->name : "",
+             (perfdata_sep != NULL) ? perfdata_sep : "",
+             (float)host->jitter, (float)warn.jitter, (float)crit.jitter,
+             (targets > 1 || perfdata_sep != NULL) ? host->name : "",
+             (perfdata_sep != NULL) ? perfdata_sep : "",
+             (float)host->jitter_max / 1000,
+             (targets > 1 || perfdata_sep != NULL) ? host->name : "",
+             (perfdata_sep != NULL) ? perfdata_sep : "",
+             (float)host->jitter_min / 1000);
     }
     if (mos_mode) {
-      printf("%smos=%0.1f;%0.1f;%0.1f;0;5 ", (targets > 1) ? host->name : "",
+      printf("%s%smos=%0.1f;%0.1f;%0.1f;0;5 ",
+             (targets > 1 || perfdata_sep != NULL) ? host->name : "",
+             (perfdata_sep != NULL) ? perfdata_sep : "",
              (float)host->mos, (float)warn.mos, (float)crit.mos);
     }
     if (score_mode) {
-      printf("%sscore=%u;%u;%u;0;100 ", (targets > 1) ? host->name : "",
+      printf("%s%sscore=%u;%u;%u;0;100 ",
+             (targets > 1 || perfdata_sep != NULL) ? host->name : "",
+             (perfdata_sep != NULL) ? perfdata_sep : "",
              (int)host->score, (int)warn.score, (int)crit.score);
     }
     host = host->next;
@@ -2087,6 +2115,10 @@ void print_help(void) {
   printf("    %s %u + %d)\n",
          _("Packet size will be data bytes + icmp header (currently"),
          icmp_data_size, ICMP_MINLEN);
+  printf(" %s\n", "-f");
+  printf("    %s\n", _("separator for perfdata instance"));
+  printf(" %s\n", "-F");
+  printf("    %s\n", _("number of instances to output perfdata for"));
   printf(" %s\n", "-v");
   printf("    %s\n", _("verbose"));
   printf("\n");

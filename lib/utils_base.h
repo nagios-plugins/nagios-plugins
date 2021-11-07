@@ -111,7 +111,7 @@ void np_set_args(int argc, char **argv);
 void np_cleanup();
 
 /* np_suid() returns true if the real and effective uids differs, such as when
-+ * running a suid plugin */
+ * running a suid plugin */
 #define np_suid() (getuid() != geteuid())
 
 #endif /* NAGIOS_UTILS_BASE_H_INCLUDED */

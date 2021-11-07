@@ -120,6 +120,7 @@ int use_ssl = FALSE;
 int use_sni = FALSE;
 int verbose = FALSE;
 int show_extended_perfdata = FALSE;
+int show_output_body_as_perfdata = FALSE;
 int show_url = FALSE;
 int sd;
 int min_page_len = 0;
@@ -266,6 +267,7 @@ process_arguments (int argc, char **argv)
         {"use-ipv4", no_argument, 0, '4'},
         {"use-ipv6", no_argument, 0, '6'},
         {"extended-perfdata", no_argument, 0, 'E'},
+        {"output-body-as-perfdata", no_argument, 0, 'o'},
         {"show-url", no_argument, 0, 'U'},
         {0, 0, 0, 0}
     };
@@ -287,7 +289,7 @@ process_arguments (int argc, char **argv)
     }
 
     while (1) {
-        c = getopt_long (argc, argv, "Vvh46t:c:w:A:k:H:P:j:T:I:a:b:d:e:p:s:R:r:u:f:C:J:K:nlLS::m:M:NEU", longopts, &option);
+        c = getopt_long (argc, argv, "Vvh46t:c:w:A:k:H:P:j:T:I:a:b:d:e:p:s:R:r:u:f:C:J:K:nlLS::m:M:NEoU", longopts, &option);
         if (c == -1 || c == EOF)
             break;
 
@@ -566,6 +568,9 @@ enable_ssl:
         break;
         case 'E': /* show extended perfdata */
             show_extended_perfdata = TRUE;
+            break;
+        case 'o': /* output response body as perfdata */
+            show_output_body_as_perfdata = TRUE;
             break;
         case 'U': /* show checked url in output msg */
           show_url = TRUE;
@@ -1503,7 +1508,7 @@ check_http (void)
     /* check elapsed time */
     if (show_extended_perfdata) {
         xasprintf (&msg,
-                   _("%s - %d bytes in %.3f second response time %s|%s %s %s %s %s %s %s"),
+                   _("%s - %d bytes in %.3f second response time %s|%s %s %s %s %s %s %s %s"),
                    msg, page_len, elapsed_time,
                    (display_html ? "</A>" : ""),
                    perfd_time (elapsed_time),
@@ -1512,15 +1517,17 @@ check_http (void)
                    use_ssl == TRUE ? perfd_time_ssl (elapsed_time_ssl) : "",
                    perfd_time_headers (elapsed_time_headers),
                    perfd_time_firstbyte (elapsed_time_firstbyte),
-                   perfd_time_transfer (elapsed_time_transfer));
+                   perfd_time_transfer (elapsed_time_transfer),
+                   (result == STATE_OK && show_output_body_as_perfdata ? page : ""));
     }
     else {
         xasprintf (&msg,
-                   _("%s - %d bytes in %.3f second response time %s|%s %s"),
+                   _("%s - %d bytes in %.3f second response time %s|%s %s %s"),
                    msg, page_len, elapsed_time,
                    (display_html ? "</A>" : ""),
                    perfd_time (elapsed_time),
-                   perfd_size (page_len));
+                   perfd_size (page_len),
+                   (result == STATE_OK && show_output_body_as_perfdata ? page : ""));
     }
 
     result = max_state_alt(get_status(elapsed_time, thlds), result);
@@ -1865,6 +1872,8 @@ print_help (void)
     printf ("    %s\n", _("Any other tags to be sent in http header. Use multiple times for additional headers"));
     printf (" %s\n", "-E, --extended-perfdata");
     printf ("    %s\n", _("Print additional performance data"));
+    printf (" %s\n", "-o, --output-body-as-perfdata");
+    printf ("    %s\n", _("Output response body as performance data on succes"));
     printf (" %s\n", "-U, --show-url");
     printf ("    %s\n", _("Print URL in msg output in plain text"));
     printf (" %s\n", "-L, --link");
