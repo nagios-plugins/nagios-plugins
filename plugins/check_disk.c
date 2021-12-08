@@ -488,11 +488,11 @@ main (int argc, char **argv)
           const char *free_pct_str = &human_disk_entry->free_pct_str[0];
           const char *disk_result_str = state_text(human_disk_entry->disk_result);
           const char *avail_bytes_str = human_readable(human_disk_entry->avail_bytes, &human_buf[0], human_opts, 1, 1);
-          strncpy(&human_disk_entry->avail_bytes_str[0], avail_bytes_str, sizeof(human_disk_entry->avail_bytes_str));
+          strncpy(human_disk_entry->avail_bytes_str, avail_bytes_str, sizeof(human_disk_entry->avail_bytes_str - 1));
           const char *total_bytes_str = human_readable(human_disk_entry->total_bytes, &human_buf[0], human_opts, 1, 1);
-          strncpy(&human_disk_entry->total_bytes_str[0], total_bytes_str, sizeof(human_disk_entry->total_bytes_str));
+          strncpy(human_disk_entry->total_bytes_str, total_bytes_str, sizeof(human_disk_entry->total_bytes_str - 1));
 
-          strncpy(&human_disk_entry->disk_result_str[0], disk_result_str, sizeof(human_disk_entry->disk_result_str));
+          strncpy(human_disk_entry->disk_result_str, disk_result_str, sizeof(human_disk_entry->disk_result_str - 1));
           if (human_column_widths.free_pct < strlen(free_pct_str))       human_column_widths.free_pct = strlen(free_pct_str);
           if (human_column_widths.avail_bytes < strlen(avail_bytes_str)) human_column_widths.avail_bytes = strlen(avail_bytes_str);
           if (human_column_widths.total_bytes < strlen(total_bytes_str)) human_column_widths.total_bytes = strlen(total_bytes_str);
