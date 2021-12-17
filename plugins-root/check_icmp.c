@@ -1606,10 +1606,17 @@ static void finish(int sig) {
       puts("");
     }
     if (rta_mode) {
-      printf("%s%srta=%0.3fms;%0.3f;%0.3f;0; ",
+      if (!host->rta) {
+        printf("%s%srta=U;%0.3f;%0.3f;0; ",
+             (targets > 1 || perfdata_sep != NULL) ? host->name : "",
+             (perfdata_sep != NULL) ? perfdata_sep : "",
+             (float)warn.rta / 1000, (float)crit.rta / 1000);
+      } else {
+        printf("%s%srta=%0.3fms;%0.3f;%0.3f;0; ",
              (targets > 1 || perfdata_sep != NULL) ? host->name : "",
              (perfdata_sep != NULL) ? perfdata_sep : "",
              (float)host->rta / 1000, (float)warn.rta / 1000, (float)crit.rta / 1000);
+      }
     }
     if (pl_mode) {
       printf("%s%spl=%u%%;%u;%u;0;100 ",
@@ -1618,16 +1625,35 @@ static void finish(int sig) {
              host->pl, warn.pl, crit.pl);
     }
     if (rta_mode) {
-      printf("%s%srtmax=%0.3fms;;;; %s%srtmin=%0.3fms;;;; ",
+      if (!host->rtmax || !host->rtmin) {
+        printf("%s%srtmax=U;;;; %s%srtmin=U;;;; ",
+             (targets > 1 || perfdata_sep != NULL) ? host->name : "",
+             (perfdata_sep != NULL) ? perfdata_sep : "",
+             (targets > 1 || perfdata_sep != NULL) ? host->name : "",
+             (perfdata_sep != NULL) ? perfdata_sep : "");
+      } else {
+        printf("%s%srtmax=%0.3fms;;;; %s%srtmin=%0.3fms;;;; ",
              (targets > 1 || perfdata_sep != NULL) ? host->name : "",
              (perfdata_sep != NULL) ? perfdata_sep : "",
              (float)host->rtmax / 1000,
              (targets > 1 || perfdata_sep != NULL) ? host->name : "",
              (perfdata_sep != NULL) ? perfdata_sep : "",
              (float)host->rtmin / 1000);
+      }
     }
     if (jitter_mode) {
-      printf("%s%sjitter_avg=%0.3fms;%0.3f;%0.3f;0; %s%sjitter_max=%0.3fms;;;; "
+      if (!host->jitter || !host->jitter_max || !host->jitter_min) {
+        printf("%s%sjitter_avg=U;%0.3f;%0.3f;0; %s%sjitter_max=U;;;; "
+             "%s%sjitter_min=U;;;; ",
+             (targets > 1 || perfdata_sep != NULL) ? host->name : "",
+             (perfdata_sep != NULL) ? perfdata_sep : "",
+             (float)warn.jitter, (float)crit.jitter,
+             (targets > 1 || perfdata_sep != NULL) ? host->name : "",
+             (perfdata_sep != NULL) ? perfdata_sep : "",
+             (targets > 1 || perfdata_sep != NULL) ? host->name : "",
+             (perfdata_sep != NULL) ? perfdata_sep : "");
+      } else {
+        printf("%s%sjitter_avg=%0.3fms;%0.3f;%0.3f;0; %s%sjitter_max=%0.3fms;;;; "
              "%s%sjitter_min=%0.3fms;;;; ",
              (targets > 1 || perfdata_sep != NULL) ? host->name : "",
              (perfdata_sep != NULL) ? perfdata_sep : "",
@@ -1638,6 +1664,7 @@ static void finish(int sig) {
              (targets > 1 || perfdata_sep != NULL) ? host->name : "",
              (perfdata_sep != NULL) ? perfdata_sep : "",
              (float)host->jitter_min / 1000);
+      }
     }
     if (mos_mode) {
       printf("%s%smos=%0.1f;%0.1f;%0.1f;0;5 ",
