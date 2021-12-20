@@ -1607,7 +1607,7 @@ static void finish(int sig) {
     }
     if (rta_mode) {
       if (!host->rta) {
-        printf("%s%srta=U;%0.3f;%0.3f;0; ",
+        printf("%s%srta=Ums;%0.3f;%0.3f;0; ",
              (targets > 1 || perfdata_sep != NULL) ? host->name : "",
              (perfdata_sep != NULL) ? perfdata_sep : "",
              (float)warn.rta / 1000, (float)crit.rta / 1000);
@@ -1619,20 +1619,20 @@ static void finish(int sig) {
       }
     }
     if (pl_mode) {
-      printf("%s%spl=%u%%;%u;%u;0;100 ",
+      printf("%s%spl=%u%%;%u;%u ",
              (targets > 1 || perfdata_sep != NULL) ? host->name : "",
              (perfdata_sep != NULL) ? perfdata_sep : "",
              host->pl, warn.pl, crit.pl);
     }
     if (rta_mode) {
       if (!host->rtmax || !host->rtmin) {
-        printf("%s%srtmax=U;;;; %s%srtmin=U;;;; ",
+        printf("%s%srtmax=Ums %s%srtmin=Ums ",
              (targets > 1 || perfdata_sep != NULL) ? host->name : "",
              (perfdata_sep != NULL) ? perfdata_sep : "",
              (targets > 1 || perfdata_sep != NULL) ? host->name : "",
              (perfdata_sep != NULL) ? perfdata_sep : "");
       } else {
-        printf("%s%srtmax=%0.3fms;;;; %s%srtmin=%0.3fms;;;; ",
+        printf("%s%srtmax=%0.3fms %s%srtmin=%0.3fms ",
              (targets > 1 || perfdata_sep != NULL) ? host->name : "",
              (perfdata_sep != NULL) ? perfdata_sep : "",
              (float)host->rtmax / 1000,
@@ -1643,8 +1643,8 @@ static void finish(int sig) {
     }
     if (jitter_mode) {
       if (!host->jitter || !host->jitter_max || !host->jitter_min) {
-        printf("%s%sjitter_avg=U;%0.3f;%0.3f;0; %s%sjitter_max=U;;;; "
-             "%s%sjitter_min=U;;;; ",
+        printf("%s%sjitter_avg=Ums;%0.3f;%0.3f;0; %s%sjitter_max=Ums "
+             "%s%sjitter_min=U ",
              (targets > 1 || perfdata_sep != NULL) ? host->name : "",
              (perfdata_sep != NULL) ? perfdata_sep : "",
              (float)warn.jitter, (float)crit.jitter,
@@ -1653,8 +1653,8 @@ static void finish(int sig) {
              (targets > 1 || perfdata_sep != NULL) ? host->name : "",
              (perfdata_sep != NULL) ? perfdata_sep : "");
       } else {
-        printf("%s%sjitter_avg=%0.3fms;%0.3f;%0.3f;0; %s%sjitter_max=%0.3fms;;;; "
-             "%s%sjitter_min=%0.3fms;;;; ",
+        printf("%s%sjitter_avg=%0.3fms;%0.3f;%0.3f;0; %s%sjitter_max=%0.3fms "
+             "%s%sjitter_min=%0.3fms ",
              (targets > 1 || perfdata_sep != NULL) ? host->name : "",
              (perfdata_sep != NULL) ? perfdata_sep : "",
              (float)host->jitter, (float)warn.jitter, (float)crit.jitter,
