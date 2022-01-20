@@ -1644,7 +1644,7 @@ static void finish(int sig) {
     if (jitter_mode) {
       if (!host->jitter || !host->jitter_max || !host->jitter_min) {
         printf("%s%sjitter_avg=Ums;%0.3f;%0.3f;0; %s%sjitter_max=Ums "
-             "%s%sjitter_min=U ",
+             "%s%sjitter_min=Ums ",
              (targets > 1 || perfdata_sep != NULL) ? host->name : "",
              (perfdata_sep != NULL) ? perfdata_sep : "",
              (float)warn.jitter, (float)crit.jitter,
