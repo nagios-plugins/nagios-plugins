@@ -136,11 +136,11 @@ if (!defined($session)) {
 }
 
 
-push(@snmpoids,$snmpLocIfDescr);
 push(@snmpoids,$snmpIfOperStatus);
 push(@snmpoids,$snmpIfAdminStatus);
 push(@snmpoids,$snmpIfDescr);
 push(@snmpoids,$snmpIfType);
+push(@snmpoids,$snmpLocIfDescr) if ( defined $ifXTable);
 push(@snmpoids,$snmpIfName) if ( defined $ifXTable);
 push(@snmpoids,$snmpIfAlias) if ( defined $ifXTable);
 
