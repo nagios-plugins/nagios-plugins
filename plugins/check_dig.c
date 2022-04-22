@@ -70,7 +70,7 @@ main (int argc, char **argv)
   output chld_out, chld_err;
   char *msg = NULL;
   size_t i;
-  char *t;
+  char *t, *tt, *ex;
   long microsec;
   double elapsed_time;
   int result = STATE_UNKNOWN;
@@ -100,13 +100,10 @@ main (int argc, char **argv)
   alarm (timeout_interval);
   gettimeofday (&tv, NULL);
 
+  ex = ( (expected_address != NULL) ? expected_address : query_address );
   if (verbose) {
     printf ("%s\n", command_line);
-    if(expected_address != NULL) {
-      printf (_("Looking for: '%s'\n"), expected_address);
-    } else {
-      printf (_("Looking for: '%s'\n"), query_address);
-    }
+    printf (_("Looking for: '%s' length %lu\n"), ex, strlen( ex ));
   }
 
   /* run the command */
@@ -117,21 +114,45 @@ main (int argc, char **argv)
 
   for(i = 0; i < chld_out.lines; i++) {
     /* the server is responding, we just got the host name... */
-    if (strstr (chld_out.line[i], ";; ANSWER SECTION:")) {
 
-      /* loop through the whole 'ANSWER SECTION' */
+    /* ";; ANSWER SECTION:" is an exact, full-line match: */
+
+    if (strcmp (chld_out.line[i], ";; ANSWER SECTION:") == 0) {
+
+      /* loop through the whole 'ANSWER SECTION', which ends with a zero-length line */
+
       for(; i < chld_out.lines; i++) {
-        /* get the host address */
         if (verbose)
           printf ("%s\n", chld_out.line[i]);
 
-        if (strcasestr (chld_out.line[i], (expected_address == NULL ? query_address : expected_address)) != NULL) {
-          msg = chld_out.line[i];
-          result = STATE_OK;
+        if (strlen(chld_out.line[i]) == 0) /* end of answer section */
+          break;
 
-          /* Translate output TAB -> SPACE */
-          t = msg;
-          while ((t = strchr(t, '\t')) != NULL) *t = ' ';
+        /* drill's answer section is tab-delimited, change them to spaces */
+
+        t = chld_out.line[i];
+        while ((tt = strchr(t, '\t')) != NULL) {
+          *tt = ' ';	/* TAB -> SPACE */
+          t = ++tt;	/* t -> remainder of string */
+        }
+
+        tt = t;         /* tt points to the rightmost tab-delimited token */
+
+        /* left match: does ex appear, followed by ". " ? */
+        t = chld_out.line[i];
+        if ((strcasestr( t, ex )) == t) {
+          t += strlen( ex );
+          if (strstr( t, ". " ) == t) {
+            result = STATE_OK;
+            msg = chld_out.line[i];
+            break;
+          }
+        }
+
+        t = tt; /* consider the right-side token, does it match ex? */
+        if ( (strcasestr( t, ex ) == t) && (strlen( t ) == strlen( ex )) ) {
+          result = STATE_OK;
+          msg = chld_out.line[i];
           break;
         }
       }
