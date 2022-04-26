@@ -94,8 +94,14 @@ main (int argc, char **argv)
   timeout_interval_dig = ceil((double) timeout_interval / (double) number_tries);
 
   /* get the command to run */
-  xasprintf (&command_line, "%s %s %s -p %d @%s %s %s +tries=%d +time=%d",
+  if (dns_server == NULL) {
+    xasprintf (&command_line, "%s %s %s %s %s +tries=%d +time=%d",
+ 	PATH_TO_DIG, dig_args, query_transport, query_address, record_type, number_tries, timeout_interval_dig);
+  }
+  else {
+    xasprintf (&command_line, "%s %s %s -p %d @%s %s %s +tries=%d +time=%d",
   	PATH_TO_DIG, dig_args, query_transport, server_port, dns_server, query_address, record_type, number_tries, timeout_interval_dig);
+  }
 
   alarm (timeout_interval);
   gettimeofday (&tv, NULL);
@@ -298,12 +304,6 @@ process_arguments (int argc, char **argv)
     if (c < argc) {
       host_or_die(argv[c]);
       dns_server = argv[c];
-    }
-    else {
-      if (strcmp(query_transport,"-6") == 0)
-        dns_server = strdup("::1");
-      else
-        dns_server = strdup ("127.0.0.1");
     }
   }
 
