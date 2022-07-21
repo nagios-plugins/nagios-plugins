@@ -490,7 +490,7 @@ int process_arguments(int argc, char **argv){
 		usage ("\n");
 
 	while (1) {
-		c = getopt_long (argc, argv, "Vhv46qw:c:t:H:p:o:d:", longopts, &option);
+		c = getopt_long (argc, argv, "Vhv46qw:c:t:H:p:o:d:C:W:", longopts, &option);
 		if (c == -1 || c == EOF || c == 1)
 			break;
 
