@@ -490,7 +490,7 @@ int process_arguments(int argc, char **argv){
 		usage ("\n");
 
 	while (1) {
-		c = getopt_long (argc, argv, "Vhv46qw:c:t:H:p:o:d:", longopts, &option);
+		c = getopt_long (argc, argv, "Vhv46qw:c:t:H:p:o:d:C:W:", longopts, &option);
 		if (c == -1 || c == EOF || c == 1)
 			break;
 
@@ -722,6 +722,6 @@ void
 print_usage(void)
 {
 	printf ("%s\n", _("Usage:"));
-	printf(" %s -H <host> [-4|-6] [-w <warn>] [-c <crit>] [-v verbose] [-o <time offset>] [-d <delay>]\n", progname);
+	printf(" %s -H <host> [-4|-6] [-w <warn>] [-c <crit>] [-v verbose] [-o <time offset>] [-d <delay>] [-W <stratum warn>] [-C <stratum crit>]\n", progname);
 }
 
