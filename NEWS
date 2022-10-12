@@ -3,6 +3,7 @@ This file documents the major additions and syntax changes between releases.
 2.4.1 ????-??-??
 	FIXES
 	check_ntp_time: Ensure -W/-C (stratum warning/critical thresholds) are available as short options (#661)
+	check_icmp: Fix "Invalid Argument" errors on FreeBSD 13.1 (#659)
 
 2.4.0 2021-11-18
 	ENHANCEMENTS
