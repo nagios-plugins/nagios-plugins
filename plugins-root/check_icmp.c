@@ -242,7 +242,7 @@ extern char **environ;
 /* global variables */
 static struct rta_host **table, *cursor, *list;
 static threshold crit = {80, 500000}, warn = {40, 200000};
-static int mode, protocols, sockets, debug = 0, timeout = 10, perfdata_num=-1;
+static int mode, protocols, sockets, debug = 0, timeout = 10, perfdata_num=-1, ttl = 0;
 static char *perfdata_sep = NULL;
 static unsigned short icmp_data_size = DEFAULT_PING_DATA_SIZE;
 static unsigned short icmp_pkt_size = DEFAULT_PING_DATA_SIZE + ICMP_MINLEN;
@@ -257,7 +257,6 @@ static pid_t pid;
 static struct timezone tz;
 static struct timeval prog_start;
 static unsigned long long max_completion_time = 0;
-static unsigned char ttl = 0; /* outgoing ttl */
 static unsigned int warn_down = 1,
                     crit_down = 1; /* host down threshold values */
 static int min_hosts_alive = -1;
@@ -647,7 +646,7 @@ int main(int argc, char **argv) {
         break;
 
       case 'l':
-        ttl = (unsigned char)strtoul(optarg, NULL, 0);
+        ttl = (int)strtoul(optarg, NULL, 0);
         break;
 
       case 'm':
@@ -1162,6 +1161,7 @@ static int send_icmp_ping(int sock, struct rta_host *host) {
   struct msghdr hdr;
   struct iovec iov;
   struct timeval tv;
+  size_t addrlen;
   void *buf = NULL;
 
   if (sock == -1) {
@@ -1191,6 +1191,7 @@ static int send_icmp_ping(int sock, struct rta_host *host) {
 
   if (address_family == AF_INET) {
     struct icmp *icp = (struct icmp *)buf;
+    addrlen = sizeof(struct sockaddr_in);
     memcpy(&icp->icmp_data, &data, sizeof(data));
     icp->icmp_type = ICMP_ECHO;
     icp->icmp_code = 0;
@@ -1206,6 +1207,7 @@ static int send_icmp_ping(int sock, struct rta_host *host) {
     }
   } else if (address_family == AF_INET6) {
     struct icmp6_hdr *icp6 = (struct icmp6_hdr *)buf;
+    addrlen = sizeof(struct sockaddr_in6);
     memcpy(&icp6->icmp6_dataun.icmp6_un_data8[4], &data, sizeof(data));
     icp6->icmp6_type = ICMP6_ECHO_REQUEST;
     icp6->icmp6_code = 0;
@@ -1226,7 +1228,7 @@ static int send_icmp_ping(int sock, struct rta_host *host) {
   iov.iov_len = icmp_pkt_size;
   memset(&hdr, 0, sizeof(hdr));
   hdr.msg_name = (struct sockaddr *)&host->saddr_in;
-  hdr.msg_namelen = sizeof(struct sockaddr_storage);
+  hdr.msg_namelen = addrlen;
   hdr.msg_iov = &iov;
   hdr.msg_iovlen = 1;
 
