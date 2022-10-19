@@ -193,6 +193,7 @@ int newlines = FALSE;
 int erronly = FALSE;
 int display_mntp = FALSE;
 int exact_match = FALSE;
+int ignore_missing = FALSE;
 int freespace_ignore_reserved = FALSE;
 char *warn_freespace_units = NULL;
 char *crit_freespace_units = NULL;
@@ -314,7 +315,10 @@ main (int argc, char **argv)
   temp_list = path_select_list;
 
   while (temp_list) {
-    if (! temp_list->best_match) {
+    if (! temp_list->best_match && ignore_missing == 1) {
+      die (STATE_OK, _("DISK %s: %s not found\n"), _("OK"), temp_list->name);
+    }
+    else if (! temp_list->best_match) {
       die (STATE_CRITICAL, _("DISK %s: %s not found\n"), _("CRITICAL"), temp_list->name);
     }
 
@@ -656,6 +660,7 @@ process_arguments (int argc, char **argv)
     SKIP_FAKE_FS = CHAR_MAX + 1,
     INODE_PERFDATA_ENABLED,
     COMBINED_THRESHOLDS,
+    IGNORE_MISSING,
   };
 
   int option = 0;
@@ -687,6 +692,7 @@ process_arguments (int argc, char **argv)
     {"ignore-ereg-partition", required_argument, 0, 'i'},
     {"ignore-eregi-path", required_argument, 0, 'I'},
     {"ignore-eregi-partition", required_argument, 0, 'I'},
+    {"ignore-missing", no_argument, 0, IGNORE_MISSING},
     {"local", no_argument, 0, 'l'},
     {"skip-fake-fs", no_argument, 0, SKIP_FAKE_FS},
     {"inode-perfdata", no_argument, 0, INODE_PERFDATA_ENABLED},
@@ -944,6 +950,9 @@ process_arguments (int argc, char **argv)
       cflags = default_cflags;
       break;
 
+    case IGNORE_MISSING:
+      ignore_missing = 1;
+      break;
     case 'A':
       optarg = strdup(".*");
     case 'R':
@@ -977,7 +986,10 @@ process_arguments (int argc, char **argv)
         }
       }
 
-      if (!fnd)
+      if (!fnd && ignore_missing == 1)
+        die (STATE_OK, "DISK %s: %s - %s\n",_("OK"),
+            _("Regular expression did not match any path or disk"), optarg);
+      else if (!fnd)
         die (STATE_UNKNOWN, "DISK %s: %s - %s\n",_("UNKNOWN"),
             _("Regular expression did not match any path or disk"), optarg);
 
@@ -1199,6 +1211,8 @@ print_help (void)
   printf ("    %s\n", _("Regular expression to ignore selected path/partition (case insensitive) (may be repeated)"));
   printf (" %s\n", "-i, --ignore-ereg-path=PATH, --ignore-ereg-partition=PARTITION");
   printf ("    %s\n", _("Regular expression to ignore selected path or partition (may be repeated)"));
+  printf (" %s\n", "--ignore-missing");
+  printf ("    %s\n", _("Return OK if no filesystem matches"));
   printf (UT_PLUG_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
   printf (" %s\n", "-u, --units=STRING");
   printf ("    %s\n", _("Choose bytes, kB, MB, GB, TB, KiB, MiB, GiB, TiB (default: MiB)"));
