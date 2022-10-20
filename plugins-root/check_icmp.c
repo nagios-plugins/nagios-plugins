@@ -1847,12 +1847,27 @@ static int add_target(char *arg) {
 }
 
 static void set_source_ip(char *arg) {
-  struct sockaddr_in src;
+  struct sockaddr_storage src;
+  int result;
+  void *address_offset;
 
   memset(&src, 0, sizeof(src));
-  src.sin_family = address_family;
-  if ((src.sin_addr.s_addr = inet_addr(arg)) == INADDR_NONE) {
-    src.sin_addr.s_addr = get_ip_address(arg);
+  src.ss_family = address_family;
+
+  if (address_family == AF_INET) {
+    struct sockaddr_in *src_ipv4 = (struct sockaddr_in *) &src;
+    address_offset = (void *) &src_ipv4->sin_addr.s_addr;
+  }
+  else if (address_family == AF_INET6) {
+    struct sockaddr_in6 *src_ipv6 = (struct sockaddr_in6 *) &src;
+    /* Note: s6_addr is already an array, unlike s_addr */
+    address_offset = (void *) src_ipv6->sin6_addr.s6_addr;
+  }
+
+  result = inet_pton(address_family, arg, address_offset);
+  if (result != 1) {
+    struct sockaddr_in *src_ipv4 = (struct sockaddr_in *) &src;
+    src_ipv4->sin_addr.s_addr = get_ip_address(arg);
   }
   if (bind(icmp_sock, (struct sockaddr *)&src, sizeof(src)) == -1) {
     crash("Cannot bind to IP address %s", arg);
