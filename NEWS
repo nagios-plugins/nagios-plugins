@@ -7,6 +7,7 @@ This file documents the major additions and syntax changes between releases.
 	check_icmp: Fix address binding in ipv6 (#666)
 	check_ntp/check_ntp_time: Fixed errors when compiling with strict aliasing (#665)
 	check_ifstatus: Fixed issue where OID 1.3.6.1.4.1.9.2.2.1.1.28 was queried on systems that didn't support it (#650)
+	check_smtp: Fix regression when using STARTTLS (#649, #648)
 	Fixed several compile errors for upcoming clang-16 (#670)
 
 2.4.0 2021-11-18
