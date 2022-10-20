@@ -103,12 +103,12 @@ char *np_extract_value(const char*, const char*, char);
 
 
 void np_enable_state(char *, int);
-state_data *np_state_read();
+state_data *np_state_read(void);
 void np_state_write_string(time_t, char *);
 
 void np_init(char *, int argc, char **argv);
 void np_set_args(int argc, char **argv);
-void np_cleanup();
+void np_cleanup(void);
 
 /* np_suid() returns true if the real and effective uids differs, such as when
  * running a suid plugin */

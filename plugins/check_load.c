@@ -53,7 +53,7 @@ static int process_arguments (int argc, char **argv);
 static int validate_arguments (void);
 void print_help (void);
 void print_usage (void);
-static int print_top_consuming_processes();
+static int print_top_consuming_processes(void);
 
 static int n_procs_to_show = 0;
 
