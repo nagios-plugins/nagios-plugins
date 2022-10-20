@@ -5,7 +5,8 @@ This file documents the major additions and syntax changes between releases.
 	check_ntp_time: Ensure -W/-C (stratum warning/critical thresholds) are available as short options (#661)
 	check_icmp: Fix "Invalid Argument" errors on FreeBSD 13.1 (#659)
 	check_icmp: Fix address binding in ipv6 (#666)
-	Fixed several compile errors for upcoming clang-16
+	check_ntp/check_ntp_time: Fixed errors when compiling with strict aliasing (#665)
+	Fixed several compile errors for upcoming clang-16 (#670)
 
 2.4.0 2021-11-18
 	ENHANCEMENTS
