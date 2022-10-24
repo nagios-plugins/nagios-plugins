@@ -1259,9 +1259,17 @@ stat_path (struct parameter_list *p)
   if (stat (p->name, &stat_buf[0])) {
     if (verbose >= 3)
       printf("stat failed on %s\n", p->name);
-    if (!human_output)
+    if (ignore_missing == 1) {
+      if (!human_output) {
+        printf("DISK OK - ");
+      }
+      die (STATE_OK, _("%s %s: %s\n"), p->name, _("is not accessible (ignoring)"), strerror(errno));
+    } else {
+      if (!human_output) {
         printf("DISK %s - ", _("CRITICAL"));
-    die (STATE_CRITICAL, _("%s %s: %s\n"), p->name, _("is not accessible"), strerror(errno));
+      }
+      die (STATE_CRITICAL, _("%s %s: %s\n"), p->name, _("is not accessible"), strerror(errno));
+    }
   }
 }
 
