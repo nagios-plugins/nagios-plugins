@@ -189,8 +189,8 @@ static int allow_zero_stratum = 0;
 double ntp32_to_double(uint32_t n) {
 	double result = 0;
 	if (n) {
-		uint16_t l16 = ntohs((uint16_t) (n >> 16));
-		uint16_t r16 = ntohs((uint16_t) (n & ((1<<16) - 1)));
+		uint16_t l16 = ntohs((uint16_t) (n & ((1<<16) - 1)));
+		uint16_t r16 = ntohs((uint16_t) (n >> 16));
 		result = l16 + ((double) r16/65536.0);
 	}
 	return result;
@@ -202,8 +202,8 @@ double ntp32_to_double(uint32_t n) {
 double ntp64_to_double(uint64_t n) {
 	double result = 0;
 	if (n) {
-		uint32_t l32 = ntohl((uint32_t) (n >> 32));
-		uint32_t r32 = ntohl((uint32_t) (n & ((1ul<<32) - 1)));
+		uint32_t l32 = ntohl((uint32_t) (n & ((1ul<<32) - 1)));
+		uint32_t r32 = ntohl((uint32_t) (n >> 32));
 		result = (l32 - EPOCHDIFF)
 		       + (.00000001*(0.5+(double)(r32/42.94967296)));
 	}
@@ -222,8 +222,8 @@ double ntp64_to_double(uint64_t n) {
 struct timeval ntp64_to_tv(uint64_t n) {
 	struct timeval result = {};
 	if (n) {
-		uint32_t l32 = ntohl((uint32_t) (n >> 32));
-		uint32_t r32 = ntohl((uint32_t) (n & ((1ul<<32) - 1)));
+		uint32_t l32 = ntohl((uint32_t) (n & ((1ul<<32) - 1)));
+		uint32_t r32 = ntohl((uint32_t) (n >> 32));
 		result.tv_sec = l32 - EPOCHDIFF;
 		result.tv_usec = (int)(0.5+(double)(r32/4294.967296));
 	}

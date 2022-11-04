@@ -1,5 +1,9 @@
 This file documents the major additions and syntax changes between releases.
 
+2.4.2 2022-11-??
+	FIXES
+	check_ntp_time: Fix calculation bug introduced in 2.4.1 (#677)
+
 2.4.1 2022-10-25
 	FIXES
 	check_ntp_time: Ensure -W/-C (stratum warning/critical thresholds) are available as short options (#661)
