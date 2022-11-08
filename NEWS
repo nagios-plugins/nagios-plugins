@@ -1,8 +1,8 @@
 This file documents the major additions and syntax changes between releases.
 
-2.4.2 2022-11-??
+2.4.2 2022-11-08
 	FIXES
-	check_ntp_time: Fix calculation bug introduced in 2.4.1 (#677)
+	check_ntp/check_ntp_time: Fix calculation bug introduced in 2.4.1 (#677)
 
 2.4.1 2022-10-25
 	FIXES
