@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fr\n"
 "Report-Msgid-Bugs-To: devel@nagios-plugins.org\n"
-"POT-Creation-Date: 2020-09-01 12:05+0200\n"
+"POT-Creation-Date: 2022-10-25 13:50-0400\n"
 "PO-Revision-Date: 2010-04-21 23:38-0400\n"
 "Last-Translator: Thomas Guyot-Sionnest <dermoth@aei.ca>\n"
 "Language-Team: Nagios Plugin Development Mailing List <nagiosplug-"
@@ -25,86 +25,86 @@ msgstr ""
 #: plugins/check_by_ssh.c:86 plugins/check_cluster.c:76 plugins/check_dig.c:91
 #: plugins/check_disk.c:263 plugins/check_dns.c:136 plugins/check_dummy.c:52
 #: plugins/check_fping.c:93 plugins/check_game.c:82 plugins/check_hpjd.c:105
-#: plugins/check_http.c:173 plugins/check_ldap.c:123 plugins/check_load.c:123
+#: plugins/check_http.c:174 plugins/check_ldap.c:123 plugins/check_load.c:123
 #: plugins/check_mrtgtraf.c:87 plugins/check_mysql.c:124
-#: plugins/check_nagios.c:93 plugins/check_nt.c:127 plugins/check_ntp.c:795
-#: plugins/check_ntp_peer.c:576 plugins/check_ntp_time.c:589
+#: plugins/check_nagios.c:93 plugins/check_nt.c:127 plugins/check_ntp.c:852
+#: plugins/check_ntp_peer.c:576 plugins/check_ntp_time.c:646
 #: plugins/check_nwstat.c:173 plugins/check_overcr.c:102
 #: plugins/check_pgsql.c:173 plugins/check_ping.c:98 plugins/check_procs.c:188
 #: plugins/check_radius.c:181 plugins/check_real.c:80 plugins/check_smtp.c:160
-#: plugins/check_snmp.c:245 plugins/check_ssh.c:74 plugins/check_swap.c:113
+#: plugins/check_snmp.c:247 plugins/check_ssh.c:74 plugins/check_swap.c:113
 #: plugins/check_tcp.c:218 plugins/check_time.c:78 plugins/check_ups.c:125
-#: plugins/check_users.c:84 plugins/negate.c:209 plugins-root/check_dhcp.c:269
+#: plugins/check_users.c:84 plugins/negate.c:202 plugins-root/check_dhcp.c:269
 msgid "Could not parse arguments"
 msgstr "Impossible de décomposer les arguments"
 
 #: plugins/check_by_ssh.c:90 plugins/check_dig.c:85 plugins/check_disk.c:269
 #: plugins/check_dns.c:129 plugins/check_nagios.c:97 plugins/check_pgsql.c:179
-#: plugins/check_ping.c:102 plugins/check_procs.c:204 plugins/check_snmp.c:353
+#: plugins/check_ping.c:102 plugins/check_procs.c:204 plugins/check_snmp.c:355
 #: plugins/negate.c:78
 msgid "Cannot catch SIGALRM"
 msgstr "Impossible d'obtenir le signal SIGALRM"
 
-#: plugins/check_by_ssh.c:110
-#, c-format
-msgid "Remote command execution failed: %s\n"
+#: plugins/check_by_ssh.c:111
+#, fuzzy, c-format
+msgid "%s - check_by_ssh: Remote command execution failed: %s\n"
 msgstr "L'exécution de la commande à distance %s à échoué\n"
 
-#: plugins/check_by_ssh.c:122
+#: plugins/check_by_ssh.c:127
 #, c-format
 msgid "%s - check_by_ssh: Remote command '%s' returned status %d\n"
 msgstr ""
 
-#: plugins/check_by_ssh.c:134
+#: plugins/check_by_ssh.c:139
 #, c-format
 msgid "SSH WARNING: could not open %s\n"
 msgstr "SSH AVERTISSEMENT: impossible d'ouvrir %s\n"
 
-#: plugins/check_by_ssh.c:143
+#: plugins/check_by_ssh.c:148
 #, c-format
 msgid "%s: Error parsing output\n"
 msgstr "%s: Erreur d'analyse du résultat\n"
 
-#: plugins/check_by_ssh.c:228 plugins/check_pgsql.c:343
-#: plugins/check_radius.c:302 plugins/check_real.c:329 plugins/check_smtp.c:553
+#: plugins/check_by_ssh.c:233 plugins/check_pgsql.c:343
+#: plugins/check_radius.c:302 plugins/check_real.c:329 plugins/check_smtp.c:554
 #: plugins/check_tcp.c:513 plugins/check_time.c:296 plugins/check_ups.c:551
 msgid "Port must be a positive integer"
 msgstr "Le numéro du port doit être un entier positif"
 
-#: plugins/check_by_ssh.c:289
+#: plugins/check_by_ssh.c:294
 msgid "skip-stdout argument must be an integer"
 msgstr "Le nombres de lignes à sauter (skip-stdout) doit être un entier"
 
-#: plugins/check_by_ssh.c:297
+#: plugins/check_by_ssh.c:302
 msgid "skip-stderr argument must be an integer"
 msgstr "Le nombres de lignes à sauter (skip-stderr) doit être un entier"
 
-#: plugins/check_by_ssh.c:320
+#: plugins/check_by_ssh.c:325
 #, c-format
 msgid "%s: You must provide a host name\n"
 msgstr "%s: Vous devez fournir un nom d'hôte\n"
 
-#: plugins/check_by_ssh.c:338
+#: plugins/check_by_ssh.c:343
 msgid "No remotecmd"
 msgstr "Pas de commande distante"
 
-#: plugins/check_by_ssh.c:352
+#: plugins/check_by_ssh.c:357
 #, c-format
 msgid "%s: Argument limit of %d exceeded\n"
 msgstr ""
 
-#: plugins/check_by_ssh.c:355
+#: plugins/check_by_ssh.c:360
 msgid "Can not (re)allocate 'commargv' buffer\n"
 msgstr "Impossible de réallouer le tampon 'commargv'\n"
 
-#: plugins/check_by_ssh.c:369
+#: plugins/check_by_ssh.c:374
 #, c-format
 msgid ""
 "%s: In passive mode, you must provide a service name for each command.\n"
 msgstr ""
 "%s: En mode passif, vous devez fournir un service pour chaque commande.\n"
 
-#: plugins/check_by_ssh.c:372
+#: plugins/check_by_ssh.c:377
 #, c-format
 msgid ""
 "%s: In passive mode, you must provide the host short name from the nagios "
@@ -113,134 +113,134 @@ msgstr ""
 "%s: En mode passif, vous devez fournir le nom court du hôte mentionné dans "
 "la configuration de nagios.\n"
 
-#: plugins/check_by_ssh.c:386
+#: plugins/check_by_ssh.c:391
 #, c-format
 msgid "This plugin uses SSH to execute commands on a remote host"
 msgstr "Ce plugin utilise SSH pour exécuter des commandes sur un hôte distant"
 
-#: plugins/check_by_ssh.c:401
+#: plugins/check_by_ssh.c:406
 msgid "tell ssh to use Protocol 1 [optional]"
 msgstr "dire à ssh d'utiliser le protocole version 1 [optionnel]"
 
-#: plugins/check_by_ssh.c:403
+#: plugins/check_by_ssh.c:408
 msgid "tell ssh to use Protocol 2 [optional]"
 msgstr "dire à ssh d'utiliser le protocole 2 [optionnel]"
 
-#: plugins/check_by_ssh.c:405
+#: plugins/check_by_ssh.c:410
 msgid "Ignore all or (if specified) first n lines on STDOUT [optional]"
 msgstr ""
 
-#: plugins/check_by_ssh.c:407
+#: plugins/check_by_ssh.c:412
 msgid "Ignore all or (if specified) first n lines on STDERR [optional]"
 msgstr ""
 
-#: plugins/check_by_ssh.c:409
+#: plugins/check_by_ssh.c:414
 msgid ""
 "tells ssh to fork rather than create a tty [optional]. This will always "
 "return OK if ssh is executed"
 msgstr ""
 
-#: plugins/check_by_ssh.c:411
+#: plugins/check_by_ssh.c:416
 msgid "command to execute on the remote machine"
 msgstr "commande à exécuter sur la machine distante"
 
-#: plugins/check_by_ssh.c:413
+#: plugins/check_by_ssh.c:418
 msgid "SSH user name on remote host [optional]"
 msgstr "Nom d'utilisateur ssh sur la machine distante [optionnel]"
 
-#: plugins/check_by_ssh.c:415
+#: plugins/check_by_ssh.c:420
 msgid "identity of an authorized key [optional]"
 msgstr "Identité de la clé autorisée [optionnel]"
 
-#: plugins/check_by_ssh.c:417
+#: plugins/check_by_ssh.c:422
 msgid "external command file for nagios [optional]"
 msgstr "commande externe pour nagios [optionnel]"
 
-#: plugins/check_by_ssh.c:419
+#: plugins/check_by_ssh.c:424
 msgid "list of nagios service names, separated by ':' [optional]"
 msgstr "liste des services nagios, séparés par ':' [optionnel] "
 
-#: plugins/check_by_ssh.c:421
+#: plugins/check_by_ssh.c:426
 msgid "short name of host in nagios configuration [optional]"
 msgstr "nom court de l'hôte dans la configuration nagios [optionnel]"
 
-#: plugins/check_by_ssh.c:423
+#: plugins/check_by_ssh.c:428
 msgid "Call ssh with '-o OPTION' (may be used multiple times) [optional]"
 msgstr ""
 "appelle ssh avec '-o OPTION' (peut être utilisé plusieurs fois) [optionnel]"
 
-#: plugins/check_by_ssh.c:425
+#: plugins/check_by_ssh.c:430
 #, fuzzy
 msgid "Tell ssh to use this configfile [optional]"
 msgstr "dire à ssh d'utiliser le protocole version 1 [optionnel]"
 
-#: plugins/check_by_ssh.c:427
+#: plugins/check_by_ssh.c:432
 msgid "Tell ssh to suppress warning and diagnostic messages [optional]"
 msgstr ""
 "dire à ssh de supprimer les messages d'erreurs et de diagnostic [optionnel]"
 
-#: plugins/check_by_ssh.c:432
+#: plugins/check_by_ssh.c:436
 msgid "The most common mode of use is to refer to a local identity file with"
 msgstr ""
 
-#: plugins/check_by_ssh.c:433
+#: plugins/check_by_ssh.c:437
 msgid "the '-i' option. In this mode, the identity pair should have a null"
 msgstr ""
 
-#: plugins/check_by_ssh.c:434
+#: plugins/check_by_ssh.c:438
 msgid "passphrase and the public key should be listed in the authorized_keys"
 msgstr ""
 
-#: plugins/check_by_ssh.c:435
+#: plugins/check_by_ssh.c:439
 msgid "file of the remote host. Usually the key will be restricted to running"
 msgstr ""
 
-#: plugins/check_by_ssh.c:436
+#: plugins/check_by_ssh.c:440
 msgid "only one command on the remote server. If the remote SSH server tracks"
 msgstr ""
 
-#: plugins/check_by_ssh.c:437
+#: plugins/check_by_ssh.c:441
 msgid "invocation arguments, the one remote program may be an agent that can"
 msgstr ""
 
-#: plugins/check_by_ssh.c:438
+#: plugins/check_by_ssh.c:442
 msgid "execute additional commands as proxy"
 msgstr ""
 
-#: plugins/check_by_ssh.c:440
+#: plugins/check_by_ssh.c:444
 msgid "To use passive mode, provide multiple '-C' options, and provide"
 msgstr "Pour utiliser le mode passif, utilisez plusieurs fois l'option '-C',et"
 
-#: plugins/check_by_ssh.c:441
+#: plugins/check_by_ssh.c:445
 msgid ""
 "all of -O, -s, and -n options (servicelist order must match '-C'options)"
 msgstr ""
 "et les options -O, -s, n (l'ordre des services doit correspondre aux "
 "multiples options '-C)"
 
-#: plugins/check_by_ssh.c:443 plugins/check_cluster.c:261
-#: plugins/check_dig.c:370 plugins/check_disk.c:1216 plugins/check_http.c:1904
-#: plugins/check_nagios.c:310 plugins/check_ntp.c:900
-#: plugins/check_ntp_peer.c:734 plugins/check_ntp_time.c:715
-#: plugins/check_procs.c:882 plugins/negate.c:248 plugins/urlize.c:180
+#: plugins/check_by_ssh.c:447 plugins/check_cluster.c:261
+#: plugins/check_dig.c:370 plugins/check_disk.c:1216 plugins/check_http.c:1913
+#: plugins/check_nagios.c:310 plugins/check_ntp.c:957
+#: plugins/check_ntp_peer.c:734 plugins/check_ntp_time.c:772
+#: plugins/check_procs.c:882 plugins/negate.c:241 plugins/urlize.c:180
 msgid "Examples:"
 msgstr "Exemples:"
 
-#: plugins/check_by_ssh.c:458 plugins/check_cluster.c:274
+#: plugins/check_by_ssh.c:462 plugins/check_cluster.c:274
 #: plugins/check_dig.c:382 plugins/check_disk.c:1233 plugins/check_dns.c:696
 #: plugins/check_dummy.c:122 plugins/check_fping.c:505 plugins/check_game.c:331
-#: plugins/check_hpjd.c:451 plugins/check_http.c:1941 plugins/check_ldap.c:568
+#: plugins/check_hpjd.c:451 plugins/check_http.c:1950 plugins/check_ldap.c:568
 #: plugins/check_load.c:342 plugins/check_mrtg.c:382 plugins/check_mysql.c:581
-#: plugins/check_nagios.c:321 plugins/check_nt.c:796 plugins/check_ntp.c:919
-#: plugins/check_ntp_peer.c:754 plugins/check_ntp_time.c:724
+#: plugins/check_nagios.c:321 plugins/check_nt.c:796 plugins/check_ntp.c:976
+#: plugins/check_ntp_peer.c:754 plugins/check_ntp_time.c:781
 #: plugins/check_nwstat.c:1678 plugins/check_overcr.c:465
 #: plugins/check_pgsql.c:583 plugins/check_ping.c:627 plugins/check_procs.c:902
-#: plugins/check_radius.c:417 plugins/check_real.c:448 plugins/check_smtp.c:920
-#: plugins/check_snmp.c:1349 plugins/check_ssh.c:322 plugins/check_swap.c:583
+#: plugins/check_radius.c:417 plugins/check_real.c:448 plugins/check_smtp.c:922
+#: plugins/check_snmp.c:1360 plugins/check_ssh.c:322 plugins/check_swap.c:583
 #: plugins/check_tcp.c:689 plugins/check_time.c:368 plugins/check_ups.c:695
-#: plugins/check_users.c:262 plugins/check_ide_smart.c:641 plugins/negate.c:272
+#: plugins/check_users.c:262 plugins/check_ide_smart.c:641 plugins/negate.c:265
 #: plugins/urlize.c:197 plugins-root/check_dhcp.c:1473
-#: plugins-root/check_icmp.c:2127
+#: plugins-root/check_icmp.c:2176
 msgid "Usage:"
 msgstr "Utilisation:"
 
@@ -286,13 +286,13 @@ msgid "commas"
 msgstr "virgules"
 
 #: plugins/check_cluster.c:257 plugins/check_game.c:318
-#: plugins/check_http.c:1885 plugins/check_ldap.c:554 plugins/check_mrtg.c:363
+#: plugins/check_http.c:1894 plugins/check_ldap.c:554 plugins/check_mrtg.c:363
 #: plugins/check_mrtgtraf.c:402 plugins/check_mysql.c:570
-#: plugins/check_nt.c:780 plugins/check_ntp.c:894 plugins/check_ntp_peer.c:725
-#: plugins/check_ntp_time.c:704 plugins/check_nwstat.c:1663
-#: plugins/check_overcr.c:454 plugins/check_snmp.c:1320
-#: plugins/check_swap.c:572 plugins/check_ups.c:677 plugins/negate.c:254
-#: plugins-root/check_icmp.c:2093
+#: plugins/check_nt.c:780 plugins/check_ntp.c:951 plugins/check_ntp_peer.c:725
+#: plugins/check_ntp_time.c:761 plugins/check_nwstat.c:1663
+#: plugins/check_overcr.c:454 plugins/check_snmp.c:1331
+#: plugins/check_swap.c:572 plugins/check_ups.c:677 plugins/negate.c:247
+#: plugins-root/check_icmp.c:2142
 msgid "Notes:"
 msgstr "Notes:"
 
@@ -1054,17 +1054,17 @@ msgstr "FPING %s - %s (perte=%.0f%% )|%s\n"
 
 #: plugins/check_fping.c:326 plugins/check_fping.c:332 plugins/check_hpjd.c:351
 #: plugins/check_hpjd.c:383 plugins/check_mysql.c:383 plugins/check_mysql.c:470
-#: plugins/check_ntp.c:731 plugins/check_ntp_peer.c:497
-#: plugins/check_ntp_time.c:526 plugins/check_pgsql.c:337
+#: plugins/check_ntp.c:788 plugins/check_ntp_peer.c:497
+#: plugins/check_ntp_time.c:583 plugins/check_pgsql.c:337
 #: plugins/check_ping.c:307 plugins/check_ping.c:430 plugins/check_radius.c:294
-#: plugins/check_real.c:316 plugins/check_real.c:373 plugins/check_smtp.c:546
-#: plugins/check_smtp.c:700 plugins/check_ssh.c:159 plugins/check_time.c:240
+#: plugins/check_real.c:316 plugins/check_real.c:373 plugins/check_smtp.c:547
+#: plugins/check_smtp.c:702 plugins/check_ssh.c:159 plugins/check_time.c:240
 #: plugins/check_time.c:312 plugins/check_ups.c:537 plugins/check_ups.c:606
 msgid "Invalid hostname/address"
 msgstr "Adresse/Nom d'hôte invalide"
 
 #: plugins/check_fping.c:345 plugins/check_ldap.c:457 plugins/check_ping.c:255
-#: plugins-root/check_icmp.c:632
+#: plugins-root/check_icmp.c:640
 msgid "IPv6 support not available\n"
 msgstr "Support IPv6 non disponible\n"
 
@@ -1084,8 +1084,8 @@ msgstr "Le seuil d'avertissement doit être un entier positif"
 msgid "Interval must be a positive integer"
 msgstr "Le délai d'attente doit être un entier positif"
 
-#: plugins/check_fping.c:402 plugins/check_ntp.c:758
-#: plugins/check_ntp_peer.c:524 plugins/check_ntp_time.c:559
+#: plugins/check_fping.c:402 plugins/check_ntp.c:815
+#: plugins/check_ntp_peer.c:524 plugins/check_ntp_time.c:616
 #: plugins/check_radius.c:344 plugins/check_time.c:316
 msgid "Hostname was not supplied"
 msgstr "Le nom de l'hôte n'a pas été spécifié"
@@ -1326,622 +1326,626 @@ msgstr "Nom de l'hôte à vérifier"
 msgid "Correct false offline status reports "
 msgstr ""
 
-#: plugins/check_http.c:213
+#: plugins/check_http.c:214
 msgid "file does not exist or is not readable"
 msgstr ""
 
-#: plugins/check_http.c:338 plugins/check_http.c:343 plugins/check_http.c:348
+#: plugins/check_http.c:340 plugins/check_http.c:345 plugins/check_http.c:350
 #: plugins/check_ldap.c:426 plugins/check_ldap.c:431 plugins/check_ldap.c:436
-#: plugins/check_smtp.c:637 plugins/check_tcp.c:578 plugins/check_tcp.c:582
+#: plugins/check_smtp.c:638 plugins/check_tcp.c:578 plugins/check_tcp.c:582
 #: plugins/check_tcp.c:588
 msgid "Invalid certificate expiration period"
 msgstr "Période d'expiration du certificat invalide"
 
-#: plugins/check_http.c:393
+#: plugins/check_http.c:395
 msgid ""
 "Invalid option - Valid SSL/TLS versions: 2, 3, 1, 1.1, 1.2, 1.3 (with "
 "optional '+' suffix)"
 msgstr ""
 
-#: plugins/check_http.c:399 plugins/check_ldap.c:420 plugins/check_tcp.c:601
+#: plugins/check_http.c:401 plugins/check_ldap.c:420 plugins/check_tcp.c:601
 msgid "Invalid option - SSL is not available"
 msgstr "Option invalide - SSL n'est pas disponible"
 
-#: plugins/check_http.c:423
+#: plugins/check_http.c:425
 msgid "Invalid onredirect option"
 msgstr ""
 
-#: plugins/check_http.c:425
+#: plugins/check_http.c:427
 #, c-format
 msgid "option f:%d \n"
 msgstr "option f:%d \n"
 
-#: plugins/check_http.c:452
+#: plugins/check_http.c:454
 msgid "Invalid port number"
 msgstr "Numéro de port invalide"
 
-#: plugins/check_http.c:504
+#: plugins/check_http.c:506
 #, c-format
 msgid "Could Not Compile Regular Expression: %s"
 msgstr "Impossible de compiler l'expression rationnelle: %s"
 
-#: plugins/check_http.c:519 plugins/check_ntp.c:747
-#: plugins/check_ntp_peer.c:513 plugins/check_ntp_time.c:548
-#: plugins/check_smtp.c:680 plugins/check_ssh.c:148 plugins/check_tcp.c:482
+#: plugins/check_http.c:521 plugins/check_ntp.c:804
+#: plugins/check_ntp_peer.c:513 plugins/check_ntp_time.c:605
+#: plugins/check_smtp.c:682 plugins/check_ssh.c:148 plugins/check_tcp.c:482
 msgid "IPv6 support not available"
 msgstr "Support IPv6 non disponible"
 
-#: plugins/check_http.c:585
+#: plugins/check_http.c:590
 msgid "Server name indication requires that a host name is defined with -H"
 msgstr ""
 
-#: plugins/check_http.c:590 plugins/check_ping.c:434
+#: plugins/check_http.c:595 plugins/check_ping.c:434
 msgid "You must specify a server address or host name"
 msgstr "Vous devez spécifier une adresse ou un nom d'hôte"
 
-#: plugins/check_http.c:604
+#: plugins/check_http.c:609
 msgid ""
 "If you use a client certificate you must also specify a private key file"
 msgstr ""
 
-#: plugins/check_http.c:729 plugins/check_http.c:1000
+#: plugins/check_http.c:734 plugins/check_http.c:1005
 msgid "HTTP UNKNOWN - Memory allocation error\n"
 msgstr "HTTP INCONNU - Impossible d'allouer la mémoire\n"
 
-#: plugins/check_http.c:755
+#: plugins/check_http.c:760
 msgid "HTTP UNKNOWN - Failed to parse chunked body, invalid format\n"
 msgstr ""
 
-#: plugins/check_http.c:771
+#: plugins/check_http.c:776
 #, fuzzy
 msgid "HTTP UNKNOWN - Failed to parse chunked body, invalid chunk size\n"
 msgstr ""
 "HTTP INCONNU - Impossible de définir l'endroit de la redirection - %s%s\n"
 
-#: plugins/check_http.c:814
+#: plugins/check_http.c:819
 #, fuzzy
 msgid "HTTP_UNKNOWN - Memory allocation error\n"
 msgstr "HTTP INCONNU - Impossible d'allouer la mémoire\n"
 
-#: plugins/check_http.c:818
+#: plugins/check_http.c:823
 #, fuzzy
 msgid "HTTP_UNKNOWN - Memory copy failure\n"
 msgstr "HTTP INCONNU - Impossible d'allouer la mémoire\n"
 
-#: plugins/check_http.c:904
+#: plugins/check_http.c:909
 #, c-format
 msgid "%sServer date unknown, "
 msgstr "%sDate du serveur inconnue, "
 
-#: plugins/check_http.c:907
+#: plugins/check_http.c:912
 #, c-format
 msgid "%sDocument modification date unknown, "
 msgstr "%sDate de modification du document inconnue, "
 
-#: plugins/check_http.c:914
+#: plugins/check_http.c:919
 #, c-format
 msgid "%sServer date \"%100s\" unparsable, "
 msgstr "%sDate du serveur \"%100s\" illisible, "
 
-#: plugins/check_http.c:917
+#: plugins/check_http.c:922
 #, c-format
 msgid "%sDocument date \"%100s\" unparsable, "
 msgstr "%sDate du document \"%100s\" illisible, "
 
-#: plugins/check_http.c:920
+#: plugins/check_http.c:925
 #, c-format
 msgid "%sDocument is %d seconds in the future, "
 msgstr "%sLa date du document est %d secondes dans le futur, "
 
-#: plugins/check_http.c:925
+#: plugins/check_http.c:930
 #, c-format
 msgid "%sLast modified %.1f days ago, "
 msgstr "%sDernière modification %.1f jours auparavant, "
 
-#: plugins/check_http.c:928
+#: plugins/check_http.c:933
 #, c-format
 msgid "%sLast modified %d:%02d:%02d ago, "
 msgstr "%sDernière modification %d:%02d:%02d auparavant, "
 
-#: plugins/check_http.c:1048
+#: plugins/check_http.c:1053
 msgid "HTTP CRITICAL - Unable to open TCP socket\n"
 msgstr "HTTP CRITIQUE - Impossible d'ouvrir un socket TCP\n"
 
-#: plugins/check_http.c:1196 plugins/check_http.c:1228
+#: plugins/check_http.c:1201 plugins/check_http.c:1233
 #, fuzzy
 msgid "HTTP UNKNOWN - Could not allocate memory for full_page\n"
 msgstr "HTTP INCONNU - Impossible d'allouer une adresse\n"
 
-#: plugins/check_http.c:1254
+#: plugins/check_http.c:1259
 msgid "HTTP CRITICAL - Error on receive\n"
 msgstr "HTTP CRITIQUE - Erreur dans la réception\n"
 
-#: plugins/check_http.c:1264
+#: plugins/check_http.c:1269
 msgid "HTTP CRITICAL - No data received from host\n"
 msgstr "HTTP CRITIQUE - Pas de données reçues de l'hôte\n"
 
-#: plugins/check_http.c:1336
+#: plugins/check_http.c:1341
 #, c-format
 msgid "Invalid HTTP response received from host: %s\n"
 msgstr "Réponse HTTP reçue de l'hôte invalide: %s\n"
 
-#: plugins/check_http.c:1340
+#: plugins/check_http.c:1345
 #, c-format
 msgid "Invalid HTTP response received from host on port %d: %s\n"
 msgstr "Réponse HTTP reçue de l'hôte sur le port %d invalide: %s\n"
 
-#: plugins/check_http.c:1349
+#: plugins/check_http.c:1354
 #, c-format
 msgid "Status line output matched \"%s\" - "
 msgstr "La ligne d'état correspond à \"%s\" - "
 
-#: plugins/check_http.c:1368
+#: plugins/check_http.c:1373
 #, fuzzy, c-format
 msgid "Invalid Status Line (%s)\n"
 msgstr "HTTP CRITIQUE: Ligne d'état non valide (%s)\n"
 
-#: plugins/check_http.c:1372
+#: plugins/check_http.c:1377
 msgid "No Status Line\n"
 msgstr ""
 
-#: plugins/check_http.c:1380
+#: plugins/check_http.c:1385
 #, fuzzy, c-format
 msgid "Invalid Status (%s)\n"
 msgstr "HTTP CRITIQUE: Etat Invalide (%s)\n"
 
-#: plugins/check_http.c:1385 plugins/check_http.c:1392
-#: plugins/check_http.c:1404 plugins/check_http.c:1411
+#: plugins/check_http.c:1390 plugins/check_http.c:1397
+#: plugins/check_http.c:1409 plugins/check_http.c:1416
 #, c-format
 msgid "%s%s - "
 msgstr ""
 
-#: plugins/check_http.c:1436
+#: plugins/check_http.c:1441
 #, fuzzy, c-format
 msgid "%sheader '%s' not found on '%s://%s:%d%s', "
 msgstr "%schaîne non trouvée, "
 
-#: plugins/check_http.c:1447
+#: plugins/check_http.c:1452
 #, fuzzy, c-format
 msgid "%sstring '%s' not found on '%s://%s:%d%s', "
 msgstr "%schaîne non trouvée, "
 
-#: plugins/check_http.c:1459
+#: plugins/check_http.c:1464
 #, c-format
 msgid "%spattern not found, "
 msgstr "%sexpression non trouvée, "
 
-#: plugins/check_http.c:1461
+#: plugins/check_http.c:1466
 #, c-format
 msgid "%spattern found, "
 msgstr "%sexpression trouvée, "
 
-#: plugins/check_http.c:1466
+#: plugins/check_http.c:1471
 #, c-format
 msgid "%sExecute Error: %s, "
 msgstr "%sErreur d'exécution: %s, "
 
-#: plugins/check_http.c:1482
+#: plugins/check_http.c:1487
 #, c-format
 msgid "%spage size %d too large, "
 msgstr "%sla taille de la page est trop grande (%d), "
 
-#: plugins/check_http.c:1485
+#: plugins/check_http.c:1490
 #, c-format
 msgid "%spage size %d too small, "
 msgstr "%sla taille de la page est trop petite (%d), "
 
-#: plugins/check_http.c:1499
+#: plugins/check_http.c:1504
 #, fuzzy, c-format
 msgid "%s - %s://%s:%d%s"
 msgstr "Redirection vers %s://%s:%d%s\n"
 
-#: plugins/check_http.c:1506
+#: plugins/check_http.c:1511
 #, fuzzy, c-format
-msgid "%s - %d bytes in %.3f second response time %s|%s %s %s %s %s %s %s"
+msgid "%s - %d bytes in %.3f second response time %s|%s %s %s %s %s %s %s %s"
 msgstr "%s - %d octets en %.3f secondes de temps de réponse %s|%s %s"
 
-#: plugins/check_http.c:1519
-#, c-format
-msgid "%s - %d bytes in %.3f second response time %s|%s %s"
+#: plugins/check_http.c:1525
+#, fuzzy, c-format
+msgid "%s - %d bytes in %.3f second response time %s|%s %s %s"
 msgstr "%s - %d octets en %.3f secondes de temps de réponse %s|%s %s"
 
-#: plugins/check_http.c:1561
+#: plugins/check_http.c:1568
 msgid "HTTP UNKNOWN - Could not allocate addr\n"
 msgstr "HTTP INCONNU - Impossible d'allouer une adresse\n"
 
-#: plugins/check_http.c:1566 plugins/check_http.c:1597
+#: plugins/check_http.c:1573 plugins/check_http.c:1604
 msgid "HTTP UNKNOWN - Could not allocate URL\n"
 msgstr "HTTP INCONNU - Impossible d'allouer l'URL\n"
 
-#: plugins/check_http.c:1575
+#: plugins/check_http.c:1582
 #, c-format
 msgid "HTTP UNKNOWN - Could not find redirect location - %s%s\n"
 msgstr ""
 "HTTP INCONNU - Impossible de trouver l'endroit de la redirection - %s%s\n"
 
-#: plugins/check_http.c:1590
+#: plugins/check_http.c:1597
 #, c-format
 msgid "HTTP UNKNOWN - Empty redirect location%s\n"
 msgstr "HTTP INCONNU - endroit de redirection vide%s\n"
 
-#: plugins/check_http.c:1651
+#: plugins/check_http.c:1658
 #, c-format
 msgid "HTTP UNKNOWN - Could not parse redirect location - %s%s\n"
 msgstr ""
 "HTTP INCONNU - Impossible de définir l'endroit de la redirection - %s%s\n"
 
-#: plugins/check_http.c:1661
+#: plugins/check_http.c:1668
 #, c-format
 msgid "HTTP WARNING - maximum redirection depth %d exceeded - %s://%s:%d%s%s\n"
 msgstr ""
 "HTTP AVERTISSEMENT - le niveau maximum de redirection %d à été dépassé - "
 "%s://%s:%d%s%s\n"
 
-#: plugins/check_http.c:1669
+#: plugins/check_http.c:1676
 #, c-format
 msgid "HTTP WARNING - redirection creates an infinite loop - %s://%s:%d%s%s\n"
 msgstr ""
 "HTTP AVERTISSEMENT - la redirection crée une boucle infinie - %s://%s:%d%s"
 "%s\n"
 
-#: plugins/check_http.c:1690
+#: plugins/check_http.c:1697
 #, c-format
 msgid "HTTP UNKNOWN - Redirection to port above %d - %s://%s:%d%s%s\n"
 msgstr "HTTP INCONNU - Redirection à un port supérieur à %d - %s://%s:%d%s%s\n"
 
-#: plugins/check_http.c:1695
+#: plugins/check_http.c:1702
 #, c-format
 msgid "Redirection to %s://%s:%d%s\n"
 msgstr "Redirection vers %s://%s:%d%s\n"
 
-#: plugins/check_http.c:1770
+#: plugins/check_http.c:1777
 msgid "This plugin tests the HTTP service on the specified host. It can test"
 msgstr ""
 "Ce plugin teste le service HTTP sur l'hôte spécifié. Il peut tester les"
 
-#: plugins/check_http.c:1771
+#: plugins/check_http.c:1778
 msgid "normal (http) and secure (https) servers, follow redirects, search for"
 msgstr ""
 "serveurs normaux (http) et sécurisés (https), suivre les redirections, "
 "rechercher des"
 
-#: plugins/check_http.c:1772
+#: plugins/check_http.c:1779
 msgid "strings and regular expressions, check connection times, and report on"
 msgstr ""
 "chaînes de caractères et expressions rationnelles, vérifier le temps de "
 "réponse"
 
-#: plugins/check_http.c:1773
+#: plugins/check_http.c:1780
 msgid "certificate expiration times."
 msgstr "et rapporter la date d'expiration du certificat."
 
-#: plugins/check_http.c:1779
+#: plugins/check_http.c:1786
 #, c-format
 msgid "NOTE: One or both of -H and -I must be specified"
 msgstr "NOTE: les paramètres -H et -I peuvent être spécifiés"
 
-#: plugins/check_http.c:1787
+#: plugins/check_http.c:1794
 msgid "Host name argument for servers using host headers (virtual host)"
 msgstr ""
 
-#: plugins/check_http.c:1788
+#: plugins/check_http.c:1795
 msgid "Append a port to include it in the header (eg: example.com:5000)"
 msgstr ""
 
-#: plugins/check_http.c:1790
+#: plugins/check_http.c:1797
 msgid ""
 "IP address or name (use numeric address if possible to bypass DNS lookup)."
 msgstr ""
 
-#: plugins/check_http.c:1792
+#: plugins/check_http.c:1799
 msgid "Port number (default: "
 msgstr "Numéro du port (défaut: "
 
-#: plugins/check_http.c:1799
+#: plugins/check_http.c:1806
 msgid ""
 "Connect via SSL. Port defaults to 443. VERSION is optional, and prevents"
 msgstr ""
 
-#: plugins/check_http.c:1800
+#: plugins/check_http.c:1807
 msgid "auto-negotiation (2 = SSLv2, 3 = SSLv3, 1 = TLSv1, 1.1 = TLSv1.1,"
 msgstr ""
 
-#: plugins/check_http.c:1801
+#: plugins/check_http.c:1808
 msgid "1.2 = TLSv1.2). With a '+' suffix, newer versions are also accepted."
 msgstr ""
 
-#: plugins/check_http.c:1803 plugins/check_smtp.c:886
+#: plugins/check_http.c:1810 plugins/check_smtp.c:888
 msgid "Enable SSL/TLS hostname extension support (SNI)"
 msgstr ""
 
-#: plugins/check_http.c:1806
+#: plugins/check_http.c:1813
 msgid "Verify SSL certificate is for the -H hostname (with --sni and -S)"
 msgstr ""
 
-#: plugins/check_http.c:1809
+#: plugins/check_http.c:1816
 msgid ""
 "Minimum number of days a certificate has to be valid. Port defaults to 443"
 msgstr ""
 "Nombre de jours minimum pour que le certificat soit valide. Port par défaut "
 "443"
 
-#: plugins/check_http.c:1810
+#: plugins/check_http.c:1817
 msgid ""
 "(When this option is used the URL is not checked by default. You can use"
 msgstr ""
 
-#: plugins/check_http.c:1811
+#: plugins/check_http.c:1818
 msgid " --continue-after-certificate to override this behavior)"
 msgstr ""
 
-#: plugins/check_http.c:1813
+#: plugins/check_http.c:1820
 msgid ""
 "Allows the HTTP check to continue after performing the certificate check."
 msgstr ""
 
-#: plugins/check_http.c:1814
+#: plugins/check_http.c:1821
 msgid "Does nothing unless -C is used."
 msgstr ""
 
-#: plugins/check_http.c:1816
+#: plugins/check_http.c:1823
 msgid "Name of file that contains the client certificate (PEM format)"
 msgstr ""
 
-#: plugins/check_http.c:1817
+#: plugins/check_http.c:1824
 msgid "to be used in establishing the SSL session"
 msgstr ""
 
-#: plugins/check_http.c:1819
+#: plugins/check_http.c:1826
 msgid "Name of file containing the private key (PEM format)"
 msgstr ""
 
-#: plugins/check_http.c:1820
+#: plugins/check_http.c:1827
 msgid "matching the client certificate"
 msgstr ""
 
-#: plugins/check_http.c:1824
+#: plugins/check_http.c:1831
 msgid "Comma-delimited list of strings, at least one of them is expected in"
 msgstr ""
 "Liste the chaines de charactères séparées par des virgules, au moins une "
 "d'elles"
 
-#: plugins/check_http.c:1825
+#: plugins/check_http.c:1832
 msgid "the first (status) line of the server response (default: "
 msgstr "est attendue dans la première ligne de réponse du serveur (défaut: "
 
-#: plugins/check_http.c:1827
+#: plugins/check_http.c:1834
 msgid ""
 "If specified skips all other status line logic (ex: 3xx, 4xx, 5xx processing)"
 msgstr ""
 "Si spécifié, surpasse toute autre logique de status (ex: 3xx, 4xx, 5xx)"
 
-#: plugins/check_http.c:1829
+#: plugins/check_http.c:1836
 #, fuzzy
 msgid "String to expect in the response headers"
 msgstr "Chaîne de caractères à attendre en réponse"
 
-#: plugins/check_http.c:1831
+#: plugins/check_http.c:1838
 msgid "String to expect in the content"
 msgstr "Chaîne de caractère attendue dans le contenu"
 
-#: plugins/check_http.c:1833
+#: plugins/check_http.c:1840
 #, fuzzy
 msgid "URI to GET or POST (default: /)"
 msgstr "URI pour le GET ou le POST (défaut: /)"
 
-#: plugins/check_http.c:1835
+#: plugins/check_http.c:1842
 msgid "(deprecated) URL to GET or POST (default: /)"
 msgstr "(obsolète) URL pour le GET ou le POST (défaut: /)"
 
-#: plugins/check_http.c:1837
+#: plugins/check_http.c:1844
 msgid "URL encoded http POST data"
 msgstr ""
 
-#: plugins/check_http.c:1839
+#: plugins/check_http.c:1846
 msgid "Set HTTP method."
 msgstr ""
 
-#: plugins/check_http.c:1841
+#: plugins/check_http.c:1848
 msgid "Don't wait for document body: stop reading after headers."
 msgstr ""
 "Ne pas attendre pour le corps du document: arrêter de lire après les entêtes"
 
-#: plugins/check_http.c:1842
+#: plugins/check_http.c:1849
 msgid "(Note that this still does an HTTP GET or POST, not a HEAD.)"
 msgstr "(Veuillez noter qu'un HTTP GET ou POST est effectué, pas un HEAD.)"
 
-#: plugins/check_http.c:1844
+#: plugins/check_http.c:1851
 msgid "Warn if document is more than SECONDS old. the number can also be of"
 msgstr ""
 
-#: plugins/check_http.c:1845
+#: plugins/check_http.c:1852
 msgid "the form \"10m\" for minutes, \"10h\" for hours, or \"10d\" for days."
 msgstr ""
 
-#: plugins/check_http.c:1847
+#: plugins/check_http.c:1854
 msgid "specify Content-Type header media type when POSTing\n"
 msgstr ""
 
-#: plugins/check_http.c:1850
+#: plugins/check_http.c:1857
 msgid "Allow regex to span newlines (must precede -r or -R)"
 msgstr ""
 
-#: plugins/check_http.c:1852
+#: plugins/check_http.c:1859
 msgid "Search page for regex STRING"
 msgstr ""
 
-#: plugins/check_http.c:1854
+#: plugins/check_http.c:1861
 msgid "Search page for case-insensitive regex STRING"
 msgstr ""
 
-#: plugins/check_http.c:1856
+#: plugins/check_http.c:1863
 msgid "Return CRITICAL if found, OK if not\n"
 msgstr ""
 
-#: plugins/check_http.c:1859
+#: plugins/check_http.c:1866
 msgid "Username:password on sites with basic authentication"
 msgstr ""
 
-#: plugins/check_http.c:1861
+#: plugins/check_http.c:1868
 msgid "Username:password on proxy-servers with basic authentication"
 msgstr ""
 
-#: plugins/check_http.c:1863
+#: plugins/check_http.c:1870
 msgid "String to be sent in http header as \"User Agent\""
 msgstr ""
 
-#: plugins/check_http.c:1865
+#: plugins/check_http.c:1872
 msgid ""
 "Any other tags to be sent in http header. Use multiple times for additional "
 "headers"
 msgstr ""
 
-#: plugins/check_http.c:1867
+#: plugins/check_http.c:1874
 msgid "Print additional performance data"
 msgstr ""
 
-#: plugins/check_http.c:1869
+#: plugins/check_http.c:1876
+msgid "Output response body as performance data on succes"
+msgstr ""
+
+#: plugins/check_http.c:1878
 msgid "Print URL in msg output in plain text"
 msgstr ""
 
-#: plugins/check_http.c:1871
+#: plugins/check_http.c:1880
 msgid "Wrap output in HTML link (obsoleted by urlize)"
 msgstr ""
 
-#: plugins/check_http.c:1873
+#: plugins/check_http.c:1882
 msgid "How to handle redirected pages. sticky is like follow but stick to the"
 msgstr ""
 
-#: plugins/check_http.c:1874
+#: plugins/check_http.c:1883
 msgid "specified IP address. stickyport also ensures port stays the same."
 msgstr ""
 
-#: plugins/check_http.c:1876
+#: plugins/check_http.c:1885
 msgid "Minimum page size required (bytes) : Maximum page size required (bytes)"
 msgstr ""
 
-#: plugins/check_http.c:1886
+#: plugins/check_http.c:1895
 msgid "This plugin will attempt to open an HTTP connection with the host."
 msgstr "Ce plugin va essayer d'ouvrir un connexion SMTP avec l'hôte."
 
-#: plugins/check_http.c:1887
+#: plugins/check_http.c:1896
 msgid ""
 "Successful connects return STATE_OK, refusals and timeouts return "
 "STATE_CRITICAL"
 msgstr ""
 
-#: plugins/check_http.c:1888
+#: plugins/check_http.c:1897
 msgid ""
 "other errors return STATE_UNKNOWN.  Successful connects, but incorrect "
 "response"
 msgstr ""
 
-#: plugins/check_http.c:1889
+#: plugins/check_http.c:1898
 msgid ""
 "messages from the host result in STATE_WARNING return values.  If you are"
 msgstr ""
 
-#: plugins/check_http.c:1890
+#: plugins/check_http.c:1899
 msgid ""
 "checking a virtual server that uses 'host headers' you must supply the FQDN"
 msgstr ""
 
-#: plugins/check_http.c:1891
+#: plugins/check_http.c:1900
 msgid "(fully qualified domain name) as the [host_name] argument."
 msgstr ""
 
-#: plugins/check_http.c:1892
+#: plugins/check_http.c:1901
 msgid ""
 "You may also need to give a FQDN or IP address using -I (or --IP-Address)."
 msgstr ""
 
-#: plugins/check_http.c:1896
+#: plugins/check_http.c:1905
 msgid "This plugin can also check whether an SSL enabled web server is able to"
 msgstr ""
 
-#: plugins/check_http.c:1897
+#: plugins/check_http.c:1906
 msgid "serve content (optionally within a specified time) or whether the X509 "
 msgstr ""
 
-#: plugins/check_http.c:1898
+#: plugins/check_http.c:1907
 msgid "certificate is still valid for the specified number of days."
 msgstr ""
 
-#: plugins/check_http.c:1900
+#: plugins/check_http.c:1909
 #, fuzzy
 msgid "Please note that this plugin does not check if the presented server"
 msgstr "Ce plugin vérifie le service ntp sur l'hôte"
 
-#: plugins/check_http.c:1901
+#: plugins/check_http.c:1910
 msgid "certificate matches the hostname of the server, or if the certificate"
 msgstr ""
 
-#: plugins/check_http.c:1902
+#: plugins/check_http.c:1911
 msgid "has a valid chain of trust to one of the locally installed CAs."
 msgstr ""
 
-#: plugins/check_http.c:1906
+#: plugins/check_http.c:1915
 msgid ""
 "When the 'www.verisign.com' server returns its content within 5 seconds,"
 msgstr ""
 
-#: plugins/check_http.c:1907 plugins/check_http.c:1926
+#: plugins/check_http.c:1916 plugins/check_http.c:1935
 msgid ""
 "a STATE_OK will be returned. When the server returns its content but exceeds"
 msgstr ""
 
-#: plugins/check_http.c:1908 plugins/check_http.c:1927
+#: plugins/check_http.c:1917 plugins/check_http.c:1936
 msgid ""
 "the 5-second threshold, a STATE_WARNING will be returned. When an error "
 "occurs,"
 msgstr ""
 
-#: plugins/check_http.c:1909 plugins/check_http.c:1928
+#: plugins/check_http.c:1918 plugins/check_http.c:1937
 msgid "a STATE_CRITICAL will be returned."
 msgstr ""
 
-#: plugins/check_http.c:1912
+#: plugins/check_http.c:1921
 msgid ""
 "When the certificate of 'www.verisign.com' is valid for more than 14 days,"
 msgstr ""
 
-#: plugins/check_http.c:1913 plugins/check_http.c:1919
+#: plugins/check_http.c:1922 plugins/check_http.c:1928
 msgid ""
 "a STATE_OK is returned. When the certificate is still valid, but for less "
 "than"
 msgstr ""
 
-#: plugins/check_http.c:1914
+#: plugins/check_http.c:1923
 msgid ""
 "14 days, a STATE_WARNING is returned. A STATE_CRITICAL will be returned when"
 msgstr ""
 
-#: plugins/check_http.c:1915
+#: plugins/check_http.c:1924
 msgid "the certificate is expired."
 msgstr "le certificat est expiré."
 
-#: plugins/check_http.c:1918
+#: plugins/check_http.c:1927
 msgid ""
 "When the certificate of 'www.verisign.com' is valid for more than 30 days,"
 msgstr ""
 
-#: plugins/check_http.c:1920
+#: plugins/check_http.c:1929
 msgid "30 days, but more than 14 days, a STATE_WARNING is returned."
 msgstr ""
 
-#: plugins/check_http.c:1921
+#: plugins/check_http.c:1930
 msgid ""
 "A STATE_CRITICAL will be returned when certificate expires in less than 14 "
 "days"
 msgstr ""
 
-#: plugins/check_http.c:1924
+#: plugins/check_http.c:1933
 msgid ""
 "check_http -I 192.168.100.35 -p 80 -u https://www.verisign.com/ -S -j "
 "CONNECT -H www.verisign.com "
 msgstr ""
 
-#: plugins/check_http.c:1925
+#: plugins/check_http.c:1934
 msgid ""
 "all these options are needed: -I <proxy> -p <proxy-port> -u <check-url> -"
 "S(sl) -j CONNECT -H <webserver>"
@@ -3103,101 +3107,101 @@ msgstr ""
 msgid "and on the client service it's connecting to."
 msgstr "et dans le service auquel il se connecte."
 
-#: plugins/check_ntp.c:636
+#: plugins/check_ntp.c:693
 #, c-format
 msgid "jitter response too large (%lu bytes)\n"
 msgstr ""
 
-#: plugins/check_ntp.c:832 plugins/check_ntp_peer.c:620
-#: plugins/check_ntp_time.c:638
+#: plugins/check_ntp.c:889 plugins/check_ntp_peer.c:620
+#: plugins/check_ntp_time.c:695
 msgid "NTP CRITICAL:"
 msgstr "NTP CRITIQUE:"
 
-#: plugins/check_ntp.c:835 plugins/check_ntp_peer.c:623
-#: plugins/check_ntp_time.c:641
+#: plugins/check_ntp.c:892 plugins/check_ntp_peer.c:623
+#: plugins/check_ntp_time.c:698
 msgid "NTP WARNING:"
 msgstr "NTP AVERTISSEMENT:"
 
-#: plugins/check_ntp.c:838 plugins/check_ntp_peer.c:626
-#: plugins/check_ntp_time.c:644
+#: plugins/check_ntp.c:895 plugins/check_ntp_peer.c:626
+#: plugins/check_ntp_time.c:701
 msgid "NTP OK:"
 msgstr "NTP OK:"
 
-#: plugins/check_ntp.c:841 plugins/check_ntp_peer.c:629
-#: plugins/check_ntp_time.c:647
+#: plugins/check_ntp.c:898 plugins/check_ntp_peer.c:629
+#: plugins/check_ntp_time.c:704
 msgid "NTP UNKNOWN:"
 msgstr "NTP INCONNU:"
 
-#: plugins/check_ntp.c:845 plugins/check_ntp_peer.c:638
-#: plugins/check_ntp_time.c:651
+#: plugins/check_ntp.c:902 plugins/check_ntp_peer.c:638
+#: plugins/check_ntp_time.c:708
 msgid "Offset unknown"
 msgstr "Décalage inconnu"
 
-#: plugins/check_ntp.c:848 plugins/check_ntp_peer.c:641
+#: plugins/check_ntp.c:905 plugins/check_ntp_peer.c:641
 #: plugins/check_ntp_peer.c:643 plugins/check_ntp_peer.c:645
-#: plugins/check_ntp_time.c:654
+#: plugins/check_ntp_time.c:711
 msgid "Offset"
 msgstr "Décalage"
 
-#: plugins/check_ntp.c:869 plugins/check_ntp_peer.c:691
+#: plugins/check_ntp.c:926 plugins/check_ntp_peer.c:691
 msgid "This plugin checks the selected ntp server"
 msgstr "Ce plugin vérifie le service ntp sur l'hôte"
 
-#: plugins/check_ntp.c:879 plugins/check_ntp_peer.c:703
-#: plugins/check_ntp_time.c:683
+#: plugins/check_ntp.c:936 plugins/check_ntp_peer.c:703
+#: plugins/check_ntp_time.c:740
 msgid "Offset to result in warning status (seconds)"
 msgstr "Décalage résultant en un avertissement (secondes)"
 
-#: plugins/check_ntp.c:881 plugins/check_ntp_peer.c:705
-#: plugins/check_ntp_time.c:685
+#: plugins/check_ntp.c:938 plugins/check_ntp_peer.c:705
+#: plugins/check_ntp_time.c:742
 msgid "Offset to result in critical status (seconds)"
 msgstr "Décalage résultant en un état critique (secondes)"
 
-#: plugins/check_ntp.c:883 plugins/check_ntp_peer.c:711
+#: plugins/check_ntp.c:940 plugins/check_ntp_peer.c:711
 msgid "Warning threshold for jitter"
 msgstr "Seuil d'avertissement pour la variation (jitter)"
 
-#: plugins/check_ntp.c:885 plugins/check_ntp_peer.c:713
+#: plugins/check_ntp.c:942 plugins/check_ntp_peer.c:713
 msgid "Critical threshold for jitter"
 msgstr "Seuil critique pour la variation (jitter)"
 
-#: plugins/check_ntp.c:887 plugins/check_ntp_time.c:689
+#: plugins/check_ntp.c:944 plugins/check_ntp_time.c:746
 msgid "Delay between each packet (seconds)"
 msgstr ""
 
-#: plugins/check_ntp.c:889
+#: plugins/check_ntp.c:946
 msgid "Do not discard DNS servers which report a stratum of zero (0)"
 msgstr ""
 
-#: plugins/check_ntp.c:895 plugins/check_ntp_time.c:709
+#: plugins/check_ntp.c:952 plugins/check_ntp_time.c:766
 msgid "--delay is useful if you are triggering the anti-DOS for the"
 msgstr ""
 
-#: plugins/check_ntp.c:896 plugins/check_ntp_time.c:710
+#: plugins/check_ntp.c:953 plugins/check_ntp_time.c:767
 msgid "NTP server and need to leave a bigger gap between queries"
 msgstr ""
 
-#: plugins/check_ntp.c:901
+#: plugins/check_ntp.c:958
 msgid "Normal offset check:"
 msgstr "Vérification normale du décalage:"
 
-#: plugins/check_ntp.c:904 plugins/check_ntp_peer.c:738
+#: plugins/check_ntp.c:961 plugins/check_ntp_peer.c:738
 msgid ""
 "Check jitter too, avoiding critical notifications if jitter isn't available"
 msgstr ""
 "Vérifier aussi la variation (jitter) en évitant les notifications s'il n'est "
 "pas dispoible"
 
-#: plugins/check_ntp.c:905 plugins/check_ntp_peer.c:739
+#: plugins/check_ntp.c:962 plugins/check_ntp_peer.c:739
 msgid "(See Notes above for more details on thresholds formats):"
 msgstr ""
 "(Voir les Notes ci-dessus pour plus de détails sur le format des seuils)"
 
-#: plugins/check_ntp.c:910 plugins/check_ntp.c:917
+#: plugins/check_ntp.c:967 plugins/check_ntp.c:974
 msgid "WARNING: check_ntp is deprecated. Please use check_ntp_peer or"
 msgstr "ATTENTION: check_ntp est périmé, utilisez plutôt check_ntp_peer"
 
-#: plugins/check_ntp.c:911 plugins/check_ntp.c:918
+#: plugins/check_ntp.c:968 plugins/check_ntp.c:975
 msgid "check_ntp_time instead."
 msgstr "ou check_ntp_time."
 
@@ -3278,51 +3282,51 @@ msgstr ""
 msgid "Check only stratum:"
 msgstr "Vérification du stratum seulement:"
 
-#: plugins/check_ntp_time.c:671
+#: plugins/check_ntp_time.c:728
 msgid "This plugin checks the clock offset with the ntp server"
 msgstr "Ce plugin vérifie le décalage de l'horloge avec le serveur ntp"
 
-#: plugins/check_ntp_time.c:681
+#: plugins/check_ntp_time.c:738
 msgid "Returns UNKNOWN instead of CRITICAL if offset cannot be found"
 msgstr "Retourne INCONNU au lieu de CRITIQUE si le décalage est inconnu"
 
-#: plugins/check_ntp_time.c:687
+#: plugins/check_ntp_time.c:744
 msgid "Expected offset of the ntp server relative to local server (seconds)"
 msgstr ""
 
-#: plugins/check_ntp_time.c:691
+#: plugins/check_ntp_time.c:748
 msgid "Alert warning if stratum is worse (less) than specfied value"
 msgstr ""
 
-#: plugins/check_ntp_time.c:693
+#: plugins/check_ntp_time.c:750
 msgid "Alert critical if stratum is worse (less) than specfied value"
 msgstr ""
 
-#: plugins/check_ntp_time.c:699
+#: plugins/check_ntp_time.c:756
 msgid "This plugin checks the clock offset between the local host and a"
 msgstr "Ce plugin vérifie le décalage de l'horloge entre se serveur local et"
 
-#: plugins/check_ntp_time.c:700
+#: plugins/check_ntp_time.c:757
 msgid "remote NTP server. It is independent of any commandline programs or"
 msgstr "le serveur NTP distant. Il ne fait aucun recours aux programmes de"
 
-#: plugins/check_ntp_time.c:701
+#: plugins/check_ntp_time.c:758
 msgid "external libraries."
 msgstr "la ligne de commande ou libraries externes."
 
-#: plugins/check_ntp_time.c:705
+#: plugins/check_ntp_time.c:762
 msgid "If you'd rather want to monitor an NTP server, please use"
 msgstr "Si vous voulez plutôt surveiller un serveur NTP, veuillez"
 
-#: plugins/check_ntp_time.c:706
+#: plugins/check_ntp_time.c:763
 msgid "check_ntp_peer."
 msgstr "utiliser check_ntp_peer."
 
-#: plugins/check_ntp_time.c:707
+#: plugins/check_ntp_time.c:764
 msgid "--time-offset is useful for compensating for servers with known"
 msgstr ""
 
-#: plugins/check_ntp_time.c:708
+#: plugins/check_ntp_time.c:765
 msgid "and expected clock skew."
 msgstr ""
 
@@ -4824,7 +4828,7 @@ msgstr ""
 msgid "This plugin will attempt to open an RTSP connection with the host."
 msgstr "Ce plugin va essayer d'ouvrir un connexion RTSP avec l'hôte."
 
-#: plugins/check_real.c:435 plugins/check_smtp.c:907
+#: plugins/check_real.c:435 plugins/check_smtp.c:909
 msgid "Successul connects return STATE_OK, refusals and timeouts return"
 msgstr ""
 
@@ -4895,516 +4899,521 @@ msgstr "envoyé %s"
 msgid "SMTP UNKNOWN - Cannot read EHLO response via TLS."
 msgstr ""
 
-#: plugins/check_smtp.c:342 plugins/check_snmp.c:919
+#: plugins/check_smtp.c:343 plugins/check_snmp.c:924
 #, c-format
 msgid "Could Not Compile Regular Expression"
 msgstr "Impossible de compiler l'expression rationnelle"
 
-#: plugins/check_smtp.c:351
+#: plugins/check_smtp.c:352
 #, c-format
 msgid "SMTP %s - Invalid response '%s' to command '%s'\n"
 msgstr "SMTP %s - réponse invalide de '%s' à la commande '%s'\n"
 
-#: plugins/check_smtp.c:355 plugins/check_snmp.c:552
+#: plugins/check_smtp.c:356 plugins/check_snmp.c:556
 #, c-format
 msgid "Execute Error: %s\n"
 msgstr "Erreur d'exécution: %s\n"
 
-#: plugins/check_smtp.c:369
+#: plugins/check_smtp.c:370
 msgid "no authuser specified, "
 msgstr "Pas d'utilisateur pour l'authentification spécifié, "
 
-#: plugins/check_smtp.c:374
+#: plugins/check_smtp.c:375
 msgid "no authpass specified, "
 msgstr "pas de mot de passe spécifié, "
 
-#: plugins/check_smtp.c:381 plugins/check_smtp.c:402 plugins/check_smtp.c:422
-#: plugins/check_smtp.c:755
+#: plugins/check_smtp.c:382 plugins/check_smtp.c:403 plugins/check_smtp.c:423
+#: plugins/check_smtp.c:757
 #, c-format
 msgid "sent %s\n"
 msgstr "envoyé %s\n"
 
-#: plugins/check_smtp.c:384
+#: plugins/check_smtp.c:385
 msgid "recv() failed after AUTH LOGIN, "
 msgstr "recv() à échoué après AUTH LOGIN, "
 
-#: plugins/check_smtp.c:389 plugins/check_smtp.c:410 plugins/check_smtp.c:430
-#: plugins/check_smtp.c:766
+#: plugins/check_smtp.c:390 plugins/check_smtp.c:411 plugins/check_smtp.c:431
+#: plugins/check_smtp.c:768
 #, c-format
 msgid "received %s\n"
 msgstr "reçu %s\n"
 
-#: plugins/check_smtp.c:393
+#: plugins/check_smtp.c:394
 msgid "invalid response received after AUTH LOGIN, "
 msgstr "Réponse invalide reçue après AUTH LOGIN, "
 
-#: plugins/check_smtp.c:406
+#: plugins/check_smtp.c:407
 msgid "recv() failed after sending authuser, "
 msgstr "La commande recv() a échoué après authuser, "
 
-#: plugins/check_smtp.c:414
+#: plugins/check_smtp.c:415
 msgid "invalid response received after authuser, "
 msgstr "Réponse invalide reçue après authuser, "
 
-#: plugins/check_smtp.c:426
+#: plugins/check_smtp.c:427
 msgid "recv() failed after sending authpass, "
 msgstr "la commande recv() à échoué après authpass, "
 
-#: plugins/check_smtp.c:434
+#: plugins/check_smtp.c:435
 msgid "invalid response received after authpass, "
 msgstr "Réponse invalide reçue après authpass, "
 
-#: plugins/check_smtp.c:441
+#: plugins/check_smtp.c:442
 msgid "only authtype LOGIN is supported, "
 msgstr "seul la méthode d'authentification LOGIN est supportée, "
 
-#: plugins/check_smtp.c:465
+#: plugins/check_smtp.c:466
 #, c-format
 msgid "SMTP %s - %s%.3f sec. response time%s%s|%s\n"
 msgstr "SMTP %s - %s%.3f sec. de temps de réponse%s%s|%s\n"
 
-#: plugins/check_smtp.c:583 plugins/check_smtp.c:595
+#: plugins/check_smtp.c:584 plugins/check_smtp.c:596
 #, c-format
 msgid "Could not realloc() units [%d]\n"
 msgstr "Impossible de réallouer des unités [%d]\n"
 
-#: plugins/check_smtp.c:603
+#: plugins/check_smtp.c:604
 #, fuzzy
 msgid "Critical time must be a positive"
 msgstr "Le seuil critique doit être un entier positif"
 
-#: plugins/check_smtp.c:611
+#: plugins/check_smtp.c:612
 #, fuzzy
 msgid "Warning time must be a positive"
 msgstr "Le seuil d'avertissement doit être un entier positif"
 
-#: plugins/check_smtp.c:649 plugins/check_smtp.c:664
+#: plugins/check_smtp.c:650 plugins/check_smtp.c:666
 msgid "SSL support not available - install OpenSSL and recompile"
 msgstr "SSL n'est pas disponible - installer OpenSSL et recompilez"
 
-#: plugins/check_smtp.c:717
+#: plugins/check_smtp.c:719
 msgid "Set either -s/--ssl or -S/--starttls"
 msgstr "Définissez -s/--ssl ou -S/--starttls"
 
-#: plugins/check_smtp.c:721
+#: plugins/check_smtp.c:723
 msgid ""
 "PROXY protocol (-r/--proxy) is not implemented with SSL/TLS (-s/--ssl), yet."
-msgstr "Le protocole PROXY (-r/--proxy) n'est implémenté avec SSL/TLS (-s/--ssl)."
+msgstr ""
+"Le protocole PROXY (-r/--proxy) n'est implémenté avec SSL/TLS (-s/--ssl)."
 
-#: plugins/check_smtp.c:746 plugins/check_smtp.c:751
+#: plugins/check_smtp.c:748 plugins/check_smtp.c:753
 #, c-format
 msgid "Connection closed by server before sending QUIT command\n"
 msgstr ""
 
-#: plugins/check_smtp.c:761
+#: plugins/check_smtp.c:763
 #, c-format
 msgid "recv() failed after QUIT."
 msgstr "recv() à échoué après QUIT."
 
-#: plugins/check_smtp.c:763
+#: plugins/check_smtp.c:765
 #, c-format
 msgid "Connection reset by peer."
 msgstr ""
 
-#: plugins/check_smtp.c:853
+#: plugins/check_smtp.c:855
 msgid "This plugin will attempt to open an SMTP connection with the host."
 msgstr "Ce plugin va essayer d'ouvrir un connexion SMTP avec l'hôte."
 
-#: plugins/check_smtp.c:867
+#: plugins/check_smtp.c:869
 #, c-format
 msgid "    String to expect in first line of server response (default: '%s')\n"
 msgstr ""
 "   Texte attendu dans la première ligne de réponse du serveur (défaut: "
 "'%s')\n"
 
-#: plugins/check_smtp.c:869
+#: plugins/check_smtp.c:871
 msgid "SMTP command (may be used repeatedly)"
 msgstr "Commande SMTP (peut être utilisé plusieurs fois)"
 
-#: plugins/check_smtp.c:871
+#: plugins/check_smtp.c:873
 msgid "Expected response to command (may be used repeatedly)"
 msgstr ""
 
-#: plugins/check_smtp.c:873
+#: plugins/check_smtp.c:875
 msgid "FROM-address to include in MAIL command, required by Exchange 2000"
 msgstr ""
 
-#: plugins/check_smtp.c:875
+#: plugins/check_smtp.c:877
 msgid "FQDN used for HELO"
 msgstr ""
 
-#: plugins/check_smtp.c:877
+#: plugins/check_smtp.c:879
 msgid "Use PROXY protocol prefix for the connection."
 msgstr ""
 
-#: plugins/check_smtp.c:880 plugins/check_tcp.c:670
+#: plugins/check_smtp.c:882 plugins/check_tcp.c:670
 msgid "Minimum number of days a certificate has to be valid."
 msgstr "Nombre de jours minimum pour que le certificat soit valide."
 
-#: plugins/check_smtp.c:882
+#: plugins/check_smtp.c:884
 msgid "Use SSL/TLS for the connection."
 msgstr ""
 
-#: plugins/check_smtp.c:884
+#: plugins/check_smtp.c:886
 msgid "Use STARTTLS for the connection."
 msgstr ""
 
-#: plugins/check_smtp.c:890
+#: plugins/check_smtp.c:892
 msgid "SMTP AUTH type to check (default none, only LOGIN supported)"
 msgstr ""
 
-#: plugins/check_smtp.c:892
+#: plugins/check_smtp.c:894
 msgid "SMTP AUTH username"
 msgstr ""
 
-#: plugins/check_smtp.c:894
+#: plugins/check_smtp.c:896
 msgid "SMTP AUTH password"
 msgstr ""
 
-#: plugins/check_smtp.c:896
+#: plugins/check_smtp.c:898
 msgid "Send LHLO instead of HELO/EHLO"
 msgstr ""
 
-#: plugins/check_smtp.c:898
+#: plugins/check_smtp.c:900
 msgid "Ignore failure when sending QUIT command to server"
 msgstr ""
 
-#: plugins/check_smtp.c:908
+#: plugins/check_smtp.c:910
 msgid "STATE_CRITICAL, other errors return STATE_UNKNOWN.  Successful"
 msgstr ""
 
-#: plugins/check_smtp.c:909
+#: plugins/check_smtp.c:911
 msgid "connects, but incorrect response messages from the host result in"
 msgstr ""
 
-#: plugins/check_smtp.c:910
+#: plugins/check_smtp.c:912
 msgid "STATE_WARNING return values."
 msgstr ""
 
-#: plugins/check_snmp.c:173 plugins/check_snmp.c:692
+#: plugins/check_snmp.c:175 plugins/check_snmp.c:696
 msgid "Cannot malloc"
 msgstr ""
 
-#: plugins/check_snmp.c:249
+#: plugins/check_snmp.c:251
 msgid ""
 "Command timeout must be 1 second or greater. Please increase timeout (-t) "
 "value or decrease retries (-e) value."
 msgstr ""
 
-#: plugins/check_snmp.c:373
+#: plugins/check_snmp.c:375
 #, fuzzy, c-format
 msgid "%s - External command error: %s\n"
 msgstr "Erreur d'exécution de commande externe: %s\n"
 
-#: plugins/check_snmp.c:379
+#: plugins/check_snmp.c:381
 #, c-format
 msgid "External command error: %s\n"
 msgstr "Erreur d'exécution de commande externe: %s\n"
 
-#: plugins/check_snmp.c:385
+#: plugins/check_snmp.c:387
 #, c-format
 msgid "External command error with no output (return code: %d)\n"
 msgstr ""
 
-#: plugins/check_snmp.c:414
+#: plugins/check_snmp.c:416
 #, c-format
 msgid "UNKNOWN - Expected OID %s did not match actual OID %s.\n"
 msgstr ""
 
-#: plugins/check_snmp.c:500
+#: plugins/check_snmp.c:502
 #, fuzzy, c-format
 msgid "No valid data returned (%s)\n"
 msgstr "Pas de données valides reçues"
 
-#: plugins/check_snmp.c:511
+#: plugins/check_snmp.c:515
 msgid "Time duration between plugin calls is invalid"
 msgstr ""
 
-#: plugins/check_snmp.c:698
+#: plugins/check_snmp.c:702
 msgid "Cannot asprintf()"
 msgstr ""
 
-#: plugins/check_snmp.c:704
+#: plugins/check_snmp.c:708
 #, fuzzy
 msgid "Cannot realloc()"
 msgstr "Impossible de réallouer des unités\n"
 
-#: plugins/check_snmp.c:720
+#: plugins/check_snmp.c:724
 msgid "No previous data to calculate rate - assume okay"
 msgstr ""
 
-#: plugins/check_snmp.c:864
+#: plugins/check_snmp.c:869
 msgid "Retries interval must be a positive integer"
 msgstr "L'intervalle pour les essais doit être un entier positif"
 
-#: plugins/check_snmp.c:944
+#: plugins/check_snmp.c:949
 #, c-format
 msgid "Could not reallocate labels[%d]"
 msgstr "Impossible de réallouer des labels[%d]"
 
-#: plugins/check_snmp.c:957
+#: plugins/check_snmp.c:962
 msgid "Could not reallocate labels\n"
 msgstr "Impossible de réallouer des labels\n"
 
-#: plugins/check_snmp.c:973
+#: plugins/check_snmp.c:978
 #, c-format
 msgid "Could not reallocate units [%d]\n"
 msgstr "Impossible de réallouer des unités [%d]\n"
 
-#: plugins/check_snmp.c:985
+#: plugins/check_snmp.c:990
 msgid "Could not realloc() units\n"
 msgstr "Impossible de réallouer des unités\n"
 
-#: plugins/check_snmp.c:1005
+#: plugins/check_snmp.c:1010
 #, fuzzy
 msgid "Rate multiplier must be a positive integer"
 msgstr "La taille du paquet doit être un entier positif"
 
-#: plugins/check_snmp.c:1074
+#: plugins/check_snmp.c:1083
 msgid "No host specified\n"
 msgstr "Pas d'hôte spécifié\n"
 
-#: plugins/check_snmp.c:1078
+#: plugins/check_snmp.c:1087
 msgid "No OIDs specified\n"
 msgstr "Pas de compteur spécifié\n"
 
-#: plugins/check_snmp.c:1101 plugins/check_snmp.c:1119
-#: plugins/check_snmp.c:1137
+#: plugins/check_snmp.c:1110 plugins/check_snmp.c:1128
+#: plugins/check_snmp.c:1146
 #, c-format
 msgid "Required parameter: %s\n"
 msgstr ""
 
-#: plugins/check_snmp.c:1112
+#: plugins/check_snmp.c:1121
 msgid "Invalid seclevel"
 msgstr ""
 
-#: plugins/check_snmp.c:1158
+#: plugins/check_snmp.c:1167
 msgid "Invalid SNMP version"
 msgstr "Version de SNMP invalide"
 
-#: plugins/check_snmp.c:1175
+#: plugins/check_snmp.c:1184
 msgid "Unbalanced quotes\n"
 msgstr "Guillemets manquants\n"
 
-#: plugins/check_snmp.c:1224
+#: plugins/check_snmp.c:1233
 msgid "Check status of remote machines and obtain system information via SNMP"
 msgstr ""
 "Vérifie l'état des machines distantes et obtient l'information système via "
 "SNMP"
 
-#: plugins/check_snmp.c:1238
+#: plugins/check_snmp.c:1247
 msgid "Use SNMP GETNEXT instead of SNMP GET"
 msgstr "Utiliser SNMP GETNEXT au lieu de SNMP GET"
 
-#: plugins/check_snmp.c:1240
+#: plugins/check_snmp.c:1249
 msgid "SNMP protocol version"
 msgstr "Version du protocole SNMP"
 
-#: plugins/check_snmp.c:1242
+#: plugins/check_snmp.c:1251
 #, fuzzy
 msgid "SNMPv3 context"
 msgstr "Nom d'utilisateur SNMPv3"
 
-#: plugins/check_snmp.c:1244
+#: plugins/check_snmp.c:1253
 msgid "SNMPv3 securityLevel"
 msgstr "Niveau de sécurité SNMPv3 (securityLevel)"
 
-#: plugins/check_snmp.c:1246
+#: plugins/check_snmp.c:1255
 msgid "SNMPv3 auth proto"
 msgstr "Protocole d'authentification SNMPv3"
 
-#: plugins/check_snmp.c:1248
+#: plugins/check_snmp.c:1257
 msgid "SNMPv3 priv proto (default DES)"
 msgstr ""
 
-#: plugins/check_snmp.c:1252
+#: plugins/check_snmp.c:1261
 msgid "Optional community string for SNMP communication"
 msgstr "Communauté optionnelle pour la communication SNMP"
 
-#: plugins/check_snmp.c:1253
+#: plugins/check_snmp.c:1262
 msgid "default is"
 msgstr "défaut:"
 
-#: plugins/check_snmp.c:1255
+#: plugins/check_snmp.c:1264
 msgid "SNMPv3 username"
 msgstr "Nom d'utilisateur SNMPv3"
 
-#: plugins/check_snmp.c:1257
+#: plugins/check_snmp.c:1266
 msgid "SNMPv3 authentication password"
 msgstr "Mot de passe d'authentification SNMPv3"
 
-#: plugins/check_snmp.c:1259
+#: plugins/check_snmp.c:1268
 msgid "SNMPv3 privacy password"
 msgstr "Mot de passe de confidentialité SNMPv3"
 
-#: plugins/check_snmp.c:1263
+#: plugins/check_snmp.c:1272
 msgid "Object identifier(s) or SNMP variables whose value you wish to query"
 msgstr ""
 
-#: plugins/check_snmp.c:1265
+#: plugins/check_snmp.c:1274
 msgid ""
 "List of MIBS to be loaded (default = none if using numeric OIDs or 'ALL'"
 msgstr ""
 
-#: plugins/check_snmp.c:1266
+#: plugins/check_snmp.c:1275
 msgid "for symbolic OIDs.)"
 msgstr ""
 
-#: plugins/check_snmp.c:1268
+#: plugins/check_snmp.c:1277
 msgid "Delimiter to use when parsing returned data. Default is"
 msgstr ""
 
-#: plugins/check_snmp.c:1269
+#: plugins/check_snmp.c:1278
 msgid "Any data on the right hand side of the delimiter is considered"
 msgstr ""
 
-#: plugins/check_snmp.c:1270
+#: plugins/check_snmp.c:1279
 msgid "to be the data that should be used in the evaluation."
 msgstr ""
 
-#: plugins/check_snmp.c:1274
+#: plugins/check_snmp.c:1283
 msgid "Warning threshold range(s)"
 msgstr "Valeurs pour le seuil d'avertissement"
 
-#: plugins/check_snmp.c:1276
+#: plugins/check_snmp.c:1285
 msgid "Critical threshold range(s)"
 msgstr "Valeurs pour le seuil critique"
 
-#: plugins/check_snmp.c:1278
+#: plugins/check_snmp.c:1287
 msgid "Enable rate calculation. See 'Rate Calculation' below"
 msgstr ""
 
-#: plugins/check_snmp.c:1280
+#: plugins/check_snmp.c:1289
 msgid ""
 "Converts rate per second. For example, set to 60 to convert to per minute"
 msgstr ""
 
-#: plugins/check_snmp.c:1282
+#: plugins/check_snmp.c:1291
 msgid "Add/subtract the specified OFFSET to numeric sensor data"
 msgstr ""
 
-#: plugins/check_snmp.c:1286
+#: plugins/check_snmp.c:1293
+msgid "Multiply the numeric sensor data by MULTIPLIER before doing comparisons"
+msgstr ""
+
+#: plugins/check_snmp.c:1297
 msgid "Return OK state (for that OID) if STRING is an exact match"
 msgstr ""
 
-#: plugins/check_snmp.c:1288
+#: plugins/check_snmp.c:1299
 msgid ""
 "Return OK state (for that OID) if extended regular expression REGEX matches"
 msgstr ""
 
-#: plugins/check_snmp.c:1290
+#: plugins/check_snmp.c:1301
 msgid ""
 "Return OK state (for that OID) if case-insensitive extended REGEX matches"
 msgstr ""
 
-#: plugins/check_snmp.c:1292
+#: plugins/check_snmp.c:1303
 msgid "Invert search result (CRITICAL if found)"
 msgstr ""
 
-#: plugins/check_snmp.c:1296
+#: plugins/check_snmp.c:1307
 msgid "Prefix label for output from plugin"
 msgstr ""
 
-#: plugins/check_snmp.c:1298
+#: plugins/check_snmp.c:1309
 msgid "Units label(s) for output data (e.g., 'sec.')."
 msgstr ""
 
-#: plugins/check_snmp.c:1300
+#: plugins/check_snmp.c:1311
 msgid "Separates output on multiple OID requests"
 msgstr ""
 
-#: plugins/check_snmp.c:1304
+#: plugins/check_snmp.c:1315
 msgid "Number of retries to be used in the requests"
 msgstr "Le nombre d'essai pour les requêtes"
 
-#: plugins/check_snmp.c:1307
+#: plugins/check_snmp.c:1318
 msgid "Label performance data with OIDs instead of --label's"
 msgstr ""
 
-#: plugins/check_snmp.c:1309
+#: plugins/check_snmp.c:1320
 msgid "Enable strict mode: arguments to -o will be checked against the OID"
 msgstr ""
 
-#: plugins/check_snmp.c:1310
+#: plugins/check_snmp.c:1321
 msgid "returned by snmpget. If they don't match, the plugin returns UNKNOWN."
 msgstr ""
 
-#: plugins/check_snmp.c:1315
+#: plugins/check_snmp.c:1326
 msgid ""
 "This plugin uses the 'snmpget' command included with the NET-SNMP package."
 msgstr ""
 
-#: plugins/check_snmp.c:1316
+#: plugins/check_snmp.c:1327
 msgid ""
 "if you don't have the package installed, you will need to download it from"
 msgstr ""
 "Si vous n'avez pas le programme installé, vous devrez le télécharger depuis"
 
-#: plugins/check_snmp.c:1317
+#: plugins/check_snmp.c:1328
 msgid "http://net-snmp.sourceforge.net before you can use this plugin."
 msgstr "http://net-snmp.sourceforge.net avant de pouvoir utiliser ce plugin."
 
-#: plugins/check_snmp.c:1321
+#: plugins/check_snmp.c:1332
 #, fuzzy
 msgid ""
 "- Multiple OIDs (and labels) may be indicated by a comma or space-delimited  "
 msgstr ""
 "- Des OIDs multiples peuvent être séparées par des virgules ou des espaces"
 
-#: plugins/check_snmp.c:1322
+#: plugins/check_snmp.c:1333
 #, fuzzy
 msgid "list (lists with internal spaces must be quoted)."
 msgstr "(Les liste avec espaces doivent être entre guillemets). Max:"
 
-#: plugins/check_snmp.c:1326
+#: plugins/check_snmp.c:1337
 msgid ""
 "- When checking multiple OIDs, separate ranges by commas like '-w "
 "1:10,1:,:20'"
 msgstr ""
 
-#: plugins/check_snmp.c:1327
+#: plugins/check_snmp.c:1338
 msgid "- Note that only one string and one regex may be checked at present"
 msgstr ""
 
-#: plugins/check_snmp.c:1328
+#: plugins/check_snmp.c:1339
 msgid ""
 "- All evaluation methods other than PR, STR, and SUBSTR expect that the value"
 msgstr ""
 
-#: plugins/check_snmp.c:1329
+#: plugins/check_snmp.c:1340
 msgid "returned from the SNMP query is an unsigned integer."
 msgstr ""
 
-#: plugins/check_snmp.c:1332
+#: plugins/check_snmp.c:1343
 msgid "Rate Calculation:"
 msgstr ""
 
-#: plugins/check_snmp.c:1333
+#: plugins/check_snmp.c:1344
 msgid "In many places, SNMP returns counters that are only meaningful when"
 msgstr ""
 
-#: plugins/check_snmp.c:1334
+#: plugins/check_snmp.c:1345
 msgid "calculating the counter difference since the last check. check_snmp"
 msgstr ""
 
-#: plugins/check_snmp.c:1335
+#: plugins/check_snmp.c:1346
 msgid "saves the last state information in a file so that the rate per second"
 msgstr ""
 
-#: plugins/check_snmp.c:1336
+#: plugins/check_snmp.c:1347
 msgid "can be calculated. Use the --rate option to save state information."
 msgstr ""
 
-#: plugins/check_snmp.c:1337
+#: plugins/check_snmp.c:1348
 msgid ""
 "On the first run, there will be no prior state - this will return with OK."
 msgstr ""
 
-#: plugins/check_snmp.c:1338
+#: plugins/check_snmp.c:1349
 msgid "The state is uniquely determined by the arguments to the plugin, so"
 msgstr ""
 
-#: plugins/check_snmp.c:1339
+#: plugins/check_snmp.c:1350
 msgid "changing the arguments will create a new state file."
 msgstr ""
 
@@ -6090,11 +6099,7 @@ msgstr ""
 msgid "Output suitable for Nagios"
 msgstr ""
 
-#: plugins/negate.c:98
-msgid "No data returned from command\n"
-msgstr "Pas de données reçues de la commande\n"
-
-#: plugins/negate.c:165 plugins/utils.c:222
+#: plugins/negate.c:158 plugins/utils.c:222
 msgid ""
 "Timeout result must be a valid state name (OK, WARNING, CRITICAL, UNKNOWN) "
 "or integer (0-3)."
@@ -6102,7 +6107,7 @@ msgstr ""
 "Le résultat de temps dépassé doit être un nom d'état valide (OK, WARNING, "
 "CRITICAL, UNKNOWN) ou un nombre entier (0-3)."
 
-#: plugins/negate.c:169
+#: plugins/negate.c:162
 msgid ""
 "Ok must be a valid state name (OK, WARNING, CRITICAL, UNKNOWN) or integer "
 "(0-3)."
@@ -6110,7 +6115,7 @@ msgstr ""
 "Ok doit être un nom d'état valide (OK, WARNING, CRITICAL, UNKNOWN) ou un "
 "nombre entier (0-3)."
 
-#: plugins/negate.c:175
+#: plugins/negate.c:168
 msgid ""
 "Warning must be a valid state name (OK, WARNING, CRITICAL, UNKNOWN) or "
 "integer (0-3)."
@@ -6118,7 +6123,7 @@ msgstr ""
 "Warning doit être un nom d'état valide (OK, WARNING, CRITICAL, UNKNOWN) ou "
 "un nombre entier (0-3)."
 
-#: plugins/negate.c:180
+#: plugins/negate.c:173
 msgid ""
 "Critical must be a valid state name (OK, WARNING, CRITICAL, UNKNOWN) or "
 "integer (0-3)."
@@ -6126,7 +6131,7 @@ msgstr ""
 "Critical doit être un nom d'état valide (OK, WARNING, CRITICAL, UNKNOWN) ou "
 "un nombre entier (0-3)."
 
-#: plugins/negate.c:185
+#: plugins/negate.c:178
 msgid ""
 "Unknown must be a valid state name (OK, WARNING, CRITICAL, UNKNOWN) or "
 "integer (0-3)."
@@ -6134,33 +6139,33 @@ msgstr ""
 "Unknown doit être un nom d'état valide (OK, WARNING, CRITICAL, UNKNOWN) ou "
 "un nombre entier (0-3)."
 
-#: plugins/negate.c:212
+#: plugins/negate.c:205
 msgid "Require path to command"
 msgstr "Chemin vers la commande requis"
 
-#: plugins/negate.c:223
+#: plugins/negate.c:216
 msgid ""
 "Negates the status of a plugin (returns OK for CRITICAL and vice-versa)."
 msgstr ""
 "Inverse le statut d'un plugin (retourne OK pour CRITIQUE et vice-versa)."
 
-#: plugins/negate.c:224
+#: plugins/negate.c:217
 msgid "Additional switches can be used to control which state becomes what."
 msgstr ""
 "Des options additionnelles peuvent être utilisées pour contrôler quel état "
 "devient quoi."
 
-#: plugins/negate.c:233
+#: plugins/negate.c:226
 msgid "Keep timeout longer than the plugin timeout to retain CRITICAL status."
 msgstr ""
 "Utilisez un délai de réponse plus long que celui du plugin afin de conserver "
 "les résultats CRITIQUE"
 
-#: plugins/negate.c:235
+#: plugins/negate.c:228
 msgid "Custom result on Negate timeouts; see below for STATUS definition\n"
 msgstr ""
 
-#: plugins/negate.c:241
+#: plugins/negate.c:234
 #, c-format
 msgid ""
 "    STATUS can be 'OK', 'WARNING', 'CRITICAL' or 'UNKNOWN' without single\n"
@@ -6168,63 +6173,63 @@ msgstr ""
 "    STATUS peut être 'OK', 'WARNING', 'CRITICAL' ou 'UNKNOWN' sans les "
 "simple\n"
 
-#: plugins/negate.c:242
+#: plugins/negate.c:235
 #, c-format
 msgid ""
 "    quotes. Numeric values are accepted. If nothing is specified, permutes\n"
 msgstr "    quotes. Les valeurs numériques sont acceptées. Si rien n'est\n"
 
-#: plugins/negate.c:243
+#: plugins/negate.c:236
 #, c-format
 msgid "    OK and CRITICAL.\n"
 msgstr "    spécifié, inverse OK et CRITIQUE.\n"
 
-#: plugins/negate.c:245
+#: plugins/negate.c:238
 #, c-format
 msgid ""
 "    Substitute output text as well. Will only substitute text in CAPITALS\n"
 msgstr ""
 
-#: plugins/negate.c:250
+#: plugins/negate.c:243
 msgid "Run check_ping and invert result. Must use full path to plugin"
 msgstr ""
 "Execute check_ping et inverse le résultat. Le chemin complet du plug-in doit "
 "être spécifié"
 
-#: plugins/negate.c:252
+#: plugins/negate.c:245
 msgid "This will return OK instead of WARNING and UNKNOWN instead of CRITICAL"
 msgstr ""
 "Ceci retournera OK au lieu de AVERTISSEMENT et INCONNU au lieu de CRITIQUE"
 
-#: plugins/negate.c:255
+#: plugins/negate.c:248
 msgid ""
 "This plugin is a wrapper to take the output of another plugin and invert it."
 msgstr ""
 "Ce plugin est un adaptateur qui prends l'état d'un autre plug-in et "
 "l'inverse."
 
-#: plugins/negate.c:256
+#: plugins/negate.c:249
 msgid "The full path of the plugin must be provided."
 msgstr "Le chemin complet du plugin doit être spécifié."
 
-#: plugins/negate.c:257
+#: plugins/negate.c:250
 msgid "If the wrapped plugin returns OK, the wrapper will return CRITICAL."
 msgstr "Si le plugin executé retourne OK, l'adaptateur retournera CRITIQUE."
 
-#: plugins/negate.c:258
+#: plugins/negate.c:251
 msgid "If the wrapped plugin returns CRITICAL, the wrapper will return OK."
 msgstr "Si le plugin executé retourne CRITIQUE, l'adaptateur retournera OK."
 
-#: plugins/negate.c:259
+#: plugins/negate.c:252
 msgid "Otherwise, the output state of the wrapped plugin is unchanged."
 msgstr "Autrement, l'état du plugin executé reste inchangé."
 
-#: plugins/negate.c:261
+#: plugins/negate.c:254
 msgid ""
 "Using timeout-result, it is possible to override the timeout behaviour or a"
 msgstr ""
 
-#: plugins/negate.c:262
+#: plugins/negate.c:255
 msgid "plugin by setting the negate timeout a bit lower."
 msgstr ""
 
@@ -6341,7 +6346,7 @@ msgstr "La fonction malloc à échoué dans strscat\n"
 msgid "failed malloc in xvasprintf\n"
 msgstr "La fonction malloc à échoué dans strscat\n"
 
-#: plugins/utils.h:131
+#: plugins/utils.h:133
 #, c-format
 msgid ""
 "       %s (-h | --help) for detailed help\n"
@@ -6350,7 +6355,7 @@ msgstr ""
 "       %s (-h | --help) pour l'aide détaillée\n"
 "       %s (-V | --version) pour les informations relative à la version\n"
 
-#: plugins/utils.h:135
+#: plugins/utils.h:137
 msgid ""
 "\n"
 "Options:\n"
@@ -6366,7 +6371,7 @@ msgstr ""
 " -V, --version\n"
 "    Afficher les informations relative à la version\n"
 
-#: plugins/utils.h:142
+#: plugins/utils.h:144
 #, c-format
 msgid ""
 " -H, --hostname=ADDRESS\n"
@@ -6379,7 +6384,7 @@ msgstr ""
 " -%c, --port=INTEGER\n"
 "    Numéro de port (défaut: %s)\n"
 
-#: plugins/utils.h:148
+#: plugins/utils.h:150
 msgid ""
 " -4, --use-ipv4\n"
 "    Use IPv4 connection\n"
@@ -6391,7 +6396,7 @@ msgstr ""
 " -6, --use-ipv6\n"
 "    Utiliser une connection IPv6\n"
 
-#: plugins/utils.h:154
+#: plugins/utils.h:156
 msgid ""
 " -v, --verbose\n"
 "    Show details for command-line debugging (Nagios may truncate output)\n"
@@ -6400,7 +6405,7 @@ msgstr ""
 "    Affiche les informations de déboguage en ligne de commande (Nagios peut "
 "tronquer la sortie)\n"
 
-#: plugins/utils.h:158
+#: plugins/utils.h:160
 msgid ""
 " -w, --warning=DOUBLE\n"
 "    Response time to result in warning status (seconds)\n"
@@ -6412,7 +6417,7 @@ msgstr ""
 " -c, --critical=DOUBLE\n"
 "    Temps de réponse résultant en un état critique (secondes)\n"
 
-#: plugins/utils.h:164
+#: plugins/utils.h:166
 msgid ""
 " -w, --warning=RANGE\n"
 "    Warning range (format: start:end). Alert if outside this range\n"
@@ -6425,7 +6430,7 @@ msgstr ""
 " -c, --critical=RANGE\n"
 "    Seuil critique\n"
 
-#: plugins/utils.h:170
+#: plugins/utils.h:172
 #, fuzzy, c-format
 msgid ""
 " -t, --timeout=INTEGER:<timeout state>\n"
@@ -6436,7 +6441,7 @@ msgstr ""
 " -t, --timeout=INTEGER\n"
 "    Délais de connection en secondes (défaut: %d)\n"
 
-#: plugins/utils.h:175
+#: plugins/utils.h:177
 #, fuzzy, c-format
 msgid ""
 " -t, --timeout=INTEGER\n"
@@ -6445,7 +6450,7 @@ msgstr ""
 " -t, --timeout=INTEGER\n"
 "    Délais de connection en secondes (défaut: %d)\n"
 
-#: plugins/utils.h:180
+#: plugins/utils.h:182
 #, fuzzy
 msgid ""
 " --extra-opts=[section][@file]\n"
@@ -6458,7 +6463,7 @@ msgstr ""
 "opts\n"
 "    pour les instructions et examples.\n"
 
-#: plugins/utils.h:189
+#: plugins/utils.h:191
 #, fuzzy
 msgid ""
 " See:\n"
@@ -6469,7 +6474,7 @@ msgstr ""
 " https://www.nagios-plugins.org/doc/guidelines.html.html#THRESHOLDFORMAT\n"
 " pour le format et examples des seuils (THRESHOLD).\n"
 
-#: plugins/utils.h:194
+#: plugins/utils.h:196
 msgid ""
 "\n"
 "Send email to help@nagios-plugins.org if you have questions regarding use\n"
@@ -6484,7 +6489,7 @@ msgstr ""
 "améliorations, envoyez un email à devel@nagios-plugins.org\n"
 "\n"
 
-#: plugins/utils.h:199
+#: plugins/utils.h:201
 msgid ""
 "\n"
 "The nagios plugins come with ABSOLUTELY NO WARRANTY. You may redistribute\n"
@@ -6850,137 +6855,146 @@ msgstr ""
 msgid "Unicast testing: mimic a DHCP relay, requires -s"
 msgstr ""
 
-#: plugins-root/check_icmp.c:2034
+#: plugins-root/check_icmp.c:2079
 msgid "warning threshold (currently "
 msgstr "Valeurs pour le seuil d'avertissement (actuellement "
 
-#: plugins-root/check_icmp.c:2037
+#: plugins-root/check_icmp.c:2082
 msgid "critical threshold (currently "
 msgstr "Valeurs pour le seuil critique (actuellement "
 
-#: plugins-root/check_icmp.c:2040
+#: plugins-root/check_icmp.c:2085
 msgid ""
 "RTA, round trip average,  mode  warning,critical, ex. 100ms,200ms unit in ms"
 msgstr ""
 
-#: plugins-root/check_icmp.c:2043
+#: plugins-root/check_icmp.c:2088
 msgid "packet loss mode, ex. 40%,50% , unit in %"
 msgstr ""
 
-#: plugins-root/check_icmp.c:2047
+#: plugins-root/check_icmp.c:2092
 msgid "jitter mode  warning,critical, ex. 40.000ms,50.000ms , unit in ms "
 msgstr ""
 
-#: plugins-root/check_icmp.c:2050
+#: plugins-root/check_icmp.c:2095
 msgid "MOS mode, between 0 and 4.4  warning,critical, ex. 3.5,3.0"
 msgstr ""
 
-#: plugins-root/check_icmp.c:2053
+#: plugins-root/check_icmp.c:2098
 msgid "score  mode, max value 100  warning,critical, ex. 80,70 "
 msgstr ""
 
-#: plugins-root/check_icmp.c:2055
+#: plugins-root/check_icmp.c:2100
 msgid "detect out of order ICMP packts "
 msgstr ""
 
-#: plugins-root/check_icmp.c:2057
+#: plugins-root/check_icmp.c:2102
 msgid "target address(es) are IPv4 and packets are ICMPv4"
 msgstr ""
 
-#: plugins-root/check_icmp.c:2059
+#: plugins-root/check_icmp.c:2104
 msgid "target address(es) are IPv6 and packets are ICMPv6"
 msgstr ""
 
-#: plugins-root/check_icmp.c:2061
+#: plugins-root/check_icmp.c:2106
 msgid "specify a target"
 msgstr ""
 
-#: plugins-root/check_icmp.c:2063
+#: plugins-root/check_icmp.c:2108
 msgid "specify a source IP address or device name"
 msgstr "spécifiez une adresse ou un nom d'hôte"
 
-#: plugins-root/check_icmp.c:2065 plugins-root/check_icmp.c:2068
+#: plugins-root/check_icmp.c:2110 plugins-root/check_icmp.c:2113
 msgid "number of packets to send (currently "
 msgstr "nombre de paquets à envoyer (actuellement "
 
-#: plugins-root/check_icmp.c:2071
+#: plugins-root/check_icmp.c:2116
 msgid "max packet interval (currently "
 msgstr ""
 
-#: plugins-root/check_icmp.c:2074
+#: plugins-root/check_icmp.c:2119
 msgid "max target interval (currently "
 msgstr ""
 
-#: plugins-root/check_icmp.c:2077
+#: plugins-root/check_icmp.c:2122
 msgid "number of alive hosts required for success"
 msgstr "nombre d'hôtes vivants requis pour réussite"
 
-#: plugins-root/check_icmp.c:2080
+#: plugins-root/check_icmp.c:2125
 msgid "TTL on outgoing packets (currently "
 msgstr ""
 
-#: plugins-root/check_icmp.c:2083
+#: plugins-root/check_icmp.c:2128
 msgid "timeout value (seconds, currently  "
 msgstr ""
 
-#: plugins-root/check_icmp.c:2086
+#: plugins-root/check_icmp.c:2131
 msgid "Number of icmp data bytes to send"
 msgstr "Nombre de paquets ICMP à envoyer"
 
-#: plugins-root/check_icmp.c:2088
+#: plugins-root/check_icmp.c:2133
 msgid "Packet size will be data bytes + icmp header (currently"
 msgstr ""
 
-#: plugins-root/check_icmp.c:2091
+#: plugins-root/check_icmp.c:2136
+msgid "separator for perfdata instance"
+msgstr ""
+
+#: plugins-root/check_icmp.c:2138
+msgid "number of instances to output perfdata for"
+msgstr ""
+
+#: plugins-root/check_icmp.c:2140
 msgid "verbose"
 msgstr ""
 
-#: plugins-root/check_icmp.c:2094
+#: plugins-root/check_icmp.c:2143
 msgid ""
 "If not mode R,P,J,M,S or O is informed, default icmp behavior, RTA and "
 "packet loss"
 msgstr ""
 
-#: plugins-root/check_icmp.c:2097
+#: plugins-root/check_icmp.c:2146
 msgid "The -H switch is optional. Naming a host (or several) to check is not."
 msgstr ""
 
-#: plugins-root/check_icmp.c:2100
+#: plugins-root/check_icmp.c:2149
 msgid ""
 "When defining multiple addresses they must be provided as the last argument."
 msgstr ""
 
-#: plugins-root/check_icmp.c:2103
+#: plugins-root/check_icmp.c:2152
 msgid ""
 "Threshold format for -w and -c is 200.25,60% for 200.25 msec RTA and 60%"
 msgstr ""
 
-#: plugins-root/check_icmp.c:2107
+#: plugins-root/check_icmp.c:2156
 msgid "packet loss.  The default values should work well for most users."
 msgstr ""
 
-#: plugins-root/check_icmp.c:2108
+#: plugins-root/check_icmp.c:2157
 msgid ""
 "You can specify different RTA factors using the standardized abbreviations"
 msgstr ""
 
-#: plugins-root/check_icmp.c:2110
+#: plugins-root/check_icmp.c:2159
 msgid ""
 "us (microseconds), ms (milliseconds, default) or just plain s for seconds."
 msgstr ""
 
-#: plugins-root/check_icmp.c:2118
+#: plugins-root/check_icmp.c:2167
 msgid "The -v switch can be specified several times for increased verbosity."
 msgstr ""
 
-#, c-format
+#~ msgid "No data returned from command\n"
+#~ msgstr "Pas de données reçues de la commande\n"
+
 #~ msgid "Timeout interval must be a positive integer - %s"
 #~ msgstr "Le délai d'attente doit être un entier positif - %s"
 
 #~ msgid "Path or partition (may be repeated)"
 #~ msgstr "Répertoire ou partition (peut être utilisé plusieurs fois)"
 
-#, c-format
 #~ msgid "expected '%s' but got '%s'"
 #~ msgstr "j'attendais '%s' mais j'ai reçu '%s'"
 
@@ -6996,26 +7010,21 @@ msgstr ""
 #~ msgid "Warning Process Count must be an integer!"
 #~ msgstr "Avertissement Le total des processus doit être un nombre entier!"
 
-#, c-format
 #~ msgid "wmax (%d) cannot be greater than cmax (%d)\n"
 #~ msgstr "wmax (%d) ne peut pas être plus grand que cmax (%d)\n"
 
-#, c-format
 #~ msgid "wmin (%d) cannot be less than cmin (%d)\n"
 #~ msgstr "wmin (%d) ne peut pas être plus petit que cmin (%d)\n"
 
 #~ msgid "OIDs."
 #~ msgstr "OIDs."
 
-#, c-format
 #~ msgid "%s - Socket timeout after %d seconds\n"
 #~ msgstr "%s - Le socket n'a pas répondu dans les %d secondes\n"
 
-#, c-format
 #~ msgid "%s - Abnormal timeout after %d seconds\n"
 #~ msgstr "%s - Dépassement anormal du temps de réponse après %d secondes\n"
 
-#, c-format
 #~ msgid "CRITICAL - Plugin timed out after %d seconds\n"
 #~ msgstr "CRITIQUE - Le plugin n'as pas répondu dans les %d secondes\n"
 
@@ -7024,7 +7033,6 @@ msgstr ""
 #~ "CRITIQUE - le temps d'attente à été dépassé dans la fonction popen, mais "
 #~ "il n'y a pas de processus fils"
 
-#, c-format
 #~ msgid "%s - Plugin timed out after %d seconds\n"
 #~ msgstr "%s - Le plugin n'as pas répondu dans les %d secondes\n"
 
