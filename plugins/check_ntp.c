@@ -68,13 +68,31 @@ typedef struct {
 	uint8_t stratum;     /* clock stratum */
 	int8_t poll;         /* polling interval */
 	int8_t precision;    /* precision of the local clock */
-	int32_t rtdelay;     /* total rt delay, as a fixed point num. see macros */
-	uint32_t rtdisp;     /* like above, but for max err to primary src */
+	union {
+		int32_t rtdelay;     /* total rt delay, as a fixed point num. see macros */
+		struct {
+			uint16_t rtdelay_l16;
+			uint16_t rtdelay_r16;
+		};
+	};
+	union {
+		uint32_t rtdisp;     /* like above, but for max err to primary src */
+		struct {
+			uint16_t rtdisp_l16;
+			uint16_t rtdisp_r16;
+		};
+	};
 	uint32_t refid;      /* ref clock identifier */
 	uint64_t refts;      /* reference timestamp.  local time local clock */
 	uint64_t origts;     /* time at which request departed client */
 	uint64_t rxts;       /* time at which request arrived at server */
-	uint64_t txts;       /* time at which request departed server */
+	union {
+		uint64_t txts;       /* time at which request departed server */
+		struct {
+			uint32_t txts_l32;
+			uint32_t txts_r32;
+		};
+	};
 } ntp_message;
 
 /* this structure holds data about results from querying offset from a peer */
@@ -167,35 +185,68 @@ static int allow_zero_stratum = 0;
 /* ntp wants seconds since 1/1/00, epoch is 1/1/70.  this is the difference */
 #define EPOCHDIFF 0x83aa7e80UL
 
+/* extract double from 32-bit ntp fixed point number, without violating strict aliasing rules */
+double ntp32_to_double(uint32_t n) {
+	double result = 0;
+	if (n) {
+		uint16_t l16 = ntohs((uint16_t) (n & ((1<<16) - 1)));
+		uint16_t r16 = ntohs((uint16_t) (n >> 16));
+		result = l16 + ((double) r16/65536.0);
+	}
+	return result;
+}
 /* extract a 32-bit ntp fixed point number into a double */
-#define NTP32asDOUBLE(x) (ntohs(L16(x)) + (double)ntohs(R16(x))/65536.0)
+/* #define NTP32asDOUBLE(x) (ntohs(L16(x)) + (double)ntohs(R16(x))/65536.0)*/
+
+/* extract double from 64-bit ntp fixed point number, without violating strict aliasing rules */
+double ntp64_to_double(uint64_t n) {
+	double result = 0;
+	if (n) {
+		uint32_t l32 = ntohl((uint32_t) (n & ((1ul<<32) - 1)));
+		uint32_t r32 = ntohl((uint32_t) (n >> 32));
+		result = (l32 - EPOCHDIFF)
+		       + (.00000001*(0.5+(double)(r32/42.94967296)));
+	}
+	return result;
+}
 
 /* likewise for a 64-bit ntp fp number */
-#define NTP64asDOUBLE(n) (double)(((uint64_t)n)?\
-                         (ntohl(L32(n))-EPOCHDIFF) + \
-                         (.00000001*(0.5+(double)(ntohl(R32(n))/42.94967296))):\
-                         0)
+/* #define NTP64asDOUBLE(n) (double)(((uint64_t)n)?\
+                          (ntohl(L32(n))-EPOCHDIFF) + \
+                          (.00000001*(0.5+(double)(ntohl(R32(n))/42.94967296))):\
+                          0)*/
 
 /* convert a struct timeval to a double */
 #define TVasDOUBLE(x) (double)(x.tv_sec+(0.000001*x.tv_usec))
 
+struct timeval ntp64_to_tv(uint64_t n) {
+	struct timeval result = {};
+	if (n) {
+		uint32_t l32 = ntohl((uint32_t) (n & ((1ul<<32) - 1)));
+		uint32_t r32 = ntohl((uint32_t) (n >> 32));
+		result.tv_sec = l32 - EPOCHDIFF;
+		result.tv_usec = (int)(0.5+(double)(r32/4294.967296));
+	}
+	return result;
+}
+
 /* convert an ntp 64-bit fp number to a struct timeval */
-#define NTP64toTV(n,t) \
+/* #define NTP64toTV(n,t) \
 	do{ if(!n) t.tv_sec = t.tv_usec = 0; \
 	    else { \
 			t.tv_sec=ntohl(L32(n))-EPOCHDIFF; \
 			t.tv_usec=(int)(0.5+(double)(ntohl(R32(n))/4294.967296)); \
 		} \
-	}while(0)
+	}while(0) */
 
 /* convert a struct timeval to an ntp 64-bit fp number */
-#define TVtoNTP64(t,n) \
+/* #define TVtoNTP64(t,n) \
 	do{ if(!t.tv_usec && !t.tv_sec) n=0x0UL; \
 		else { \
 			L32(n)=htonl(t.tv_sec + EPOCHDIFF); \
 			R32(n)=htonl((uint64_t)((4294.967296*t.tv_usec)+.5)); \
 		} \
-	} while(0)
+	} while(0) */
 
 /* NTP control message header is 12 bytes, plus any data in the data
  * field, plus null padding to the nearest 32-bit boundary per rfc.
@@ -212,9 +263,9 @@ static int allow_zero_stratum = 0;
 /* calculate the offset of the local clock */
 static inline double calc_offset(const ntp_message *m, const struct timeval *t){
 	double client_tx, peer_rx, peer_tx, client_rx;
-	client_tx = NTP64asDOUBLE(m->origts);
-	peer_rx = NTP64asDOUBLE(m->rxts);
-	peer_tx = NTP64asDOUBLE(m->txts);
+	client_tx = ntp64_to_double(m->origts);
+	peer_rx = ntp64_to_double(m->rxts);
+	peer_tx = ntp64_to_double(m->txts);
 	client_rx=TVasDOUBLE((*t));
 	return (.5*((peer_tx-client_rx)+(peer_rx-client_tx)));
 }
@@ -223,10 +274,10 @@ static inline double calc_offset(const ntp_message *m, const struct timeval *t){
 void print_ntp_message(const ntp_message *p){
 	struct timeval ref, orig, rx, tx;
 
-	NTP64toTV(p->refts,ref);
-	NTP64toTV(p->origts,orig);
-	NTP64toTV(p->rxts,rx);
-	NTP64toTV(p->txts,tx);
+	ref = ntp64_to_tv(p->refts);
+	orig = ntp64_to_tv(p->origts);
+	rx = ntp64_to_tv(p->rxts);
+	tx = ntp64_to_tv(p->txts);
 
 	printf("packet contents:\n");
 	printf("\tflags: 0x%.2x\n", p->flags);
@@ -236,13 +287,13 @@ void print_ntp_message(const ntp_message *p){
 	printf("\tstratum = %d\n", p->stratum);
 	printf("\tpoll = %g\n", pow(2, p->poll));
 	printf("\tprecision = %g\n", pow(2, p->precision));
-	printf("\trtdelay = %-.16g\n", NTP32asDOUBLE(p->rtdelay));
-	printf("\trtdisp = %-.16g\n", NTP32asDOUBLE(p->rtdisp));
+	printf("\trtdelay = %-.16g\n", ntp32_to_double(p->rtdelay));
+	printf("\trtdisp = %-.16g\n", ntp32_to_double(p->rtdisp));
 	printf("\trefid = %x\n", p->refid);
-	printf("\trefts = %-.16g\n", NTP64asDOUBLE(p->refts));
-	printf("\torigts = %-.16g\n", NTP64asDOUBLE(p->origts));
-	printf("\trxts = %-.16g\n", NTP64asDOUBLE(p->rxts));
-	printf("\ttxts = %-.16g\n", NTP64asDOUBLE(p->txts));
+	printf("\trefts = %-.16g\n", ntp64_to_double(p->refts));
+	printf("\torigts = %-.16g\n", ntp64_to_double(p->origts));
+	printf("\trxts = %-.16g\n", ntp64_to_double(p->rxts));
+	printf("\ttxts = %-.16g\n", ntp64_to_double(p->txts));
 }
 
 void print_ntp_control_message(const ntp_control_message *p){
@@ -290,11 +341,17 @@ void setup_request(ntp_message *p){
 	MODE_SET(p->flags, MODE_CLIENT);
 	p->poll=4;
 	p->precision=(int8_t)0xfa;
-	L16(p->rtdelay)=htons(1);
-	L16(p->rtdisp)=htons(1);
+	p->rtdelay_l16=htons(1);
+	p->rtdisp_l16=htons(1);
 
 	gettimeofday(&t, NULL);
-	TVtoNTP64(t,p->txts);
+
+	/* This used to use TVtoNTP64 but we ran into issues with strict aliasing/type punning.
+	 * We only used the macro in one place, so it's inlined now */
+	if (t.tv_usec || t.tv_sec) {
+		p->txts_l32 = htonl(t.tv_sec + EPOCHDIFF);
+		p->txts_r32 = htonl((uint64_t) ((4294.967296*t.tv_usec)+.5));
+	}
 }
 
 /* select the "best" server from a list of servers, and return its index.
@@ -464,8 +521,8 @@ double offset_request(const char *host, int *status){
 					printf("offset %.10g\n", servers[i].offset[respnum]);
 				}
 				servers[i].stratum=req[i].stratum;
-				servers[i].rtdisp=NTP32asDOUBLE(req[i].rtdisp);
-				servers[i].rtdelay=NTP32asDOUBLE(req[i].rtdelay);
+				servers[i].rtdisp=ntp32_to_double(req[i].rtdisp);
+				servers[i].rtdelay=ntp32_to_double(req[i].rtdelay);
 				servers[i].waiting--;
 				servers[i].flags=req[i].flags;
 				servers_readable--;

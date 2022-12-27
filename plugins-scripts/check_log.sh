@@ -18,7 +18,7 @@
 # On the first run of the plugin, it will return an OK state with a message
 # of "Log check data initialized".  On successive runs, it will return an OK
 # state if *no* pattern matches have been found in the *difference* between the
-# log file and the older copy of the log file.  If the plugin detects any 
+# log file and the older copy of the log file.  If the plugin detects any
 # pattern matches in the log diff, it will return a CRITICAL state and print
 # out a message is the following format: "(x) last_match", where "x" is the
 # total number of pattern matches found in the file and "last_match" is the
@@ -162,6 +162,10 @@ while test -n "$1"; do
             exitstatus=$2
             shift
             ;;
+		-t)
+			TMPDIR=$2
+			shift
+			;;
         *)
             echo "Unknown argument: $1"
             print_usage
@@ -191,6 +195,25 @@ elif [ ! -r "$logfile" ] ; then
     exit "$STATE_UNKNOWN"
 fi
 
+# Only use /tmp as a fallback if $TMPDIR doesn't exist
+if [ ! -d "$TMPDIR" ];then
+	TMPDIR="/tmp"
+fi
+echo "$TMPDIR"
+
+# Copy the logfile to a temporary file, to prevent diff from
+# never finishing when $logfile continues to be written to
+# during the diff
+templog="${TMPDIR}/temp_check_log.tmp"
+if [ -x /bin/mktemp ]; then
+    templog=$(/bin/mktemp "${TMPDIR}/temp_check_log.XXXXXXXXXX")
+else
+    templog=$(/bin/date '+%H%M%S')
+    templog="${TMPDIR}/temp_check_log.${templog}"
+fi
+cp "$logfile" "$templog"
+logfile=$templog
+
 # If the old log file doesn't exist, this must be the first time
 # we're running this test, so copy the original log file over to
 # the old diff file and exit
@@ -206,10 +229,10 @@ fi
 # The temporary file that the script should use while
 # processing the log file.
 if [ -x /bin/mktemp ]; then
-    tempdiff=$(/bin/mktemp /tmp/check_log.XXXXXXXXXX)
+    tempdiff=$(/bin/mktemp "${TMPDIR}/check_log.XXXXXXXXXX")
 else
     tempdiff=$(/bin/date '+%H%M%S')
-    tempdiff="/tmp/check_log.${tempdiff}"
+    tempdiff="${TMPDIR}/check_log.${tempdiff}"
     touch "$tempdiff"
     chmod 600 "$tempdiff"
 fi
