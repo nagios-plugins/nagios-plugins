@@ -2,7 +2,8 @@ This file documents the major additions and syntax changes between releases.
 
 2.4.3 2022-01-??
 	FIXES
-	check_dig: improve matching logic when using -a (#652)
+	check_dig: Improve matching logic when using -a (#652)
+	check_mailq: Fix garbled output when checking postfix (#663)
 
 2.4.2 2022-11-08
 	FIXES
