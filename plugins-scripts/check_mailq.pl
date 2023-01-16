@@ -342,6 +342,8 @@ elsif ( $mailq eq "postfix" ) {
 
 
 	@lines = reverse <MAILQ>;
+	
+	close(MAILQ);
 
         if ( $? ) {
 		print "CRITICAL: Error code ".($?>>8)." returned from $utils::PATH_TO_MAILQ$mailq_args",$/;
