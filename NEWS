@@ -1,6 +1,6 @@
 This file documents the major additions and syntax changes between releases.
 
-2.4.3 2022-01-??
+2.4.3 2022-01-17
 	FIXES
 	check_dig: Improve matching logic when using -a (#652)
 	check_mailq: Fix garbled output when checking postfix (#663)
