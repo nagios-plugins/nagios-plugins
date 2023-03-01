@@ -19,10 +19,11 @@
 #
 
 require 5.004;
+eval { require utf8::all };
 use POSIX;
 use strict;
 use Getopt::Long;
-use vars qw($opt_P $opt_V $opt_h $opt_H $opt_k $opt_s $opt_W $opt_u $opt_p $opt_w $opt_c $opt_a $verbose);
+use vars qw($opt_P $opt_V $opt_m $opt_h $opt_H $opt_k $opt_s $opt_W $opt_u $opt_p $opt_w $opt_c $opt_a $opt_C $verbose);
 use vars qw($PROGNAME);
 use FindBin;
 use lib "$FindBin::Bin";
@@ -35,7 +36,7 @@ sub print_usage ();
 $PROGNAME = "check_disk_smb";
 
 $ENV{'PATH'}='@TRUSTED_PATH@';
-$ENV{'BASH_ENV'}=''; 
+$ENV{'BASH_ENV'}='';
 $ENV{'ENV'}='';
 
 Getopt::Long::Configure('bundling');
@@ -45,6 +46,7 @@ GetOptions
 	 "V"   => \$opt_V, "version"    => \$opt_V,
 	 "h"   => \$opt_h, "help"       => \$opt_h,
 	 "k"   => \$opt_k, "kerberos"   => \$opt_k,
+	 "m=s" => \$opt_m, "maxprotocol=s" => \$opt_m,
 	 "w=s" => \$opt_w, "warning=s"  => \$opt_w,
 	 "c=s" => \$opt_c, "critical=s" => \$opt_c,
 	 "p=s" => \$opt_p, "password=s" => \$opt_p,
@@ -52,7 +54,8 @@ GetOptions
 	 "s=s" => \$opt_s, "share=s"    => \$opt_s,
 	 "W=s" => \$opt_W, "workgroup=s" => \$opt_W,
 	 "H=s" => \$opt_H, "hostname=s" => \$opt_H,
-	 "a=s" => \$opt_a, "address=s" => \$opt_a);
+	 "a=s" => \$opt_a, "address=s" => \$opt_a,
+	 "C=s" => \$opt_C, "configfile=s" => \$opt_C);
 
 if ($opt_V) {
 	print_revision($PROGNAME,'@NP_VERSION@'); #'
@@ -68,19 +71,22 @@ $smbclient    || usage("check requires smbclient, smbclient not set\n");
 # Options checking
 
 ($opt_H) || ($opt_H = shift @ARGV) || usage("Host name not specified\n");
-my $host = $1 if ($opt_H =~ /^([-_.A-Za-z0-9 ]+\$?)$/);
+my $host = $1 if ($opt_H =~ /^([^":|<>\*\?\\\/]+)$/);
 ($host) || usage("Invalid host: $opt_H\n");
 
 ($opt_s) || ($opt_s = shift @ARGV) || usage("Share volume not specified\n");
-my $share = $1 if ($opt_s =~ /^([-_.A-Za-z0-9 ]+\$?)$/);
+my $share = $1 if ($opt_s =~ /^([^":|<>\*\?\\\/]+\$?)$/);
 ($share) || usage("Invalid share: $opt_s\n");
 
 defined($opt_u) || ($opt_u = shift @ARGV) || ($opt_u = "guest");
-my $user = $1 if ($opt_u =~ /^([-_.A-Za-z0-9\\]*)$/);
+my $user = $1 if ($opt_u =~ /^([^":|<>\*\?\/(?<!\)]+)$/);
 defined($user) || usage("Invalid user: $opt_u\n");
 
 defined($opt_p) || ($opt_p = shift @ARGV) || ($opt_p = "");
 my $pass = $1 if ($opt_p =~ /(.*)/);
+
+defined($opt_m) || ($opt_m = shift @ARGV) || ($opt_m = "");
+my $maxprotocol = $1 if ($opt_m =~ /(.*)/);
 
 ($opt_w) || ($opt_w = shift @ARGV) || ($opt_w = 85);
 my $warn = $1 if ($opt_w =~ /^([0-9]{1,2}\%?|100\%?|[0-9]+[kMG])$/);
@@ -89,6 +95,10 @@ my $warn = $1 if ($opt_w =~ /^([0-9]{1,2}\%?|100\%?|[0-9]+[kMG])$/);
 ($opt_c) || ($opt_c = shift @ARGV) || ($opt_c = 95);
 my $crit = $1 if ($opt_c =~ /^([0-9]{1,2}\%?|100\%?|[0-9]+[kMG])$/);
 ($crit) || usage("Invalid critical threshold: $opt_c\n");
+
+($opt_C) || ($opt_C = shift @ARGV) || ($opt_C = "");
+my $configfile = $opt_C if ($opt_C);
+usage("Unable to read config file $configfile\n") if ($configfile) && (! -r $configfile);
 
 # Execute the given command line and return anything it writes to STDOUT and/or
 # STDERR.  (This might be useful for other plugins, too, so it should possibly
@@ -175,7 +185,7 @@ my $perfdata = "";
 my @lines = undef;
 
 # Just in case of problems, let's not hang Nagios
-$SIG{'ALRM'} = sub { 
+$SIG{'ALRM'} = sub {
 	print "No Answer from Client\n";
 	exit $ERRORS{"UNKNOWN"};
 };
@@ -187,10 +197,12 @@ my @cmd = (
 	$smbclient,
 	"//$host/$share",
 	"-U", "$user%$pass",
+	defined($maxprotocol) ? ("-m", $maxprotocol) : (),
 	defined($workgroup) ? ("-W", $workgroup) : (),
 	defined($address) ? ("-I", $address) : (),
 	defined($opt_P) ? ("-p", $opt_P) : (),
 	defined($opt_k) ? ("-k") : (),
+	defined($configfile) ? ("-s, $configfile") : (),
 	"-c", "du"
 );
 
@@ -207,7 +219,7 @@ alarm(0);
 $_ = $lines[$#lines-1];
 #print "$_\n";
 
-#Process the last line to get free space.  
+#Process the last line to get free space.
 #If line does not match required regexp, return an UNKNOWN error
 if (/\s*(\d*) blocks of size (\d*)\. (\d*) blocks available/) {
 
@@ -289,8 +301,9 @@ print "$state\n" if ($verbose);
 exit $ERRORS{$state};
 
 sub print_usage () {
-	print "Usage: $PROGNAME -H <host> -s <share> -u <user> -p <password> 
-      -w <warn> -c <crit> [-W <workgroup>] [-P <port>] [-a <IP>]\n";
+	print "Usage: $PROGNAME -H <host> -s <share> -u <user>
+      -p <password> -w <warn> -c <crit> [-W <workgroup>] [-P <port>]
+      [-a <IP>] [-C <configfile>]\n";
 }
 
 sub print_help () {
@@ -316,12 +329,13 @@ Perl Check SMB Disk plugin for Nagios
    Password to log in to server. (Defaults to an empty password)
 -w, --warning=INTEGER or INTEGER[kMG]
    Percent of used space at which a warning will be generated (Default: 85%)
-      
 -c, --critical=INTEGER or INTEGER[kMG]
    Percent of used space at which a critical will be generated (Defaults: 95%)
 -P, --port=INTEGER
    Port to be used to connect to. Some Windows boxes use 139, others 445 (Defaults to smbclient default)
-   
+-C, --configfile=STRING
+   Path to configfile which should be used by smbclient (Defaults to smb.conf of your smb installation)
+
    If thresholds are followed by either a k, M, or G then check to see if that
    much disk space is available (kilobytes, Megabytes, Gigabytes)
 

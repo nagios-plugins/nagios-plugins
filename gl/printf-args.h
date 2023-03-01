@@ -1,5 +1,5 @@
 /* Decomposed printf argument list.
-   Copyright (C) 1999, 2002-2003, 2006-2007, 2011-2013 Free Software
+   Copyright (C) 1999, 2002-2003, 2006-2007, 2011-2015 Free Software
    Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
@@ -15,8 +15,8 @@
    You should have received a copy of the GNU General Public License along
    with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef NAGIOS_PRINTF_ARGS_H_INCLUDED
-#define NAGIOS_PRINTF_ARGS_H_INCLUDED
+#ifndef _PRINTF_ARGS_H
+#define _PRINTF_ARGS_H
 
 /* This file can be parametrized with the following macros:
      ENABLE_UNISTDIO    Set to 1 to enable the unistdio extensions.
@@ -155,4 +155,4 @@ extern
 #endif
 int PRINTF_FETCHARGS (va_list args, arguments *a);
 
-#endif /* NAGIOS_PRINTF_ARGS_H_INCLUDED */
+#endif /* _PRINTF_ARGS_H */

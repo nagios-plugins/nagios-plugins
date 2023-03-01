@@ -1,7 +1,9 @@
+2005wind
 Abid Rasheed
 Adrian Murphy
 Adrian Wieczorek
 Alain Richard
+Alan Hicks
 Alen Salamun
 Alessandro Ren
 Alex Bradley
@@ -10,6 +12,7 @@ Alex Griffin
 Alexander Kulak
 Alexander Matey
 Alexander Wittig
+Alexandre Anriot
 Allan Bennett
 Alwyn Cherrington
 Anders Kaseorg
@@ -18,6 +21,7 @@ Andreas Ericsson
 Andreas Seemueller
 Andrew Berglund
 Andrew Elwell
+Andrew Penniman
 Andrew Widdersheim
 Andy Brist
 Andy Doran
@@ -25,11 +29,17 @@ Anton Lofgren
 Antony Simmonds
 Aravind Gottipati
 Ari Pollak
+Arjen Zonneveld
+Arkadiusz Miśkiewicz (arekm)
 Arnaud Quette
 Arnold Cavazos
+arvanus
 Ask Bjoern Hansen
 Aurelien Bompard
+azthec
+Barak Shohat (bazzisoft)
 Ben Clewett
+Ben Rubson
 Ben Timby
 Ben Whaley
 Benjamin Schmid
@@ -39,34 +49,43 @@ Bill Kunkel
 Bo Kersey
 Bob Ingraham
 Booker C. Bense
+BornToBeRoot
 Bradley Baetz
 Brian De Wolf
 Brian Landers
+brigriffin
 Bryan Irvine
+Bryan Leaman
 Carlos Canau
 Carole Verdon
+cejkar
 Charles-Henri Larose
 Charlie Cook
 Chester Hosey
 Chris Grim
+Chris Heath
 Chris Pepper
 Chris Wilson
 Christian G Warden
 Christian Mies
+Christian Schmidt
 Christian Schneemann
 Christoph Kron
 Christoph Schell
 Christopher Maser
 Christopher Schultz
 Cire Iriarte
+Claudio Kuenzler
 Cliff Rice
 Collin Fair
 Cove Schneider
 Craig Leres
 Craig Orsinger
+dag rob?le
 Damian Myerscough
 Daniel Austin
 Daniel Bimschas
+Daniel Bond
 Daniel Leib
 Daniel Scott
 Daniël van Eeden
@@ -95,30 +114,35 @@ Eric Chen
 Eric J. Mislivec
 Erik Wasser
 Erik Welch
+eriksejr
 Ernst-Dieter Martin
 Erwan Ben Souiden
 Evgeni Golov
 Fabian Pehla
 Fabio Rueda
+fabiodds
 Felipe Gustavo de Almeida
 Felix Frank
 Flo Gleixner
 Florian Gleixner
+fraff
 Frank Kannemann
-Frederic Krueger
+Franz Schwartau
 Frederic Krueger
 Gabriele Tozzi
 Garry Cook
 Geert Hendrickx
 Geoff Oakham
-Geoff Oakham
 George Paraskevas
+George Hansper
 Gerd Mueller
 Gerhard Lausser
 Gianluca Varisco
+gino0631
 Grant Byers
 Greg Bowser
 Guenther Mair
+Guillaume Rousse
 Gunnar Beutner
 Gunnar Hellekson
 Guy Van Den Bergh
@@ -174,32 +198,39 @@ John Rouillard
 John Sivak
 John Warburton
 Jon Hallett
+Jon Stockton
 Jon Vandegrift
-Jonas Genannt
 Jonas Genannt
 Jonathan Milby
 Jonathan Rozes
 Joseph Gooch
+Josh Coughlan
 Josip Rodin
 Juan Carlos Fernandez
 Julien Touche
 Julius Kriukas
 Justin McOmie
+jwinkle01
 Karl Ewald
-Kenny Root
 Kees Monshouwer
+Kenny Root
 Kev Green
 Kjell Sundtjonn
 Koen Wilde
 Kondoros Attila
 Konstantin Khomoutov
+Konstantin Shalygin (k0ste)
+Kris Shannon
 Kyle Tucker
 Lance Albertson
 Larry Low
+Lars Michelsen
 Lars Stavholm
 Lars Vogdt
 Laurent Licour
 Laurent Vaslin
+Lee Clemens
+Leonid Vasiliev
 Lionel Cons
 Lonny Selinger
 Luca Corti
@@ -209,11 +240,14 @@ Lynne Lawrence
 Marc Huffnagle
 Marc Poulin
 Marc Remy
+Marc Sánchez
+Marcel Klein
 Marcel Kuiper
 Marco Beck
 Marcos Della
 Mario Trangoni
 Mario Witte
+Mark A. Ziesemer
 Mark Favas
 Mark Jewiss
 Mark Keisler
@@ -221,7 +255,9 @@ Markus Baertschi
 Marlo Bell
 Martin Foster
 Matej Vela
+Mathieu Arnold
 Mathieu Masseboeuf
+Matt Capra
 Matt Garrett
 Matt Perry
 Matt Pounsett
@@ -240,14 +276,17 @@ Michael Bakker
 Michael Haro
 Michael Markstaller
 Michael Musikhin
+Michael Orlitzky
 Michael Tiernan
 Mikael Falkvidd
 Mike Emigh
 Mike McHenry
+mwennrich
 Myke Place
+nafets
 Nathan Shafer
 Neil Prockter
-Nick Peelman
+Nick Fox
 Nick Peelman
 Nik Soggia
 Nikita Kalabukhov
@@ -259,6 +298,7 @@ Olaf Greis
 Olivier 'Babar' Raginel
 Olli Hauer
 Ollie Cook
+orangejuicy
 Oskar Ahner
 Oskar Liljeblad
 Pall Sigurdsson
@@ -278,12 +318,15 @@ Paulo Fessel
 Pawel Malachowski
 Pawel Rozlach
 Pedro Leite
+Peter (pirtoo)
+Peter Athaks
 Peter Hoogendijk
 Peter Pramberger
 Phil Dibowitz
 Phil Randal
-Peter (pirtoo)
+pieska
 Ragnar Hojland Espinosa
+Rahul Golam
 Rainer Duffner
 Ralph Rye
 Randy O'Meara
@@ -302,6 +345,7 @@ Robert Dale
 Roberto Greiner
 Robin Sonefors
 Rodger Allen
+Roger Niesten
 Rok Debevc
 Roman Fiedler
 Ronald Tin
@@ -312,9 +356,9 @@ Ryan Kelly
 Sakari Lehtonen
 Sam Kottler
 Sascha Runschke
+Scott Baker
 Sean Shore
 Sebastian Harl
-Sebastian Herbszt
 Sebastian Herbszt
 Sebastian Nohn
 Sebastian Schmidt
@@ -324,10 +368,12 @@ Sebastien Guay
 Serhan Kiymaz
 Shawn Wills
 Simon Bellwood
+Simon F (bratkartoffel)
 Simon Kainz
 Simon L Nielsen
 Simon Meggle
 Sivakumar Nellurandi
+slsca
 Spenser Reinhardt
 Stefan Meier
 Stephane Chazelas
@@ -338,20 +384,25 @@ Steve Hanselman
 Steve Rader
 Steve Rigler
 Steve Weinreich
+Steve Wilton (eskyuu)
 Steven Grimm
 Steven Kreuzer
 StoneISStephan
 Stuart Webster
 Stéphane Bortzmeyer
 Stéphane Urbanovski
+Subito
 Sven Meyer
 Sven Schaffranneck
+Syl Robataille
 Thomas Nilsen
 Thomas Schimpke
 Tilman Koschnick
 Tilmann Bubeck
 Tim Laszlo
 Tobias Brox
+Tobias Leich
+Todd Zullinger (tmzullinger)
 Tom Bertelston
 Tom De Blende
 Tom Payerle
@@ -359,19 +410,17 @@ Tom Shields
 Tomasz Pilat
 Torsten Werner
 Trevor McDonald
+Troy Lea
 Truongchinh Nguyen
 Vaclav Ovsik
 Valdimir Ivaschenko
 Ville Mattila
+Vít Heřman
 Walbert Oberngruber
 Will Preston
 William Leibzon
 William Pietri
 Wolfgang Rosenauer
 Yannick Charton
+Yusuke Hayashi (yusukeh0710)
 Ziya Suzen
-arvanus
-dag rob?le
-fabiodds
-jwinkle01
-nafets

@@ -1,6 +1,6 @@
 /* Wrappers that don't throw invalid parameter notifications
    with MSVC runtime libraries.
-   Copyright (C) 2011-2013 Free Software Foundation, Inc.
+   Copyright (C) 2011-2015 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,8 +15,8 @@
    You should have received a copy of the GNU General Public License along
    with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef NGAIOS_MSVC_NOTHROW_H_INCLUDED
-#define NGAIOS_MSVC_NOTHROW_H_INCLUDED
+#ifndef _MSVC_NOTHROW_H
+#define _MSVC_NOTHROW_H
 
 /* With MSVC runtime libraries with the "invalid parameter handler" concept,
    functions like fprintf(), dup2(), or close() crash when the caller passes
@@ -40,4 +40,4 @@ extern intptr_t _gl_nothrow_get_osfhandle (int fd);
 
 #endif
 
-#endif /* NGAIOS_MSVC_NOTHROW_H_INCLUDED */
+#endif /* _MSVC_NOTHROW_H */

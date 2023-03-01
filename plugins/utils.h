@@ -7,7 +7,7 @@
 /* The purpose of this package is to provide safer alternatives to C
 functions that might otherwise be vulnerable to hacking. This
 currently includes a standard suite of validation routines to be sure
-that an string argument acually converts to its intended type and a
+that an string argument actually converts to its intended type and a
 suite of string handling routine that do their own memory management
 in order to resist overflow attacks. In addition, a few functions are
 provided to standardize version and error reporting across the entire
@@ -79,6 +79,8 @@ char *strpcat (char *, const char *, const char *);
 int xvasprintf (char **strp, const char *fmt, va_list ap);
 int xasprintf (char **strp, const char *fmt, ...);
 
+
+int min_state (int a, int b);
 int max_state (int a, int b);
 int max_state_alt (int a, int b);
 

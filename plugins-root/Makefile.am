@@ -52,8 +52,19 @@ INSTALL_SUID = \
 	chmod $(setuid_root_mode) $(DESTDIR)$(libexecdir)/$$p; \
 	done
 
+INSTALL_NOSUID = \
+	for f in $(noinst_PROGRAMS) ; do \
+	p=$$f; \
+	echo " $(INSTALL_PROGRAM) $$p $(DESTDIR)$(libexecdir)/$$p"; \
+	$(INSTALL_PROGRAM) $$p $(DESTDIR)$(libexecdir)/$$p; \
+	echo "NOTE: $(DESTDIR)$(libexecdir)/$$p expected to be chown/chmod by the package installer"; \
+	done
+
 install-root: $(noinst_PROGRAMS)
 	@$(INSTALL_SUID)
+
+install-packager: $(noinst_PROGRAMS)
+	@$(INSTALL_NOSUID)
 
 install-exec-local: $(noinst_PROGRAMS)
 	@TMPFILE=$(DESTDIR)$(libexecdir)/.setuid-$$$$; \
@@ -77,8 +88,8 @@ install-exec-local: $(noinst_PROGRAMS)
 
 ##############################################################################
 # the actual targets
-check_dhcp_LDADD = @LTLIBINTL@ $(NETLIBS)
-check_icmp_LDADD = @LTLIBINTL@ $(NETLIBS) $(SOCKETLIBS)
+check_dhcp_LDADD = @LTLIBINTL@ $(NETLIBS) $(SSLLIBS)
+check_icmp_LDADD = @LTLIBINTL@ $(NETLIBS) $(SOCKETLIBS) $(SSLLIBS)
 
 # -m64 needed at compiler and linker phase
 pst3_CFLAGS = @PST3CFLAGS@

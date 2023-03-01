@@ -4,7 +4,7 @@
 #   transmittal.  
 #
 # Initial version support sendmail's mailq command
-#  Support for mutiple sendmail queues (Carlos Canau)
+#  Support for multiple sendmail queues (Carlos Canau)
 #  Support for qmail (Benjamin Schmid)
 
 # License Information:
@@ -28,9 +28,9 @@
 use POSIX;
 use strict;
 use Getopt::Long;
-use vars qw($opt_V $opt_h $opt_v $verbose $PROGNAME $opt_w $opt_c $opt_t $opt_s
-					$opt_M $mailq $status $state $msg $msg_q $msg_p $opt_W $opt_C $mailq @lines
-					%srcdomains %dstdomains);
+use vars qw($opt_V $opt_h $opt_v $verbose $PROGNAME $opt_w $opt_c $opt_t $opt_s $opt_d
+					$opt_M $mailq $status $state $msg $msg_q $msg_p $opt_W $opt_C $mailq $mailq_args
+					@lines %srcdomains %dstdomains);
 use FindBin;
 use lib "$FindBin::Bin";
 use lib '@libexecdir@';
@@ -49,6 +49,8 @@ $PROGNAME = "check_mailq";
 $mailq = 'sendmail';	# default
 $msg_q = 0 ;
 $msg_p = 0 ;
+# If appended, must start with a space
+$mailq_args = '' ;
 $state = $ERRORS{'UNKNOWN'};
 
 Getopt::Long::Configure('bundling');
@@ -56,6 +58,10 @@ $status = process_arguments();
 if ($status){
 	print "ERROR: processing arguments\n";
 	exit $ERRORS{"UNKNOWN"};
+}
+
+if ($opt_d) {
+	$mailq_args = $mailq_args . ' -C ' . $opt_d;
 }
 
 if ($opt_s) {
@@ -313,19 +319,19 @@ elsif ( $mailq eq "postfix" ) {
      ## open mailq
 	if ( defined $utils::PATH_TO_MAILQ ) {
 		if (-x $utils::PATH_TO_MAILQ) {
-			if (! open (MAILQ, "$utils::PATH_TO_MAILQ | ")) {
-				print "ERROR: $utils::PATH_TO_MAILQ returned an error\n";
+			if (! open (MAILQ, "$utils::PATH_TO_MAILQ$mailq_args | ")) {
+				print "ERROR: $utils::PATH_TO_MAILQ$mailq_args returned an error\n";
 				exit $ERRORS{'UNKNOWN'};
 			}
 		}
 		else {
 			if ( $sudo ne "" ) {
-				if (! open (MAILQ, "$sudo $utils::PATH_TO_MAILQ | " ) ) {
-					print "ERROR: $utils::PATH_TO_MAILQ is not executable with sudo by (uid $>:gid($)))\n";
+				if (! open (MAILQ, "$sudo $utils::PATH_TO_MAILQ$mailq_args | " ) ) {
+					print "ERROR: $utils::PATH_TO_MAILQ$mailq_args is not executable with sudo by (uid $>:gid($)))\n";
 					exit $ERRORS{'UNKNOWN'};
 				}
 			} else {
-				print "ERROR: $utils::PATH_TO_MAILQ is not executable by (uid $>:gid($))) and sudo is not set in utils.pm\n";
+				print "ERROR: $utils::PATH_TO_MAILQ$mailq_args is not executable by (uid $>:gid($))) and sudo is not set in utils.pm\n";
 				exit $ERRORS{'UNKNOWN'};
 			}
 		}
@@ -336,9 +342,11 @@ elsif ( $mailq eq "postfix" ) {
 
 
 	@lines = reverse <MAILQ>;
+	
+	close(MAILQ);
 
         if ( $? ) {
-		print "CRITICAL: Error code ".($?>>8)." returned from $utils::PATH_TO_MAILQ",$/;
+		print "CRITICAL: Error code ".($?>>8)." returned from $utils::PATH_TO_MAILQ$mailq_args",$/;
 		exit $ERRORS{CRITICAL};
         }
 
@@ -351,7 +359,7 @@ elsif ( $mailq eq "postfix" ) {
 	}elsif ($lines[0]=~/Mail queue is empty/) {
 		$msg_q = 0;
         }else{
-                print "Couldn't match $utils::PATH_TO_MAILQ output\n";
+                print "Couldn't match $utils::PATH_TO_MAILQ$mailq_args output\n";
                 exit   $ERRORS{'UNKNOWN'};
         }
 
@@ -520,7 +528,47 @@ elsif ( $mailq eq "exim" ) {
 		$state = $ERRORS{'CRITICAL'};
 	}
 } # end of ($mailq eq "exim")
+elsif ( $mailq eq "opensmtpd" ) {
+	## open smtpctl
+	if ( defined $utils::PATH_TO_SMTPCTL && -x $utils::PATH_TO_SMTPCTL ) {
+		if (! open (MAILQ, "$sudo $utils::PATH_TO_SMTPCTL show queue | " ) ) {
+			print "ERROR: could not open $utils::PATH_TO_SMTPCTL \n";
+			exit $ERRORS{'UNKNOWN'};
+		}
+	}elsif( defined $utils::PATH_TO_SMTPCTL){
+		unless (-x $utils::PATH_TO_SMTPCTL) {
+			print "ERROR: $utils::PATH_TO_SMTPCTL is not executable by (uid $>:gid($)))\n";
+			exit $ERRORS{'UNKNOWN'};
+		}
+	} else {
+		print "ERROR: \$utils::PATH_TO_SMTPCTL is not defined\n";
+		exit $ERRORS{'UNKNOWN'};
+	}
 
+	while (<MAILQ>) {
+
+		# 34357f5b3f589feb|inet4|mta||f.someone@domaina.org|no-reply@domainb.com|no-reply@domainb.com|1498235412|1498581012|0|25|pending|17168|Network error on destination MXs
+		if (/^.*|.*|.*|.*|.*|.*|.*|.*|.*|.*|.*|.*|.*|.*$/) {
+			$msg_q++ ;
+		}
+	}
+	close(MAILQ);
+
+	if ( $? ) {
+		print "CRITICAL: Error code ".($?>>8)." returned from $utils::PATH_TO_SMTPCTL",$/;
+		exit $ERRORS{CRITICAL};
+	}
+	if ($msg_q < $opt_w) {
+		$msg = "OK: $mailq mailq ($msg_q) is below threshold ($opt_w/$opt_c)";
+		$state = $ERRORS{'OK'};
+	}elsif ($msg_q >= $opt_w  && $msg_q < $opt_c) {
+		$msg = "WARNING: $mailq mailq is $msg_q (threshold w = $opt_w)";
+		$state = $ERRORS{'WARNING'};
+	}else {
+		$msg = "CRITICAL: $mailq mailq is $msg_q (threshold c = $opt_c)";
+		$state = $ERRORS{'CRITICAL'};
+	}
+} # end of ($mailq eq "opensmtpd")
 elsif ( $mailq eq "nullmailer" ) {
 	## open mailq
 	if ( defined $utils::PATH_TO_MAILQ && -x $utils::PATH_TO_MAILQ ) {
@@ -541,7 +589,7 @@ elsif ( $mailq eq "nullmailer" ) {
 	while (<MAILQ>) {
 	    #2006-06-22 16:00:00  282 bytes
 
-	    if (/^[1-9][0-9]*-[01][0-9]-[0-3][0-9]\s[0-2][0-9]\:[0-2][0-9]\:[0-2][0-9]\s{1,2}[0-9]+\sbytes$/) {
+	    if (/^[1-9][0-9]*-[01][0-9]-[0-3][0-9]\s[0-2][0-9]\:[0-5][0-9]\:[0-5][0-9]\s{1,2}[0-9]+\sbytes$/) {
 		$msg_q++ ;
 	    }
 	}
@@ -557,6 +605,39 @@ elsif ( $mailq eq "nullmailer" ) {
 		$state = $ERRORS{'CRITICAL'};
 	}
 } # end of ($mailq eq "nullmailer")
+
+elsif ( $mailq eq "opensmtp" ) {
+	## open mailq
+	if ( defined $utils::PATH_TO_MAILQ && -x $utils::PATH_TO_MAILQ ) {
+		if (! open (MAILQ, "$sudo $utils::PATH_TO_MAILQ | " ) ) {
+			print "ERROR: could not open $utils::PATH_TO_MAILQ \n";
+			exit $ERRORS{'UNKNOWN'};
+		}
+	}elsif( defined $utils::PATH_TO_MAILQ){
+		unless (-x $utils::PATH_TO_MAILQ) {
+			print "ERROR: $utils::PATH_TO_MAILQ is not executable by (uid $>:gid($)))\n";
+			exit $ERRORS{'UNKNOWN'};
+		}
+	} else {
+		print "ERROR: \$utils::PATH_TO_MAILQ is not defined\n";
+		exit $ERRORS{'UNKNOWN'};
+	}
+
+	$msg_q++ while (<MAILQ>);
+
+	close(MAILQ) ;
+	if ($msg_q < $opt_w) {
+		$msg = "OK: $mailq mailq ($msg_q) is below threshold ($opt_w/$opt_c)";
+		$state = $ERRORS{'OK'};
+	}elsif ($msg_q >= $opt_w  && $msg_q < $opt_c) {
+		$msg = "WARNING: $mailq mailq is $msg_q (threshold w = $opt_w)";
+		$state = $ERRORS{'WARNING'};
+	}else {
+		$msg = "CRITICAL: $mailq mailq is $msg_q (threshold c = $opt_c)";
+		$state = $ERRORS{'CRITICAL'};
+	}
+} # end of ($mailq eq "opensmtp")
+
 
 # Perfdata support
 print "$msg|unsent=$msg_q;$opt_w;$opt_c;0\n";
@@ -576,7 +657,8 @@ sub process_arguments(){
 		 "w=i" => \$opt_w, "warning=i"  => \$opt_w,   # warning if above this number
 		 "c=i" => \$opt_c, "critical=i" => \$opt_c,	  # critical if above this number
 		 "t=i" => \$opt_t, "timeout=i"  => \$opt_t,
-		 "s"   => \$opt_s, "sudo"       => \$opt_s
+		 "s"   => \$opt_s, "sudo"       => \$opt_s,
+		 "d:s" => \$opt_d, "configdir:s" => \$opt_d
 		 );
 
 	if ($opt_V) {
@@ -618,7 +700,7 @@ sub process_arguments(){
 	}
 
 	if (defined $opt_M) {
-		if ($opt_M =~ /^(sendmail|qmail|postfix|exim|nullmailer)$/) {
+		if ($opt_M =~ /^(sendmail|qmail|postfix|exim|nullmailer|opensmtpd)$/) {
 			$mailq = $opt_M ;
 		}elsif( $opt_M eq ''){
 			$mailq = 'sendmail';
@@ -648,6 +730,10 @@ sub process_arguments(){
 		{
 			$mailq = 'nullmailer';
 		}
+		elsif (defined $utils::PATH_TO_SMTPCTL && -x $utils::PATH_TO_SMTPCTL)
+		{
+			$mailq = 'opensmtpd';
+		}
 		else {
 			$mailq = 'sendmail';
 		}
@@ -657,7 +743,7 @@ sub process_arguments(){
 }
 
 sub print_usage () {
-	print "Usage: $PROGNAME -w <warn> -c <crit> [-W <warn>] [-C <crit>] [-M <MTA>] [-t <timeout>] [-s] [-v]\n";
+	print "Usage: $PROGNAME -w <warn> -c <crit> [-W <warn>] [-C <crit>] [-M <MTA>] [-t <timeout>] [-s] [-d <CONFIGDIR>] [-v]\n";
 }
 
 sub print_help () {
@@ -673,7 +759,7 @@ sub print_help () {
 	print "-W (--Warning)   = Min. number of messages for same domain in queue to generate warning\n";
 	print "-C (--Critical)  = Min. number of messages for same domain in queue to generate critical alert ( W < C )\n";
 	print "-t (--timeout)   = Plugin timeout in seconds (default = $utils::TIMEOUT)\n";
-	print "-M (--mailserver) = [ sendmail | qmail | postfix | exim | nullmailer ] (default = autodetect)\n";
+	print "-M (--mailserver) = [ sendmail | qmail | postfix | exim | nullmailer | opensmtpd ] (default = autodetect)\n";
 	print "-h (--help)\n";
 	print "-V (--version)\n";
 	print "-v (--verbose)   = debugging output\n";

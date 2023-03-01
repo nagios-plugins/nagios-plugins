@@ -28,7 +28,7 @@
 # (c) 1999 Bo Kersey, VirCIO - Managed Server Solutions <bo@vircio.com>
 # 22-10-99, 12:17
 #
-# Modified the script to give useage if no parameters are input.
+# Modified the script to give usage if no parameters are input.
 #
 # Modified the script to check for negative as well as positive 
 # time differences.
@@ -46,7 +46,7 @@
 #           source. This happens while starting up and if contact
 #           with master has been lost.
 #
-# Modifed to run under Embedded Perl  (sghosh@users.sf.net)
+# Modified to run under Embedded Perl  (sghosh@users.sf.net)
 #   - combined logic some blocks together..
 # 
 # Added ntpdate check for stratum 16 desynch peer (James Fidell) Feb 03, 2003
@@ -272,7 +272,7 @@ if ( $? && !$ignoreret ) {
 #          broadcast (b); not sure about multicast/broadcast
 # Field 6: last packet receive (in seconds)
 # Field 7: polling interval
-# Field 8: reachability resgister (octal) 
+# Field 8: reachability register (octal) 
 # Field 9: delay
 # Field 10: offset
 # Field 11: dispersion/jitter
@@ -427,8 +427,11 @@ if ($ntpdate_error != $ERRORS{'OK'}) {
 
 foreach my $key (keys %ERRORS) {
 	if ($state==$ERRORS{$key}) {
-#		print ("NTP $key: $answer");
-		print ("NTP $key: $answer|offset=$offset, jitter=" . $jitter/1000 .	",peer_stratum=$stratum\n");
+		print ("NTP $key: $answer|offset=$offset");
+		if ($have_ntpq) {
+			print (", jitter=" . $jitter/1000 .	",peer_stratum=$stratum");
+		}
+		print ("\n");
 		last;
 	}
 }

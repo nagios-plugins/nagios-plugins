@@ -84,6 +84,8 @@ void host_or_die(const char *str);
 extern int econn_refuse_state;
 extern int was_refused;
 extern int address_family;
+extern char address_length(int address_family);
+extern void parse_address_string(int address_family, struct sockaddr_storage *addr, char *address, int size);
 
 RETSIGTYPE socket_timeout_alarm_handler (int) __attribute__((noreturn));
 
@@ -94,20 +96,23 @@ RETSIGTYPE socket_timeout_alarm_handler (int) __attribute__((noreturn));
 #  define MP_TLSv1 3
 #  define MP_TLSv1_1 4
 #  define MP_TLSv1_2 5
-#  define MP_SSLv2_OR_NEWER 6
-#  define MP_SSLv3_OR_NEWER 7
-#  define MP_TLSv1_OR_NEWER 8
-#  define MP_TLSv1_1_OR_NEWER 9
-#  define MP_TLSv1_2_OR_NEWER 10
+#  define MP_TLSv1_3 6
+#  define MP_SSLv2_OR_NEWER 7
+#  define MP_SSLv3_OR_NEWER 8
+#  define MP_TLSv1_OR_NEWER 9
+#  define MP_TLSv1_1_OR_NEWER 10
+#  define MP_TLSv1_2_OR_NEWER 11
+#  define MP_TLSv1_3_OR_NEWER 12
 /* maybe this could be merged with the above np_net_connect, via some flags */
 int np_net_ssl_init(int sd);
 int np_net_ssl_init_with_hostname(int sd, char *host_name);
 int np_net_ssl_init_with_hostname_and_version(int sd, char *host_name, int version);
 int np_net_ssl_init_with_hostname_version_and_cert(int sd, char *host_name, int version, char *cert, char *privkey);
-void np_net_ssl_cleanup();
+void np_net_ssl_cleanup(void);
 int np_net_ssl_write(const void *buf, int num);
 int np_net_ssl_read(void *buf, int num);
 int np_net_ssl_check_cert(int days_till_exp_warn, int days_till_exp_crit);
+int np_net_ssl_check_cert_real(SSL *ssl, int days_till_exp_warn, int days_till_exp_crit);
 #endif /* HAVE_SSL */
 
 #endif /* NAGIOS_NETUGILS_H_INCLUDED_ */

@@ -33,6 +33,7 @@ const char *copyright = "1999-2014";
 const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"
+#include "runcmd.h"
 #include "utils.h"
 #include "popen.h"
 
@@ -52,6 +53,9 @@ static int process_arguments (int argc, char **argv);
 static int validate_arguments (void);
 void print_help (void);
 void print_usage (void);
+static int print_top_consuming_processes(void);
+
+static int n_procs_to_show = 0;
 
 /* strictly for pretty-print usage in loops */
 static const int nums[3] = { 1, 5, 15 };
@@ -98,16 +102,13 @@ int
 main (int argc, char **argv)
 {
 	int result;
-	int i;
+	int i, j;
 	long numcpus;
 
-	double la[3] = { 0.0, 0.0, 0.0 };	/* NetBSD complains about unitialized arrays */
+	double la[3] = { 0.0, 0.0, 0.0 };	/* NetBSD complains about uninitialized arrays */
 #ifndef HAVE_GETLOADAVG
 	char input_buffer[MAX_INPUT_BUFFER];
-# ifdef HAVE_PROC_LOADAVG
-	FILE *fp;
-	char *str, *next;
-# endif
+	int len;
 #endif
 
 	setlocale (LC_ALL, "");
@@ -126,23 +127,6 @@ main (int argc, char **argv)
 	if (result != 3)
 		return STATE_UNKNOWN;
 #else
-# ifdef HAVE_PROC_LOADAVG
-	fp = fopen (PROC_LOADAVG, "r");
-	if (fp == NULL) {
-		printf (_("Error opening %s\n"), PROC_LOADAVG);
-		return STATE_UNKNOWN;
-	}
-
-	while (fgets (input_buffer, MAX_INPUT_BUFFER - 1, fp)) {
-		str = (char *)input_buffer;
-		for(i = 0; i < 3; i++) {
-			la[i] = strtod(str, &next);
-			str = next;
-		}
-	}
-
-	fclose (fp);
-# else
 	child_process = spopen (PATH_TO_UPTIME);
 	if (child_process == NULL) {
 		printf (_("Error opening %s\n"), PATH_TO_UPTIME);
@@ -153,14 +137,28 @@ main (int argc, char **argv)
 		printf (_("Could not open stderr for %s\n"), PATH_TO_UPTIME);
 	}
 	fgets (input_buffer, MAX_INPUT_BUFFER - 1, child_process);
+
+	/* Some platforms include commas in load averages, some don't. */
+	/* Strip out any commas in the uptime output */
+	len = strlen(input_buffer);
+
+	for (i = 0, j = 0; i < len, j < len; i++, j++) {
+		while (input_buffer[j] == ',') {
+			j += 1;
+		}
+		input_buffer[i] = input_buffer[j];
+	}
+
+	input_buffer[i] = '\0';
+
     if(strstr(input_buffer, "load average:")) {
-	    sscanf (input_buffer, "%*[^l]load average: %lf, %lf, %lf", &la1, &la5, &la15);
+	    sscanf (input_buffer, "%*[^l]load average: %lf %lf %lf", &la1, &la5, &la15);
     }
     else if(strstr(input_buffer, "load averages:")) {
-	    sscanf (input_buffer, "%*[^l]load averages: %lf, %lf, %lf", &la1, &la5, &la15);
+	    sscanf (input_buffer, "%*[^l]load averages: %lf %lf %lf", &la1, &la5, &la15);
     }
     else {
-		printf (_("could not parse load from uptime: %s\n"), result, PATH_TO_UPTIME);
+		printf (_("could not parse load %d from uptime: %s\n"), result, PATH_TO_UPTIME);
 		return STATE_UNKNOWN;
     }
 
@@ -169,7 +167,6 @@ main (int argc, char **argv)
 		printf (_("Error code %d returned in %s\n"), result, PATH_TO_UPTIME);
 		return STATE_UNKNOWN;
 	}
-# endif
 #endif
 
 	if (take_into_account_cpus == 1) {
@@ -183,11 +180,7 @@ main (int argc, char **argv)
 #ifdef HAVE_GETLOADAVG
 		printf (_("Error in getloadavg()\n"));
 #else
-# ifdef HAVE_PROC_LOADAVG
-		printf (_("Error processing %s\n"), PROC_LOADAVG);
-# else
 		printf (_("Error processing %s\n"), PATH_TO_UPTIME);
-# endif
 #endif
 		return STATE_UNKNOWN;
 	}
@@ -215,6 +208,9 @@ main (int argc, char **argv)
 		printf("load%d=%.3f;%.3f;%.3f;0; ", nums[i], la[i], wload[i], cload[i]);
 
 	putchar('\n');
+	if (n_procs_to_show > 0) {
+		print_top_consuming_processes();
+	}
 	return result;
 }
 
@@ -232,6 +228,7 @@ process_arguments (int argc, char **argv)
 		{"percpu", no_argument, 0, 'r'},
 		{"version", no_argument, 0, 'V'},
 		{"help", no_argument, 0, 'h'},
+		{"procs-to-show", required_argument, 0, 'n'},
 		{0, 0, 0, 0}
 	};
 
@@ -239,7 +236,7 @@ process_arguments (int argc, char **argv)
 		return ERROR;
 
 	while (1) {
-		c = getopt_long (argc, argv, "Vhrc:w:", longopts, &option);
+		c = getopt_long (argc, argv, "Vhrc:w:n:", longopts, &option);
 
 		if (c == -1 || c == EOF)
 			break;
@@ -260,6 +257,9 @@ process_arguments (int argc, char **argv)
 		case 'h':									/* help */
 			print_help ();
 			exit (STATE_OK);
+		case 'n':
+			n_procs_to_show = atoi(optarg);
+			break;
 		case '?':									/* help */
 			usage5 ();
 		}
@@ -329,6 +329,9 @@ print_help (void)
   printf ("    %s\n", _("the load average format is the same used by \"uptime\" and \"w\""));
   printf (" %s\n", "-r, --percpu");
   printf ("    %s\n", _("Divide the load averages by the number of CPUs (when possible)"));
+  printf (" %s\n", "-n, --procs-to-show=NUMBER_OF_PROCS");
+  printf ("    %s\n", _("Number of processes to show when printing the top consuming processes."));
+  printf ("    %s\n", _("NUMBER_OF_PROCS=0 disables this feature. Default value is 0"));
 
 	printf (UT_SUPPORT);
 }
@@ -337,5 +340,50 @@ void
 print_usage (void)
 {
   printf ("%s\n", _("Usage:"));
-	printf ("%s [-r] -w WLOAD1,WLOAD5,WLOAD15 -c CLOAD1,CLOAD5,CLOAD15\n", progname);
+	printf ("%s [-r] -w WLOAD1,WLOAD5,WLOAD15 -c CLOAD1,CLOAD5,CLOAD15 [-n NUMBER_OF_PROCS]\n", progname);
+}
+
+#ifdef PS_USES_PROCPCPU
+int cmpstringp(const void *p1, const void *p2) {
+	int procuid = 0;
+	pid_t procpid = 0;
+	pid_t procppid = 0;
+	pid_t kthread_ppid = 0;
+	int procvsz = 0;
+	int procrss = 0;
+	float procpcpu = 0;
+	char procstat[8];
+#ifdef PS_USES_PROCETIME
+	char procetime[MAX_INPUT_BUFFER] = { '\0' };
+#endif /* PS_USES_PROCETIME */
+	char *procprog;
+	char *proc_cgroup_hierarchy;
+	int pos;
+	sscanf (* (char * const *) p1, PS_FORMAT, PS_VARLIST);
+	float procpcpu1 = procpcpu;
+	sscanf (* (char * const *) p2, PS_FORMAT, PS_VARLIST);
+	return procpcpu1 < procpcpu;
+}
+#endif /* PS_USES_PROCPCPU */
+
+static int print_top_consuming_processes() {
+	int i = 0;
+	struct output chld_out, chld_err;
+	if(np_runcmd(PS_COMMAND, &chld_out, &chld_err, 0) != 0){
+		fprintf(stderr, _("'%s' exited with non-zero status.\n"), PS_COMMAND);
+		return STATE_UNKNOWN;
+	}
+	if (chld_out.lines < 2) {
+		fprintf(stderr, _("some error occurred getting procs list.\n"));
+		return STATE_UNKNOWN;
+	}
+#ifdef PS_USES_PROCPCPU
+	qsort(chld_out.line + 1, chld_out.lines - 1, sizeof(char*), cmpstringp);
+#endif /* PS_USES_PROCPCPU */
+	int lines_to_show = chld_out.lines < (n_procs_to_show + 1)
+			? chld_out.lines : n_procs_to_show + 1;
+	for (i = 0; i < lines_to_show; i += 1) {
+		printf("%s\n", chld_out.line[i]);
+	}
+	return OK;
 }

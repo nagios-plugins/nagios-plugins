@@ -2,7 +2,7 @@
 
 SUBDIRS = gl tap lib plugins plugins-scripts plugins-root po @PERLMODS_DIR@
 
-EXTRA_DIST = config.rpath \
+EXTRA_DIST = build-aux/config.rpath \
 	ABOUT-NLS ACKNOWLEDGEMENTS AUTHORS CODING ChangeLog FAQ LEGAL NEWS \
 	NP-VERSION-GEN REQUIREMENTS SUPPORT THANKS \
 	NPTest.pm pkg nagios-plugins.spec \
@@ -27,6 +27,9 @@ dist-hook:
 	echo ${VERSION} >$(distdir)/release
 
 install-root:
+	cd plugins-root && $(MAKE) $@
+
+install-packager:
 	cd plugins-root && $(MAKE) $@
 
 test test-debug:

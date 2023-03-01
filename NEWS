@@ -1,5 +1,141 @@
 This file documents the major additions and syntax changes between releases.
 
+2.4.3 2022-01-17
+	FIXES
+	check_dig: Improve matching logic when using -a (#652)
+	check_mailq: Fix garbled output when checking postfix (#663)
+
+2.4.2 2022-11-08
+	FIXES
+	check_ntp/check_ntp_time: Fix calculation bug introduced in 2.4.1 (#677)
+
+2.4.1 2022-10-25
+	FIXES
+	check_ntp_time: Ensure -W/-C (stratum warning/critical thresholds) are available as short options (#661)
+	check_icmp: Fix "Invalid Argument" errors on FreeBSD 13.1 (#659)
+	check_icmp: Fix address binding in ipv6 (#666)
+	check_ntp/check_ntp_time: Fixed errors when compiling with strict aliasing (#665)
+	check_ifstatus: Fixed issue where OID 1.3.6.1.4.1.9.2.2.1.1.28 was queried on systems that didn't support it (#650)
+	check_smtp: Fix regression when using STARTTLS (#649, #648, #651)
+	check_log.sh: Use temporary files to fix diffing for high-throughput logs (#566)
+	Fixed several compile errors for upcoming clang-16 (#670)
+
+2.4.0 2021-11-18
+	ENHANCEMENTS
+	check_http: Add -o option (Append page body as performance data) (#615) (Tobias Leich)
+	check_icmp: Add -f and -F perfdata options (#567)
+	check_ifstatus: Add -d option (exclude interfaces by description regexp) (#548) (Alexandre Anriot)
+	check_smtp: Add support for SMTP over TLS (#565) (Franz Schwartau)
+	check_snmp: Add -M to multiply results by a given factor (#559) (Scott Baker)
+	
+	FIXES
+	lib: _np_state_calculate_location_prefix() should return non-void when running under suid (Kris Shannon)
+	pst3.c: Fix build issue on Solaris (#537)
+	check_by_ssh: Fix return code when ssh or the shell itself fails (#618) (Guillaume Rousse)
+	check_disk: Fix false DISK CRITICAL alerts on btrfs systems (#569) (George Hansper)
+	check_log: Fix error message for systems that don't use bash (#539)
+	check_log: Fix linebreaks in documentation (#621) (Matt Capra)
+	check_mysql_query: Fix use-after-free (#602) (Simon F)
+	negate: Errors are now printed directly to stderr instead of being redirected to stdout (#571) (Geert Hendrickx)
+
+2.3.3 2020-03-11
+	FIXES
+	check_http: Fix several issues related to page length calculation (#535, #533, #536)
+	check_icmp: fix issues when not running in debug mode (#530)
+
+2.3.2 2020-02-20
+	FIXES
+	build: Fix broken builds on some systems, including Homebrew (#508)
+	check_disk: Change unit calculations to always use binary units for backward compatibility (#518)
+	check_dns: Improve error messaging for "connection timed out" and "connected refused" cases (#503) (Barak Shohat)
+	check_http: Fix host:port syntax when using -H (#514) (Isaac White)
+	check_icmp: All performance data tags should show when packet loss is 100% (#510)
+	check_icmp: Fix incorrect status when run against multiple hosts (#520)
+	check_mailq: Fix nullmailer regular expression to recognize minutes and seconds properly (#522)
+	check_ntp_peer: Fixed improper performance data by setting LC_NUMERIC to 'C' (#526)
+	check_ntp_time: Fixed improper performance data by setting LC_NUMERIC to 'C' (#526)
+	check_ping: Fixed inconsistent timeout behavior (#323, #419) (Barak Shohat)
+	perl dependencies: updated the included Module::Build to work with newer versions of perl (#505)
+
+2.3.1 2019-12-09
+	FIXES
+	check_icmp: Fixed backward-compatibility issue with performance data (#480)
+
+2.3.0 2019-12-04
+Note: nagios-plugins 2.3.0 introduced a backward-compatibility issue for performance data graphs produced by check_icmp.
+Anyone upgrading from an older version of nagios-plugins should upgrade directly to >=2.3.1.
+	ENHANCEMENTS
+	Added a plugin "remove_perfdata" to remove perfdata from another plugin's output
+	Added a plugin "check_ssl_validity" which verifies a certificate through CRL or OCSP
+	Added directory plugins-python containing three Python plugins
+	check_apt: Add --only-critical switch
+	check_apt: Add --packages-warning (Marc Sánchez)
+	check_disk: Add --combined-thresholds to alert on a percentage AND raw units. 
+	check_disk: Add --inode-perfdata to get extra performance data from inode statistics
+	check_disk: Add support for base-10 units kB, MB, GB, TB; rename base-2 units to KiB, MiB, GiB, TiB
+	check_disk_smb: Add configfile feature
+	check_disk_smb: Added additional smb support
+	check_disk_smb: Allow non-latin characters in names (Konstantin Shalygin)
+	check_file_age: Use extended plugin output to show one file per line
+	check_http: New parameter `--verify-host` will check if -H hostname matches the SSL certificate
+	check_icmp: Add Jitter, MOS, Score (Alessandro Ren)
+	check_ldap: Add support for checking LDAP cert age (Guillaume Rousse)
+	check_mailq: Add mailq -C option for config dir or config file
+	check_mailq: Add option for opensmtpd (brigriffin)
+	check_mailq: Add support for opensmtpd
+	check_mysql_query: Add --character-set flag
+	check_ntp: Add --delay flag to circumvent DOS detection
+	check_ntp: Add --allow-zero-stratum flag
+	check_ntp_time: Add --delay flag to circumvent DOS detection
+	check_ntp_time: Add support for monitoring stratum of timesources
+	check_oracle: Add support for Oracle XE databases (Peter Athaks)
+	check_ping: plugin output will now include hostname and IP address
+	check_pgsql: Add --print-query flag
+	check_procs: Add FreeBSD jail support (Mathieu Arnold)
+	check_procs: Allow process to be excluded from check_procs (Marcel Klein)
+	check_procs: Additional performance data metrics (azthec)
+	check_radius: Add calling-station-id (cejkar)
+	check_smtp: Add --proxy flag for PROXY protocol (Patrick Uiterwijk)
+	check_smtp: Add support for --sni (Arkadiusz Miśkiewicz)
+	check_snmp: Add --strict flag to ensure returned OID matches -o.
+	check_swap: Add --no-swap flag (Mario Trangoni)
+	check_ups: Add check for battery runtime left (gino0631)
+	lib: Added warning_string/critical_string to struct thresholds for storing originally parsed strings
+	ssl_utils: Added certificate expiry data in OK status (check_http, check_smtp, check_tcp) (Matt Capra)
+
+	FIXES
+	build: Fix ax_with_python not crashing on Python3 (Michael Orlitzky)
+	build: fix configure.ac for FreeBSD SWAPFORMAT
+	build: Fix rpmbuild errors (Josh Coughlan)
+	check_disk: autofs being mounted despite '-l'. Fixed, and also excluded some system "fake" mountpoints
+	check_disk: Add missing timeout logic
+	check_dns: Fix for Bind 9.11.x AAAA records being reported with A record format (Troy Lea)
+	check_dns: reverse (PTR) check is now case insensitive
+	check_file_age: For multiple files, use the "worst" status instead of the "last" one
+	check_file_age: perfdata labels when using multiple files
+	check_file_age: For multiple files, don't exit immediately on first file not found
+	check_http: Additional header/status checking
+	check_http: Fix --no-body
+	check_http: When checking certificate, don't check content/status unless specified by --continue-after-certificate
+	check_load: Fixed for operating systems which don't have commas in their load averages (like Mac OSX)
+	check_log does not check for "-O oldlog"
+	check_log lost ability to use regexes for query (-q) in 2.1.4
+	check_mysql_query & mysql_query: extra-opts causes crash
+	check_ntp/ntp_time/ntp_peer: Fix how thresholds are displayed in performance data
+	check_ntp_time calls `write` on a UDP socket without a successful call to `connect`
+	check_ntp_time: Periodically returns "Socket timeout" when one of several ntp server doesn't respond
+	check_ntp.pl: Fixed crash due to references to undefined variables
+	check_ping: FreeBSD ping working natively
+	check_procs: Prevent buffer overflow/crash on Solaris
+	check_radius: Fix for null pointer dereference (Vít Heřman)
+	check_sensors: Fix fault test with --ignore-fault
+	check_snmp: Fix --authpasswd option
+	check_snmp: Fix perfdata not adhering to plugin dev guidelines
+	check_snmp: warning/critical perfdata is returned properly
+	check_ups: Change performance data units to match spec. (Temperature and voltage units can be accessed via -e)
+	check_wave: produces lots of errors if required arguments are not provided
+
+
 2.2.1 2017-04-19
 	FIXES
 	check_users: not accepting zero as the threshold
@@ -17,6 +153,7 @@ This file documents the major additions and syntax changes between releases.
 	check_mailq: Nullmailer Regex is not working for Ubuntu 16.04
 	check_swap: Downstream Fedora patch: Prevent check_swap from returning OK, if no swap activated
 	Building RPMs on Amazon Linux - Add 'install-root' on line 165 of spec file
+	check_http: Memory allocation error
 
 
 2.2.0 2017-01-19
@@ -116,20 +253,20 @@ This file documents the major additions and syntax changes between releases.
 	check_dig honor the -4 and -6 switches
 	check_ntp_peer: do not use uninitialized results for max state
 	check_log.sh, check_oracle.sh, check_sensors.sh: Setting PATH at first
-	check_log.sh: droping path from basename while evaluating PROGNAME
+	check_log.sh: dropping path from basename while evaluating PROGNAME
 	check_tcp: Fix check_jabber to work with Openfire servers
 	check_ifstatus.pl: Fix "-n" and "-u" options to ignore if either is set, not just both
 	check_mrtgtraf: Fix perfdata to comply with perfdata UOM definition
 	check_real, check_ntp: fix null termination
 	check_apt: fix memset
-	check_ssh: change warning to critical for protocal/version errors
+	check_ssh: change warning to critical for protocol/version errors
 	utils_cmd.c: avoid a segfault, if ulimit is set to unlimited
 	utils_cmd.c: make constants from maxfd values
 	configure.ac: Added particular ps command for HP-UX
 	check_disk: Fix pthread start routine type
 	check_http: Make header_value() and chunked-encoding decoding more robust
 	check_http: fix Host header if explicitly set with -k
-	sslutils.c: Forcing furter restriction of ciphers for current security concerns
+	sslutils.c: Forcing further restriction of ciphers for current security concerns
 	check_nagios, check_procs: Enable check_proc to monitor processes in PID name-spaced environments.
 	check_dhcp.c: use /dev/urandom if available
 	check_http.c: Don't decode page if it's not there
@@ -167,7 +304,7 @@ This file documents the major additions and syntax changes between releases.
 	test.pl.in: Use "C" locale when running test suite
 	check_http.t: Adjust date strings to the now-localized output
 	check_dns.t - Fix Perl Warning. perl doesn't understand /d within "".
-	check_snmp.t: skip extented snmp tests if snmpd has no perl support
+	check_snmp.t: skip extended snmp tests if snmpd has no perl support
 	check_snmp.t: fix snmp test for included threshold
 	check_http.t: fix tests for certificates expire date with seconds
 	check_http.t: add faketime based tests for check_http
@@ -260,7 +397,7 @@ This file documents the major additions and syntax changes between releases.
 	check_nt.c - Changed 'Mb' to 'MB' in MEMUSE output for clarity (abrist)
 
 2.0.1 15th April 2014
-	ENHANCMENTS
+	ENHANCEMENTS
 	check_snmp.c - Added thresholds to performance data (jccomputing)
 	check_http.c - Added */* MIME support (Alex Gottschalk)
 	check_mailq.pl - Added autodetection for mailq implementation (evgeni)
@@ -370,10 +507,10 @@ This file documents the major additions and syntax changes between releases.
 	New check_procs -k option to ignore kernel threads (on Linux)
 	Let check_procs use /proc/<PID>/exe (if available) instead of getpid(2), unless -T is specified
 	Let check_mysql support SSL
-	Let check_mysql add perfromance metrics for all checks
+	Let check_mysql add performance metrics for all checks
 	New check_mysql -f option to specify a client options file
 	New check_mysql -g option to specify a client options group
-	New check_snmp --offset option to allow for adding/substracting an offset value to sensor data
+	New check_snmp --offset option to allow for adding/subtracting an offset value to sensor data
 	Let check_snmp support an arbitrary number of OIDs
 	Let check_ide_smart support NetBSD
 
@@ -388,7 +525,7 @@ This file documents the major additions and syntax changes between releases.
 	Fix deprecated imports of check_nmap.py (Fabio Rueda)
 
 	WARNINGS
-	check_http behaviour of -k/--header changed since it does not seperate multiple headers by semicolons anymore. Use multiple -k switches instead.
+	check_http behaviour of -k/--header changed since it does not separate multiple headers by semicolons anymore. Use multiple -k switches instead.
 	check_http's --proxy_authorization option is now called --proxy-authorization (it was always documented this way)
 	The contrib directory has been removed from this distribution
 
@@ -539,7 +676,7 @@ This file documents the major additions and syntax changes between releases.
 	check_ntp and check_ntp_peer now show proper jitter/stratum thresholds longopts in --help
 	check_dns now allow to repeat -a to match multiple possibly returned address (common with load balancers)
 	check_mysql and check_radius now try clearing password in processlist just like check_mysql_query
-	check_mysql and check_mysql_query now support sockets explicitely (-s, --socket)
+	check_mysql and check_mysql_query now support sockets explicitly (-s, --socket)
 	negate now has the ability to replace the status text as well (-s, --substitute)
 	Added performance data to check_ping (Christian Schneemann)
 	Added support for --extra-opts in all C plugins (disabled by default, see configure --help)
@@ -579,7 +716,7 @@ This file documents the major additions and syntax changes between releases.
 	New check_disk option -L: Only check local filesystems, but call stat() on remote ones, too.
 	  Thus accessibility of remote filesystems can be checked without any threshold comparison.
 	Check_disk's --help now prints some examples for the new features introduced in 1.4.8
-	New check_disk -i/-I option to ignore pathes/partitions based on regular expressions
+	New check_disk -i/-I option to ignore paths/partitions based on regular expressions
 	New check_disk -A option to select all filesystems explicitly
 	WARNING: check_disk's -E option must now be passed before -p or -r/-R arguments
 	  Passing -E after -p or -r results in UNKNOWN state, now

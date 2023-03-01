@@ -71,7 +71,7 @@ int wrta_p = FALSE;
 int
 main (int argc, char **argv)
 {
-/* normaly should be  int result = STATE_UNKNOWN; */
+/* normally should be  int result = STATE_UNKNOWN; */
 
   int status = STATE_UNKNOWN;
   int result = 0;
@@ -147,7 +147,7 @@ main (int argc, char **argv)
   (void) fclose (child_stderr);
 
   /* close the pipe */
-  if (result = spclose (child_process))
+  if ((result = spclose (child_process)))
     /* need to use max_state not max */
     status = max_state (status, STATE_WARNING);
 
@@ -184,7 +184,7 @@ textscan (char *buf)
   int status = STATE_UNKNOWN;
 
   if (strstr (buf, "not found")) {
-    die (STATE_CRITICAL, _("FPING UNKNOW - %s not found\n"), server_name);
+    die (STATE_CRITICAL, _("FPING UNKNOWN - %s not found\n"), server_name);
 
   }
   else if (strstr (buf, "is unreachable") || strstr (buf, "Unreachable")) {
