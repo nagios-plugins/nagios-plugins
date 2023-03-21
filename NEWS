@@ -1,5 +1,9 @@
 This file documents the major additions and syntax changes between releases.
 
+2.4.4 2023-04-??
+	FIXES
+	check_log: improve file readability test to accommodate CAP_DAC_READ_SEARCH and similar (#604)
+
 2.4.3 2022-01-17
 	FIXES
 	check_dig: Improve matching logic when using -a (#652)
