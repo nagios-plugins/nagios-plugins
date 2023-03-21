@@ -185,12 +185,19 @@ if [ $rc -eq 0 ]; then
 	exit "$STATE_UNKNOWN"
 fi
 
-# If the source log file doesn't exist, exit
+# If the source log file doesn't exist or isn't readable, exit.
+#
+# Note that we deliberately use "dd" to check for read access instead
+# of "[ -r $logfile ]", as the latter can return false-negatives on
+# Linux if the check_log plugin is being run via nrpe with additional
+# capabilities (e.g., CAP_DAC_READ_SEARCH).  In contrast, "dd"
+# actually attempts to open the file, which is a true test of whether
+# the file is readable.
 
 if [ ! -e "$logfile" ]; then
     echo "Log check error: Log file $logfile does not exist!"
     exit "$STATE_UNKNOWN"
-elif [ ! -r "$logfile" ] ; then
+elif ! dd if="$logfile" count=0 1>/dev/null 2>&1; then
     echo "Log check error: Log file $logfile is not readable!"
     exit "$STATE_UNKNOWN"
 fi
