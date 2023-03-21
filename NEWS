@@ -4,6 +4,7 @@ This file documents the major additions and syntax changes between releases.
 	FIXES
 	check_log: improve file readability test to accommodate CAP_DAC_READ_SEARCH and similar (#604)
 	check_mrtgtraf: fix incorrect out_pct performance data metric (#600)
+	check_ping: handle "bad checksum" warning from ping output (#616)
 
 2.4.3 2022-01-17
 	FIXES
