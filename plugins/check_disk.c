@@ -233,7 +233,7 @@ main (int argc, char **argv)
   int temp_result2;
 
   struct mount_entry *me;
-  struct mount_entry *last_me;
+  struct mount_entry *last_me = NULL;
   struct fs_usage fsp, tmpfsp;
   struct parameter_list *temp_list, *path;
 

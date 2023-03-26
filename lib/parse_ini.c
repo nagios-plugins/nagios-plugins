@@ -118,7 +118,7 @@ static void parse_locator(const char *locator, const char *def_stanza, np_ini_in
 np_arg_list* np_get_defaults(const char *locator, const char *default_section){
 	FILE *inifile=NULL;
 	np_arg_list *defaults=NULL;
-	np_ini_info i;
+	np_ini_info i = {NULL, NULL};
 	struct stat fstat;
 	bool is_suid_set = np_suid();
 
