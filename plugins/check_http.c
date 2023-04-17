@@ -150,6 +150,7 @@ void print_help (void);
 void print_usage (void);
 
 extern int check_hostname;
+extern int allow_tls_shutdown;
 
 
 int
@@ -226,7 +227,8 @@ process_arguments (int argc, char **argv)
         INVERT_REGEX = CHAR_MAX + 1,
         SNI_OPTION,
         VERIFY_HOST,
-        CONTINUE_AFTER_CHECK_CERT
+        CONTINUE_AFTER_CHECK_CERT,
+        ALLOW_TLS_SHUTDOWN
     };
 
     int option = 0;
@@ -269,6 +271,7 @@ process_arguments (int argc, char **argv)
         {"extended-perfdata", no_argument, 0, 'E'},
         {"output-body-as-perfdata", no_argument, 0, 'o'},
         {"show-url", no_argument, 0, 'U'},
+        {"allow-tls-shutdown", no_argument, 0, ALLOW_TLS_SHUTDOWN},
         {0, 0, 0, 0}
     };
 
@@ -406,6 +409,9 @@ enable_ssl:
             break;
         case VERIFY_HOST:
             check_hostname = 1;
+            break;
+        case ALLOW_TLS_SHUTDOWN:
+            allow_tls_shutdown = 1;
             break;
         case 'f': /* onredirect */
             if (!strcmp (optarg, "stickyport"))
@@ -1825,6 +1831,8 @@ print_help (void)
     printf (" %s\n", "-K, --private-key=FILE");
     printf ("   %s\n", _("Name of file containing the private key (PEM format)"));
     printf ("   %s\n", _("matching the client certificate"));
+    printf (" %s\n", "--allow-tls-shutdown");
+    printf ("    %s\n", _("Allow shut down of TLS/SSL. Controlled and by the specifications of the TLS/SSL protocol."));
 #endif
 
     printf (" %s\n", "-e, --expect=STRING");
