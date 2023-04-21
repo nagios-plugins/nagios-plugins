@@ -108,7 +108,7 @@ AM_CONDITIONAL([RELEASE_PRESENT], [test -f $srcdir/release])
 
 # Also read in the version from it
 if test -f $srcdir/release; then
-	NP_RELEASE="$(<release)"
+	NP_RELEASE="$(<$srcdir/release)"
 else
 	NP_RELEASE="$PACKAGE_VERSION"
 fi
