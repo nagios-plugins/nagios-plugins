@@ -3,6 +3,7 @@ This file documents the major additions and syntax changes between releases.
 2.4.5 2023-05-15
 	FIXES
 	check_tcp: Add --sni as an alias to -N (#701)
+	build: fix bug when using VPATH builds (#700)
 
 2.4.4 2023-04-14
 	FIXES
