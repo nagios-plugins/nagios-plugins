@@ -60,10 +60,10 @@ case "$1" in
 		elif [ "$status" != 0 ] ; then
 			text="WARNING - sensors returned state $status"
 			exit=$STATE_WARNING
-		elif echo "${sensordata}" | egrep -q ALARM >/dev/null ; then
+		elif echo "${sensordata}" | grep -q ALARM >/dev/null ; then
 			text="SENSOR CRITICAL - Sensor alarm detected!"
 			exit=$STATE_CRITICAL
-		elif [ $ignorefault -eq 0 ] && echo "${sensordata}" | egrep -q FAULT  >/dev/null; then
+		elif [ $ignorefault -eq 0 ] && echo "${sensordata}" | grep -q FAULT  >/dev/null; then
 			text="SENSOR UNKNOWN - Sensor reported fault"
 			exit=$STATE_UNKNOWN
 		else
