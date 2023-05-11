@@ -48,21 +48,25 @@ SKIP: {
     like( $result->output, '/^PROCS OK: 1 process with command name \'launchd\', UID = 501 (.*)$/', "Output correct" );
 }
 
-$result = NPTest->testCmd( "$command -u -2 -w 2:2" );
-is( $result->return_code, 1, "Checking processes with userid=-2" );
-like( $result->output, '/^PROCS WARNING: 3 processes with UID = -2 \(nobody\)$/', "Output correct" );
+SKIP: {
+    skip 'user with uid -2 required', 8 unless getpwuid(-2);
 
-$result = NPTest->testCmd( "$command -u -2 -w 3:3" );
-is( $result->return_code, 0, "Checking processes with userid=-2 past threshold" );
-like( $result->output, '/^PROCS OK: 3 processes with UID = -2 \(nobody\)$/', "Output correct" );
+    $result = NPTest->testCmd( "$command -u -2 -w 2:2" );
+    is( $result->return_code, 1, "Checking processes with userid=-2" );
+    like( $result->output, '/^PROCS WARNING: 3 processes with UID = -2 \(nobody\)$/', "Output correct" );
 
-$result = NPTest->testCmd( "$command -u -2 -a usb" );
-is( $result->return_code, 0, "Checking processes with userid=-2 and usb in arguments" );
-like( $result->output, '/^PROCS OK: 1 process with UID = -2 \(nobody\), args \'usb\'/', "Output correct" );
+    $result = NPTest->testCmd( "$command -u -2 -w 3:3" );
+    is( $result->return_code, 0, "Checking processes with userid=-2 past threshold" );
+    like( $result->output, '/^PROCS OK: 3 processes with UID = -2 \(nobody\)$/', "Output correct" );
 
-$result = NPTest->testCmd( "$command -u -2 -a UsB" );
-is( $result->return_code, 0, "Checking case sensitivity of args" );
-like( $result->output, '/^PROCS OK: 0 processes with UID = -2 \(nobody\), args \'UsB\'/', "Output correct" );
+    $result = NPTest->testCmd( "$command -u -2 -a usb" );
+    is( $result->return_code, 0, "Checking processes with userid=-2 and usb in arguments" );
+    like( $result->output, '/^PROCS OK: 1 process with UID = -2 \(nobody\), args \'usb\'/', "Output correct" );
+
+    $result = NPTest->testCmd( "$command -u -2 -a UsB" );
+    is( $result->return_code, 0, "Checking case sensitivity of args" );
+    like( $result->output, '/^PROCS OK: 0 processes with UID = -2 \(nobody\), args \'UsB\'/', "Output correct" );
+}
 
 $result = NPTest->testCmd( "$command --ereg-argument-array='mdworker.*501'" );
 is( $result->return_code, 0, "Checking regexp search of arguments" );
@@ -98,7 +102,7 @@ is( $result->output, 'PROCS OK: 8 processes with PCPU >= 0.70 | procs=8;;;0;', "
 
 $result = NPTest->testCmd( "$command --metric=CPU -w 8" );
 is( $result->return_code, 1, "Checking against metric of CPU > 8" );
-is( $result->output, 'CPU WARNING: 1 warn out of 95 processes | procs=95;;;0; procs_warn=1;;;0; procs_crit=0;;;0;', "Output correct" );
+is( $result->output, 'CPU WARNING: 1 warn out of 95 processes | procs=95;;;0; procs_warn=1;;;0; procs_crit=0;;;0; procpcpu=23.000000;', "Output correct" );
 
 # TODO: Because of a conversion to int, if CPU is 1.45%, will not alert, but 2.01% will.
 SKIP: {
@@ -111,15 +115,15 @@ SKIP: {
 
 $result = NPTest->testCmd( "$command --metric=VSZ -w 1200000 -v" );
 is( $result->return_code, 1, "Checking against VSZ > 1.2GB" );
-is( $result->output, 'VSZ WARNING: 4 warn out of 95 processes [WindowServer, Safari, Mail, Skype] | procs=95;;;0; procs_warn=4;;;0; procs_crit=0;;;0;', "Output correct" );
+is( $result->output, 'VSZ WARNING: 4 warn out of 95 processes [WindowServer, Safari, Mail, Skype] | procs=95;;;0; procs_warn=4;;;0; procs_crit=0;;;0; procvsz=74520456;', "Output correct" );
 
 $result = NPTest->testCmd( "$command --metric=VSZ -w 1200000 -v" );
 is( $result->return_code, 1, "Checking against VSZ > 1.2GB" );
-is( $result->output, 'VSZ WARNING: 4 warn out of 95 processes [WindowServer, Safari, Mail, Skype] | procs=95;;;0; procs_warn=4;;;0; procs_crit=0;;;0;', "Output correct" );
+is( $result->output, 'VSZ WARNING: 4 warn out of 95 processes [WindowServer, Safari, Mail, Skype] | procs=95;;;0; procs_warn=4;;;0; procs_crit=0;;;0; procvsz=74520456;', "Output correct" );
 
 $result = NPTest->testCmd( "$command --metric=RSS -c 70000 -v" );
 is( $result->return_code, 2, "Checking against RSS > 70MB" );
-is( $result->output, 'RSS CRITICAL: 5 crit, 0 warn out of 95 processes [WindowServer, SystemUIServer, Safari, Mail, Safari] | procs=95;;;0; procs_warn=0;;;0; procs_crit=5;;;0;', "Output correct" );
+is( $result->output, 'RSS CRITICAL: 5 crit, 0 warn out of 95 processes [WindowServer, SystemUIServer, Safari, Mail, Safari] | procs=95;;;0; procs_warn=0;;;0; procs_crit=5;;;0; procrss=2381476;', "Output correct" );
 
 $result = NPTest->testCmd( "$command --ereg-argument-array='(nosuchname|nosuch2name)'" );
 is( $result->return_code, 0, "Checking no pipe symbol in output" );
