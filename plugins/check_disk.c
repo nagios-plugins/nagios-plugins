@@ -211,6 +211,7 @@ char *group = NULL;
 struct stat *stat_buf;
 struct name_list *seen = NULL;
 int human_output = 0;
+int human_perfdata = 0;
 int inode_perfdata_enabled = 0;
 
 int
@@ -499,7 +500,8 @@ main (int argc, char **argv)
           if (human_column_widths.disk_result < strlen(disk_result_str)) human_column_widths.disk_result = strlen(disk_result_str);
           if (human_column_widths.type < strlen(me->me_type))            human_column_widths.type = strlen(me->me_type);
           if (human_column_widths.mount_dir < strlen(me->me_mountdir))   human_column_widths.mount_dir = strlen(me->me_mountdir);
-      } else {
+      } 
+      if (!human_output || human_perfdata) {
           label_name = (!strcmp(me->me_mountdir, "none") || display_mntp) ? me->me_devname : me->me_mountdir;
           /* Nb: *_high_tide are unset when == ULONG_MAX */
           xasprintf (&perf, "%s %s", perf,
@@ -596,7 +598,12 @@ main (int argc, char **argv)
 
     if (human_output) {
         print_human_disk_entries(&human_disk_entries[0], num_human_disk_entries);
-    } else {
+        
+        if (human_perfdata) {
+            printf ("|%s\n", perf);
+        }
+    }
+    if(!human_output) {
         if (verbose >= 2)
             xasprintf (&output, "%s%s", output, details);
 
@@ -671,6 +678,7 @@ process_arguments (int argc, char **argv)
     {"megabytes", no_argument, 0, 'm'},
     {"units", required_argument, 0, 'u'},
     {"human", no_argument, 0, 'H'},
+    {"human_perfdata", no_argument, 0, 'Z'},
     {"path", required_argument, 0, 'p'},
     {"partition", required_argument, 0, 'p'},
     {"exclude_device", required_argument, 0, 'x'},
@@ -714,7 +722,7 @@ process_arguments (int argc, char **argv)
       strcpy (argv[c], "-t");
 
   while (1) {
-    c = getopt_long (argc, argv, "+?VqhHvefCt:c:w:K:W:u:p:x:X:N:mklLg:R:r:i:I:MEAn", longopts, &option);
+    c = getopt_long (argc, argv, "+?VqhHZvefCt:c:w:K:W:u:p:x:X:N:mklLg:R:r:i:I:MEAn", longopts, &option);
 
     if (c == -1 || c == EOF)
       break;
@@ -818,6 +826,10 @@ process_arguments (int argc, char **argv)
 
     case 'H': /* Human display */
       human_output = 1;
+    break;
+    case 'Z': /* Human display with performance Data */
+      human_output = 1;
+      human_perfdata = 1;
     break;
 
     case 'k': /* display mountpoint */
@@ -1174,6 +1186,8 @@ print_help (void)
   printf ("    %s\n", _("Group paths. Thresholds apply to (free-)space of all partitions together"));
   printf (" %s\n", "-H, --human");
   printf ("    %s\n", _("Produce human-readable output."));
+  printf (" %s\n", "-Z, --human_perfdata");
+  printf ("    %s\n", _("Produce human-readable output including performance data."));
   printf (" %s\n", "-k, --kilobytes");
   printf ("    %s\n", _("Same as '--units kB'"));
   printf (" %s\n", "-l, --local");
@@ -1232,7 +1246,7 @@ print_usage (void)
 {
   printf ("%s\n", _("Usage:"));
   printf (" %s -w limit -c limit [-W limit] [-K limit] {-p path | -x device}\n", progname);
-  printf ("[-C] [-E] [-e] [-f] [-g group ] [-H] [-k] [-l] [-M] [-m] [-R path ] [-r path ]\n");
+  printf ("[-C] [-E] [-e] [-f] [-g group ] [-H] [-Z] [-k] [-l] [-M] [-m] [-R path ] [-r path ]\n");
   printf ("[-t timeout] [-u unit] [-v] [-X type] [-N type] [-n] [--combined-thresholds ]\n");
 }
 
@@ -1310,14 +1324,10 @@ get_stats (struct parameter_list *p, struct fs_usage *fsp) {
 
 void
 get_path_stats (struct parameter_list *p, struct fs_usage *fsp) {
-#if defined(__NetBSD__) || defined(__FreeBSD__) || defined(OpenBSD )
   /* 2007-12-08 - Workaround for Gnulib reporting insanely high available
   * space on BSD (the actual value should be negative but fsp->fsu_bavail
   * is unsigned) */
   p->available = fsp->fsu_bavail > fsp->fsu_bfree ? 0 : fsp->fsu_bavail;
-#else
-  p->available = fsp->fsu_bavail;
-#endif
   p->available_to_root = fsp->fsu_bfree;
   p->used = fsp->fsu_blocks - fsp->fsu_bfree;
   if (freespace_ignore_reserved) {
