@@ -27,7 +27,7 @@
 *****************************************************************************/
 
 const char *progname = "check_by_ssh";
-const char *copyright = "2000-2014";
+const char *copyright = "2000-";
 const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"
@@ -304,6 +304,16 @@ process_arguments (int argc, char **argv)
 				skip_stderr = atoi (optarg);
 			break;
 		case 'o':									/* Extra options for the ssh command */
+
+			/* Don't allow the user to run commands local to the nagios server, unless they decide otherwise at compile time. */
+#ifndef HAVE_UNRESTRICTED_SSH_OPTIONS
+			if (   strcasestr(optarg, "ProxyCommand") != NULL
+				|| strcasestr(optarg, "PermitLocalCommand") != NULL
+				|| strcasestr(optarg, "LocalCommand") != NULL) {
+				break;
+			}
+#endif
+
 			comm_append("-o");
 			comm_append(optarg);
 			break;

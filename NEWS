@@ -1,10 +1,11 @@
 This file documents the major additions and syntax changes between releases.
 
-2.4.5 2023-05-15
+2.4.5 2023-05-31
 	FIXES
 	check_dns: Fix buffer overflow on Ubuntu 22.04 (#699)
 	check_sensors: Use grep instead of deprecated egrep (#697)
 	check_tcp: Add --sni as an alias to -N (#701)
+	check_by_ssh: Prevent users from using ProxyCommand/LocalCommand/PermitLocalCommand (./configure --with-unrestricted-ssh-options=yes to re-enable)
 	build: fix bug when using VPATH builds (#700)
 
 2.4.4 2023-04-14

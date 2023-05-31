@@ -418,6 +418,16 @@ then
 		[path and arguments for invoking 'who'])
 fi
 
+AC_ARG_WITH(unrestricted_ssh_options,
+	[AS_HELP_STRING([--with-unrestricted-ssh-options],
+		[allow any SSH options to be used with check_by_ssh])],
+	[],
+	[unrestricted_ssh_options=no])
+
+if test "x$with_unrestricted_ssh_options" = xyes ; then
+	AC_DEFINE(HAVE_UNRESTRICTED_SSH_OPTIONS,[1],[Allow SSH to use options that run local commands.])
+fi
+
 AC_ARG_WITH([ipv6],
 	[AS_HELP_STRING([--with-ipv6], [support IPv6 @<:@default=check@:>@])],
 	[], [with_ipv6=check])
