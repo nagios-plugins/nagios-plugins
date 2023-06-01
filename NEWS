@@ -1,6 +1,6 @@
 This file documents the major additions and syntax changes between releases.
 
-2.4.5 2023-05-31
+2.4.5 2023-06-01
 	FIXES
 	check_dns: Fix buffer overflow on Ubuntu 22.04 (#699)
 	check_sensors: Use grep instead of deprecated egrep (#697)
