@@ -33,7 +33,7 @@ AC_ARG_WITH(nagios_group,
 	extra_install_args="$extra_install_args -g $withval")
 AC_ARG_WITH(world_permissions,
 	ACX_HELP_STRING([--without-world-permissions],
-		[Installs executables without world permissions]))
+		[Installs executables without world permissions])) 
 
 if test "x$with_world_permissions" = xno ; then
 	extra_install_args="$extra_install_args -m 0550"
