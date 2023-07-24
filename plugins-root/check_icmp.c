@@ -969,12 +969,12 @@ static void run_checks() {
 /*		icmp header                : 28 bytes */
 /*		icmp echo reply            : the rest */
 static int wait_for_reply(int sock, u_int t) {
-  int n, hlen;
+  int n, hlen = 0;
   static unsigned char buf[4096];
   struct sockaddr_storage resp_addr;
   union ip_hdr *ip;
   union icmp_packet packet;
-  struct rta_host *host;
+  struct rta_host *host = NULL;
   struct icmp_ping_data data;
   struct timeval wait_start, now;
   u_int tdiff, i, per_pkt_wait;
@@ -1700,8 +1700,8 @@ static u_int get_timevaldiff(struct timeval *early, struct timeval *later) {
 
 static int add_target_ip(char *arg, struct sockaddr_storage *in) {
   struct rta_host *host;
-  struct sockaddr_in *sin, *host_sin;
-  struct sockaddr_in6 *sin6, *host_sin6;
+  struct sockaddr_in *sin = NULL, *host_sin;
+  struct sockaddr_in6 *sin6 = NULL, *host_sin6;
 
   if (address_family == AF_INET) {
     sin = (struct sockaddr_in *)in;
