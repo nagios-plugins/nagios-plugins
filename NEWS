@@ -3,6 +3,7 @@ This file documents the major additions and syntax changes between releases.
 2.4.6 2023-08-01
 	FIXES
 	check_mailq: Correctly handle "Mail queue is empty" when monitoring Postfix over SSMTP (#611)
+	check_oracle: Reduce false positives when looking for "OK" messages (#723)
 	utils: Fix compiler warnings (#583, #637)
 
 2.4.5 2023-06-01
