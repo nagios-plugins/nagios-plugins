@@ -137,7 +137,7 @@ export ORACLE_HOME PATH LD_LIBRARY_PATH
 case "$cmd" in
 --tns)
     tnschk=$(tnsping "$2")
-    tnschk2=$(echo "$tnschk" | grep -c OK)
+    tnschk2=$(echo "$tnschk" | grep -Ec "^OK \([[:digit:]]+ msec\)")
     if [ "${tnschk2}" -eq 1 ] ; then 
         tnschk3=${tnschk##*(}; tnschk3=${tnschk3%)*}
         echo "OK - reply time ${tnschk3} from $2"
