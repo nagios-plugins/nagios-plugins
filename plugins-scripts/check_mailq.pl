@@ -319,14 +319,14 @@ elsif ( $mailq eq "postfix" ) {
      ## open mailq
 	if ( defined $utils::PATH_TO_MAILQ ) {
 		if (-x $utils::PATH_TO_MAILQ) {
-			if (! open (MAILQ, "$utils::PATH_TO_MAILQ$mailq_args | ")) {
+			if (! open (MAILQ, "$utils::PATH_TO_MAILQ$mailq_args 2>&1 | ")) {
 				print "ERROR: $utils::PATH_TO_MAILQ$mailq_args returned an error\n";
 				exit $ERRORS{'UNKNOWN'};
 			}
 		}
 		else {
 			if ( $sudo ne "" ) {
-				if (! open (MAILQ, "$sudo $utils::PATH_TO_MAILQ$mailq_args | " ) ) {
+				if (! open (MAILQ, "$sudo $utils::PATH_TO_MAILQ$mailq_args 2>&1 | " ) ) {
 					print "ERROR: $utils::PATH_TO_MAILQ$mailq_args is not executable with sudo by (uid $>:gid($)))\n";
 					exit $ERRORS{'UNKNOWN'};
 				}
