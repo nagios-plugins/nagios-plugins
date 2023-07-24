@@ -338,6 +338,11 @@ else {
     @crldps = @{$decoded->CRLDistributionPoints};
     $crlskip = 0;
     foreach $crldp (@crldps) {
+        if ($crldp !~ "^http://") {
+            if ($opt_d) { print "Skipping non-http CRL DP $crldp\n" }
+            next;
+        }
+
         if ($opt_d) {
             print "Checking CRL DP $crldp.\n";
         }
