@@ -206,7 +206,6 @@ fi
 if [ ! -d "$TMPDIR" ];then
 	TMPDIR="/tmp"
 fi
-echo "$TMPDIR"
 
 # Copy the logfile to a temporary file, to prevent diff from
 # never finishing when $logfile continues to be written to
@@ -258,6 +257,8 @@ lastentry=$(egrep "$query" "$tempdiff" | tail -1)
 
 rm -f "$tempdiff"
 cat "$logfile" > "$oldlog"
+# Need to remove the temp file otherwise it just fills up the temp directory
+rm -f "$templog"
 
 if [ "$count" = "0" ]; then # no matches, exit with no error
     echo "Log check ok - 0 pattern matches found|match=$count;;;0"
