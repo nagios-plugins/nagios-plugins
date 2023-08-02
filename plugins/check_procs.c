@@ -282,6 +282,7 @@ main (int argc, char **argv)
 				for (i = 0; i < exclude_progs_counter; i++) {
 					if (!strcmp(procprog, exclude_progs_arr[i])) {
 						found = 1;
+						break;
 					}
 				}
 				if (found == 0) {
