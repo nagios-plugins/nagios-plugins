@@ -98,7 +98,7 @@ char *statopts;
 char *prog;
 char *exclude_progs;
 char **exclude_progs_arr = NULL;
-char exclude_progs_counter = 0; 
+int exclude_progs_counter = 0;
 char *cgroup_hierarchy;
 char *args;
 char *input_filename = NULL;
