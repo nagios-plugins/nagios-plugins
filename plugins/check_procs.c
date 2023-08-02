@@ -97,7 +97,7 @@ float pcpu;
 char *statopts;
 char *prog;
 char *exclude_progs;
-char ** exclude_progs_arr = NULL;
+char **exclude_progs_arr = NULL;
 char exclude_progs_counter = 0; 
 char *cgroup_hierarchy;
 char *args;
@@ -275,23 +275,21 @@ main (int argc, char **argv)
 			}
 
 			/* Ignore excluded processes by name */
-			if(options & EXCLUDE_PROGS) {
-			  int found = 0;
-			  int i = 0;
-			 
-			  
-			  for(i=0; i < (exclude_progs_counter); i++) {
-			    if(!strcmp(procprog, exclude_progs_arr[i])) {
-			      found = 1;
-			    }
-			  }
-			  if(found == 0) {
-			    resultsum |= EXCLUDE_PROGS;
-			  }else
-			  {
-                            if(verbose >= 3)
-			      printf("excluding - by ignorelist\n");
-                          }
+			if (options & EXCLUDE_PROGS) {
+				int found = 0;
+				int i = 0;
+
+				for (i = 0; i < exclude_progs_counter; i++) {
+					if (!strcmp(procprog, exclude_progs_arr[i])) {
+						found = 1;
+					}
+				}
+				if (found == 0) {
+					resultsum |= EXCLUDE_PROGS;
+				} else {
+					if (verbose >= 3)
+						printf("excluding - by ignorelist\n");
+				}
 			}
 
 			/* filter kernel threads (childs of KTHREAD_PARENT)*/
@@ -573,18 +571,18 @@ process_arguments (int argc, char **argv)
 			options |= PROG;
 			break;
 		case 'X':
-		        if(exclude_progs)
-			  break;
+		        if (exclude_progs)
+				break;
 			else
-			  exclude_progs = optarg;
+				exclude_progs = optarg;
 			xasprintf (&fmt, _("%s%sexclude progs '%s'"), (fmt ? fmt : ""), (options ? ", " : ""),
-				   exclude_progs);
+			           exclude_progs);
 			char *p = strtok(exclude_progs, ",");
 
-			while(p){
-			  exclude_progs_arr = realloc(exclude_progs_arr, sizeof(char*) * ++exclude_progs_counter);
-			  exclude_progs_arr[exclude_progs_counter-1] = p;
-			  p = strtok(NULL, ",");
+			while (p) {
+				exclude_progs_arr = realloc(exclude_progs_arr, sizeof(char*) * ++exclude_progs_counter);
+				exclude_progs_arr[exclude_progs_counter - 1] = p;
+				p = strtok(NULL, ",");
 			}
 
 			options |= EXCLUDE_PROGS;
