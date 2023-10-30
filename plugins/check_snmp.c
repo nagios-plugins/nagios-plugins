@@ -496,8 +496,10 @@ main (int argc, char **argv)
 		/* Process this block for numeric comparisons */
 		/* Make some special values,like Timeticks numeric only if a threshold is defined */
 		if (thlds[i]->warning || thlds[i]->critical || calculate_rate || is_ticks || offset != 0.0 || multiplier != 1.0) {
-			ptr = strpbrk (show, "-0123456789");
-
+			/* Find the first instance of the '(' character - the value of the OID should be contained in parens */
+			ptr = strpbrk(show, "(");
+			ptr++;
+			
 			if (ptr == NULL)
 				die (STATE_UNKNOWN,_("No valid data returned (%s)\n"), show);
 			while (i >= response_size) {
