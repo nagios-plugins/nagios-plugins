@@ -94,6 +94,7 @@ void print_usage (void);
 void print_help (void);
 
 #include "regex.h"
+#include <ctype.h>
 char regex_expect[MAX_INPUT_BUFFER] = "";
 regex_t preg;
 regmatch_t pmatch[10];
@@ -490,6 +491,11 @@ main (int argc, char **argv)
 		}
 		else
 			show = response;
+			for (int i = 0; i < strlen(show); i++){
+				if (isspace(show[i])){
+					die (STATE_UNKNOWN,_("No valid data returned (%s)\n"), show);
+				}
+			}
 
 		iresult = STATE_DEPENDENT;
 
