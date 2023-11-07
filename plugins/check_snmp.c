@@ -489,14 +489,14 @@ main (int argc, char **argv)
 			show = strpbrk (show, "-0123456789");
 			is_ticks = 1;
 		}
-		else
+		else {
 			show = response;
 			for (int i = 0; i < strlen(show); i++){
 				if (isspace(show[i])){
 					die (STATE_UNKNOWN,_("No valid data returned (%s)\n"), show);
 				}
 			}
-
+		}
 		iresult = STATE_DEPENDENT;
 
 		/* Process this block for numeric comparisons */
