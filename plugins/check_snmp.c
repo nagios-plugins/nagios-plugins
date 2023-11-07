@@ -498,10 +498,10 @@ main (int argc, char **argv)
 		if (thlds[i]->warning || thlds[i]->critical || calculate_rate || is_ticks || offset != 0.0 || multiplier != 1.0) {
 			/* Find the first instance of the '(' character - the value of the OID should be contained in parens */
 			ptr = strpbrk(show, "(");
-			ptr++;
-			
 			if (ptr == NULL)
 				die (STATE_UNKNOWN,_("No valid data returned (%s)\n"), show);
+			ptr++;
+			
 			while (i >= response_size) {
 				response_size += OID_COUNT_STEP;
 				response_value = realloc(response_value, response_size * sizeof(*response_value));
