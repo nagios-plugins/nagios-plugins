@@ -500,7 +500,7 @@ main (int argc, char **argv)
 			ptr = strpbrk(show, "(");
 			if (ptr == NULL)
 				die (STATE_UNKNOWN,_("No valid data returned (%s)\n"), show);
-			ptr++;
+			ptr++; /* Move to the first character after the '(' */
 			
 			while (i >= response_size) {
 				response_size += OID_COUNT_STEP;
