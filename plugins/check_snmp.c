@@ -94,6 +94,7 @@ void print_usage (void);
 void print_help (void);
 
 #include "regex.h"
+#include <ctype.h>
 char regex_expect[MAX_INPUT_BUFFER] = "";
 regex_t preg;
 regmatch_t pmatch[10];
@@ -203,7 +204,7 @@ main (int argc, char **argv)
 	char *previous_string=NULL;
 	char *ap=NULL;
 	char *state_string=NULL;
-	size_t response_length, current_length, string_length;
+	size_t response_length, current_length, string_length, show_length;
 	char *temp_string=NULL;
 	char *quote_string=NULL;
 	time_t current_time;
@@ -488,9 +489,15 @@ main (int argc, char **argv)
 			show = strpbrk (show, "-0123456789");
 			is_ticks = 1;
 		}
-		else
+		else {
 			show = response;
-
+			show_length = strlen(show);
+			for (int i = 0; i < show_length; i++){
+				if (isspace(show[i])){
+					die (STATE_UNKNOWN,_("No valid data returned (%s)\n"), show);
+				}
+			}
+		}
 		iresult = STATE_DEPENDENT;
 
 		/* Process this block for numeric comparisons */
