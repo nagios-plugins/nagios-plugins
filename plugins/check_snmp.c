@@ -204,7 +204,7 @@ main (int argc, char **argv)
 	char *previous_string=NULL;
 	char *ap=NULL;
 	char *state_string=NULL;
-	size_t response_length, current_length, string_length;
+	size_t response_length, current_length, string_length, show_length;
 	char *temp_string=NULL;
 	char *quote_string=NULL;
 	time_t current_time;
@@ -491,7 +491,8 @@ main (int argc, char **argv)
 		}
 		else {
 			show = response;
-			for (int i = 0; i < strlen(show); i++){
+			show_length = strlen(show);
+			for (int i = 0; i < show_length; i++){
 				if (isspace(show[i])){
 					die (STATE_UNKNOWN,_("No valid data returned (%s)\n"), show);
 				}
