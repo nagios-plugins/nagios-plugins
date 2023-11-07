@@ -490,6 +490,7 @@ main (int argc, char **argv)
 			is_ticks = 1;
 		}
 		else {
+			/* This branch is expected to be error-handling only */
 			show = response;
 			show_length = strlen(show);
 			for (int i = 0; i < show_length; i++){
