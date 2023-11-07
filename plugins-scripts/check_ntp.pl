@@ -214,7 +214,7 @@ while (<NTPDATE>) {
 		$stratum = $1;
 	}
 	
-	if (/(offset|adjust)\s+([-.\d]+)/i) {
+	if (/(offset|adjust)\s+([-+.\d]+)/i) {
 		$offset = $2;
 
 		# An offset of 0.000000 with an error is probably bogus. Actually,
@@ -427,7 +427,8 @@ if ($ntpdate_error != $ERRORS{'OK'}) {
 
 foreach my $key (keys %ERRORS) {
 	if ($state==$ERRORS{$key}) {
-		print ("NTP $key: $answer|offset=$offset");
+ 		$offset =~ s/\+//;
+		print ("NTP $key: $answer|offset=".$offset."s;$owarn;$ocrit;;");
 		if ($have_ntpq) {
 			print (", jitter=" . $jitter/1000 .	",peer_stratum=$stratum");
 		}
