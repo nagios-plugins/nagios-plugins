@@ -490,6 +490,7 @@ main (int argc, char **argv)
 			is_ticks = 1;
 		}
 		else {
+			/* This branch is expected to be error-handling only */
 			show = response;
 			show_length = strlen(show);
 			for (int i = 0; i < show_length; i++){
@@ -503,10 +504,12 @@ main (int argc, char **argv)
 		/* Process this block for numeric comparisons */
 		/* Make some special values,like Timeticks numeric only if a threshold is defined */
 		if (thlds[i]->warning || thlds[i]->critical || calculate_rate || is_ticks || offset != 0.0 || multiplier != 1.0) {
-			ptr = strpbrk (show, "-0123456789");
-
+			/* Find the first instance of the '(' character - the value of the OID should be contained in parens */
+			ptr = strpbrk(show, "(");
 			if (ptr == NULL)
 				die (STATE_UNKNOWN,_("No valid data returned (%s)\n"), show);
+			ptr++; /* Move to the first character after the '(' */
+			
 			while (i >= response_size) {
 				response_size += OID_COUNT_STEP;
 				response_value = realloc(response_value, response_size * sizeof(*response_value));
