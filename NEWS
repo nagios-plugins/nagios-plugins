@@ -1,6 +1,6 @@
 This file documents the major additions and syntax changes between releases.
 
-2.4.7 2023-11-07
+2.4.7 2023-11-16
 	FIXES
 	check_ntp.pl: Fix warning/critical threshold information missing from performance data output (#735)
 	check_ntp.pl: Fix issues when NTP server has a positive time offset (#734)
