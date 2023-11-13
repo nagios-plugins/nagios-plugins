@@ -493,7 +493,7 @@ main (int argc, char **argv)
 			/* This branch is expected to be error-handling only */
 			show = response;
 			show_length = strlen(show);
-			for (int j = 0; j < show_length; j++){
+			for (j = 0; j < show_length; j++){
 				if (isspace(show[j])){
 					die (STATE_UNKNOWN,_("No valid data returned (%s)\n"), show);
 				}
