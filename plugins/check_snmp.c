@@ -183,7 +183,7 @@ static char *fix_snmp_range(char *th)
 int
 main (int argc, char **argv)
 {
-	int i, len, line, total_oids;
+	int i, j, len, line, total_oids;
 	unsigned int bk_count = 0, dq_count = 0;
 	int iresult = STATE_UNKNOWN;
 	int result = STATE_UNKNOWN;
@@ -493,8 +493,8 @@ main (int argc, char **argv)
 			/* This branch is expected to be error-handling only */
 			show = response;
 			show_length = strlen(show);
-			for (int i = 0; i < show_length; i++){
-				if (isspace(show[i])){
+			for (int j = 0; j < show_length; j++){
+				if (isspace(show[j])){
 					die (STATE_UNKNOWN,_("No valid data returned (%s)\n"), show);
 				}
 			}
