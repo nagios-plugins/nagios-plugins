@@ -486,7 +486,6 @@ main (int argc, char **argv)
 		}
 		else if (strstr (response, "Timeticks: ")) {
 			show = strstr (response, "Timeticks: ");
-			show = strpbrk (show, "-0123456789");
 			is_ticks = 1;
 		}
 		else {
