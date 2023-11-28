@@ -104,8 +104,16 @@ main (int argc, char **argv)
   alarm (timeout_interval);
   gettimeofday (&tv, NULL);
 
-  ex = ( (expected_address != NULL) ? expected_address : query_address );
-  exlen = strlen(ex);
+  if (expected_address != NULL) {
+    ex = expected_address;
+    exlen = strlen(ex);
+  } else {
+    /* allow absolute names to be found. */
+    ex = query_address;
+    exlen = strlen(ex);
+    if (exlen > 1 && ex[exlen-1] == '.')
+      ex[exlen-1] = '\0';
+  }
 
   if (verbose) {
     printf ("%s\n", command_line);
