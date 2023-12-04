@@ -1,12 +1,15 @@
 This file documents the major additions and syntax changes between releases.
 
+2.4.8 2023-12-7
+	FIXES
+	check_snmp: Fixed issue where Timeticks would incorrectly return No valid data returned (#743)
+
 2.4.7 2023-11-16
 	FIXES
 	check_ntp.pl: Fix warning/critical threshold information missing from performance data output (#735)
 	check_ntp.pl: Fix issues when NTP server has a positive time offset (#734)
 	check_snmp: Fixed issue where plugin returned OK for missing OID (#679)
 	check_snmp: Fixed issue where OID name with numeric data was misinterpreted as OID value (#720)
-	check_snmp: Fixed issue where Timeticks would incorrectly return No valid data returned (#743)
 
 2.4.6 2023-08-01
 	FIXES
