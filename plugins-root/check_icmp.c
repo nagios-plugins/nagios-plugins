@@ -725,7 +725,9 @@ int main(int argc, char **argv) {
   }
 
   /* now drop privileges (no effect if not setsuid or geteuid() == 0) */
-  setuid(getuid());
+  if (setuid(getuid()) == -1) {
+    crash("dropping privileges failed");
+  }
 
 #ifdef SO_TIMESTAMP
   if (setsockopt(icmp_sock, SOL_SOCKET, SO_TIMESTAMP, &on, sizeof(on))) {
