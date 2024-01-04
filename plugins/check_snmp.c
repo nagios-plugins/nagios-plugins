@@ -504,10 +504,13 @@ main (int argc, char **argv)
 		/* Make some special values,like Timeticks numeric only if a threshold is defined */
 		if (thlds[i]->warning || thlds[i]->critical || calculate_rate || is_ticks || offset != 0.0 || multiplier != 1.0) {
 			/* Find the first instance of the '(' character - the value of the OID should be contained in parens */
-			ptr = strpbrk(show, "(");
+			if (ptr = strpbrk(show, "(")) {
+				ptr++; /* Move to the first character after the '(' */
+			} else {
+				ptr = strpbrk(show, "-0123456789");
+			}
 			if (ptr == NULL)
 				die (STATE_UNKNOWN,_("No valid data returned (%s)\n"), show);
-			ptr++; /* Move to the first character after the '(' */
 			
 			while (i >= response_size) {
 				response_size += OID_COUNT_STEP;
