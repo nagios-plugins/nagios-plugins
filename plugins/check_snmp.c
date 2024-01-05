@@ -494,7 +494,7 @@ main (int argc, char **argv)
 			show_length = strlen(show);
 			for (j = 0; j < show_length; j++){
 				if (isspace(show[j])){
-					die (STATE_UNKNOWN,_("No valid data returned (%s)\n"), show);
+					die (STATE_UNKNOWN,_("No valid data returned at 497 (%s)\n"), show);
 				}
 			}
 		}
