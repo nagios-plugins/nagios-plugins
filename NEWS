@@ -1,5 +1,9 @@
 This file documents the major additions and syntax changes between releases.
 
+2.4.9
+	FIXES
+	check_snmp: Robustly fixes incorrect integer return value parsing (#749)
+
 2.4.8 2023-12-7
 	FIXES
 	check_snmp: Fixed issue where Timeticks would incorrectly show "No valid data returned" (#743)
