@@ -466,7 +466,7 @@ process_arguments (int argc, char **argv)
 				break;
 			}
 			else {
-				have_warn = FALSE;
+				have_crit = FALSE;
 			}
 		case 'a':									/* all swap */
 			allswaps = TRUE;
@@ -561,11 +561,11 @@ print_help (void)
 
   printf (" %s\n", "-w, --warning=INTEGER");
   printf ("    %s\n", _("Exit with WARNING status if less than INTEGER bytes of swap space are free"));
-  printf (" %s\n", "-w, --warning=PERCENT%%");
+  printf (" %s\n", "-w, --warning=PERCENT%");
   printf ("    %s\n", _("Exit with WARNING status if less than PERCENT of swap space is free"));
   printf (" %s\n", "-c, --critical=INTEGER");
   printf ("    %s\n", _("Exit with CRITICAL status if less than INTEGER bytes of swap space are free"));
-  printf (" %s\n", "-c, --critical=PERCENT%%");
+  printf (" %s\n", "-c, --critical=PERCENT%");
   printf ("    %s\n", _("Exit with CRITICAL status if less than PERCENT of swap space is free"));
   printf (" %s\n", "-a, --allswaps");
   printf ("    %s\n", _("Conduct comparisons for all swap partitions, one by one"));
@@ -588,6 +588,6 @@ void
 print_usage (void)
 {
   printf ("%s\n", _("Usage:"));
-  printf (" %s [-av] [-w <percent_free>%%] [-c <percent_free>%%]\n",progname);
-  printf ("  [-w <bytes_free>] [-c <bytes_free>] [-n <state>]\n");
+  printf (" %s [-av] [-w <percent_free>%% -c <percent_free>%%]\n",progname);
+  printf ("  [-w <bytes_free> -c <bytes_free>] [-n <state>]\n");
 }
