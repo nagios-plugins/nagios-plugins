@@ -505,7 +505,7 @@ main (int argc, char **argv)
 		if (thlds[i]->warning || thlds[i]->critical || calculate_rate || is_ticks || offset != 0.0 || multiplier != 1.0) {
 			/* Find the first instance of the '(' character - the value of the OID should be contained in parens */
 			if ((ptr = strpbrk(show, "(")) != NULL) { /* Timetick */
-				ptr++; /* Move to the first character after the '(' */
+				ptr++;
 			} else if ((ptr = strpbrk(show, "-0123456789")) == NULL) { /* Counter, gauge, or integer */
 				die (STATE_UNKNOWN,_("No valid data returned (%s)\n"), show);
 			}
