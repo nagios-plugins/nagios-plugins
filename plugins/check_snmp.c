@@ -494,7 +494,7 @@ main (int argc, char **argv)
 			show_length = strlen(show);
 			for (j = 0; j < show_length; j++){
 				if (isspace(show[j])){
-					die (STATE_UNKNOWN,_("No valid data returned (%s)\n"), show);
+					die (STATE_UNKNOWN,_("Unrecognized OID name returned (%s)\n"), show);
 				}
 			}
 		}
@@ -504,11 +504,12 @@ main (int argc, char **argv)
 		/* Make some special values,like Timeticks numeric only if a threshold is defined */
 		if (thlds[i]->warning || thlds[i]->critical || calculate_rate || is_ticks || offset != 0.0 || multiplier != 1.0) {
 			/* Find the first instance of the '(' character - the value of the OID should be contained in parens */
-			ptr = strpbrk(show, "(");
-			if (ptr == NULL)
+			if ((ptr = strpbrk(show, "(")) != NULL) { /* Timetick */
+				ptr++;
+			} else if ((ptr = strpbrk(show, "-0123456789")) == NULL) { /* Counter, gauge, or integer */
 				die (STATE_UNKNOWN,_("No valid data returned (%s)\n"), show);
-			ptr++; /* Move to the first character after the '(' */
-			
+			}
+
 			while (i >= response_size) {
 				response_size += OID_COUNT_STEP;
 				response_value = realloc(response_value, response_size * sizeof(*response_value));
