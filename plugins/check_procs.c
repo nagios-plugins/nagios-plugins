@@ -101,8 +101,10 @@ char ** exclude_progs_arr = NULL;
 char exclude_progs_counter = 0; 
 char *cgroup_hierarchy;
 char *args;
+int invert_args = 0;
 char *input_filename = NULL;
 regex_t re_args;
+int invert_re_args = 0;
 char *fmt;
 char *fails;
 char tmp[MAX_INPUT_BUFFER];
@@ -311,9 +313,9 @@ main (int argc, char **argv)
 
 			if ((options & STAT) && (strstr (statopts, procstat)))
 				resultsum |= STAT;
-			if ((options & ARGS) && procargs && (strstr (procargs, args) != NULL))
+			if ((options & ARGS) && procargs && (((strstr (procargs, args) != NULL)) != invert_args))
 				resultsum |= ARGS;
-			if ((options & EREG_ARGS) && procargs && (regexec(&re_args, procargs, (size_t) 0, NULL, 0) == 0))
+			if ((options & EREG_ARGS) && procargs && ((regexec(&re_args, procargs, (size_t) 0, NULL, 0) == 0) != invert_re_args))
 				resultsum |= EREG_ARGS;
 			if ((options & PROG) && procprog && (strcmp (prog, procprog) == 0))
 				resultsum |= PROG;
@@ -463,6 +465,7 @@ process_arguments (int argc, char **argv)
 	int cflags = REG_NOSUB | REG_EXTENDED;
 	char errbuf[MAX_INPUT_BUFFER];
 	char *temp_string;
+	char *p;
 	int i=0;
 	static struct option longopts[] = {
 		{"warning", required_argument, 0, 'w'},
@@ -604,23 +607,32 @@ process_arguments (int argc, char **argv)
 				break;
 			else
 				args = optarg;
-			xasprintf (&fmt, "%s%sargs '%s'", (fmt ? fmt : ""), (options ? ", " : ""), args);
+			if (args[0] == '!') {
+				invert_args = 1;
+				args++;
+			}
+			xasprintf (&fmt, "%s%sargs %s'%s'", (fmt ? fmt : ""), (options ? ", " : ""), (invert_args ? "not " : ""), args);
 			options |= ARGS;
 			break;
 		case CHAR_MAX+1:
-			err = regcomp(&re_args, optarg, cflags);
+			p = optarg;
+			if (p[0] == '!') {
+				invert_re_args = 1;
+				p++;
+			}
+			err = regcomp(&re_args, p, cflags);
 			if (err != 0) {
 				regerror (err, &re_args, errbuf, MAX_INPUT_BUFFER);
 				die (STATE_UNKNOWN, "PROCS %s: %s - %s\n", _("UNKNOWN"), _("Could not compile regular expression"), errbuf);
 			}
 			/* Strip off any | within the regex optarg */
-			temp_string = strdup(optarg);
+			temp_string = strdup(p);
 			while(temp_string[i]!='\0'){
 				if(temp_string[i]=='|')
 					temp_string[i]=',';
 				i++;
 			}
-			xasprintf (&fmt, "%s%sregex args '%s'", (fmt ? fmt : ""), (options ? ", " : ""), temp_string);
+			xasprintf (&fmt, "%s%sregex args %s'%s'", (fmt ? fmt : ""), (options ? ", " : ""), (invert_re_args ? "not " : ""), temp_string);
 			options |= EREG_ARGS;
 			break;
 		case 'r': 					/* RSS */
@@ -851,8 +863,10 @@ print_help (void)
   printf ("   %s\n", _("Only scan for processes with user name or ID indicated."));
   printf (" %s\n", "-a, --argument-array=STRING");
   printf ("   %s\n", _("Only scan for processes with args that contain STRING."));
+  printf ("   %s\n", _("If STRING starts with an exclamation mark, filter for non-matches."));
   printf (" %s\n", "--ereg-argument-array=STRING");
   printf ("   %s\n", _("Only scan for processes with args that contain the regex STRING."));
+  printf ("   %s\n", _("If STRING starts with an exclamation mark, filter for non-matches."));
   printf (" %s\n", "-C, --command=COMMAND");
   printf ("   %s\n", _("Only scan for exact matches of COMMAND (without path)."));
   printf (" %s\n", "-X, --exclude-process");
