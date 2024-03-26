@@ -488,6 +488,9 @@ main (int argc, char **argv)
 			show = strstr (response, "Timeticks: ");
 			is_ticks = 1;
 		}
+		else if (strstr (response, "IpAddress: ")) {
+			show = strstr (response, "IpAddress: ") + 11;
+		}
 		else {
 			/* This branch is expected to be error-handling only */
 			show = response;
