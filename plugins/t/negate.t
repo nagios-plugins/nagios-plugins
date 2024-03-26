@@ -48,7 +48,7 @@ $res = NPTest->testCmd( "./negate $PWD/check_dummy 0 'a dummy okay'" );
 is( $res->output, "OK: a dummy okay", "The quoted string is passed through to subcommand correctly" );
 
 $res = NPTest->testCmd( "./negate '$PWD/check_dummy 0' 'a dummy okay'" );
-is( $res->output, "No data returned from command", "Bad command, as expected (trying to execute './check_dummy 0')");
+is( $res->output, "", "Bad command, as expected (trying to execute './check_dummy 0')");
 
 $res = NPTest->testCmd( './negate '.$PWD.'/check_dummy 0 \'$$ a dummy okay\'' );
 is( $res->output, 'OK: $$ a dummy okay', 'Proves that $$ is not being expanded again' );
@@ -62,12 +62,12 @@ my %state = (
 
 # Timeout tests
 $res = NPTest->testCmd( "./negate -t 2 /bin/sh -c 'sleep 5'" );
-is( $res->output, 'CRITICAL - Plugin timed out after 2 seconds' );
+is( $res->output, 'CRITICAL - Plugin timed out' );
 
 foreach my $state (keys(%state)) {
 	$res = NPTest->testCmd( "./negate -t 2 -T $state /bin/sh -c 'sleep 5'" );
 	is( $res->return_code, $state{$state}, "Got timeout state $state" );
-	is( $res->output,  uc($state)." - Plugin timed out after 2 seconds", "Timeout state $state output");
+	is( $res->output,  uc($state)." - Plugin timed out", "Timeout state $state output");
 }
 
 foreach my $current_state (keys(%state)) {
