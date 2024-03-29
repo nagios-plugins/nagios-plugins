@@ -1,4 +1,7 @@
 This file documents the major additions and syntax changes between releases.
+2.4.10 2024-XX-XX
+	FIXES
+	check_mailq: Add config directory option for exim mailservers (#716)
 
 2.4.9 2024-03-21
 	FIXES
