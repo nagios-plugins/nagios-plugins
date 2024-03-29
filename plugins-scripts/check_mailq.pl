@@ -489,13 +489,13 @@ elsif ( $mailq eq "qmail" ) {
 elsif ( $mailq eq "exim" ) {
 	## open mailq 
 	if ( defined $utils::PATH_TO_MAILQ && -x $utils::PATH_TO_MAILQ ) {
-		if (! open (MAILQ, "$sudo $utils::PATH_TO_MAILQ | " ) ) {
-			print "ERROR: could not open $utils::PATH_TO_MAILQ \n";
+		if (! open (MAILQ, "$sudo $utils::PATH_TO_MAILQ$mailq_args 2>&1 | " ) ) {
+			print "ERROR: could not open $utils::PATH_TO_MAILQ$mailq_args\n";
 			exit $ERRORS{'UNKNOWN'};
 		}
 	}elsif( defined $utils::PATH_TO_MAILQ){
 		unless (-x $utils::PATH_TO_MAILQ) {
-			print "ERROR: $utils::PATH_TO_MAILQ is not executable by (uid $>:gid($)))\n";
+			print "ERROR: $utils::PATH_TO_MAILQ$mailq_args is not executable by (uid $>:gid($)))\n";
 			exit $ERRORS{'UNKNOWN'};
 		}
 	} else {
@@ -514,7 +514,7 @@ elsif ( $mailq eq "exim" ) {
 	close(MAILQ) ;
 
 	if ( $? ) {
-		print "CRITICAL: Error code ".($?>>8)." returned from $utils::PATH_TO_MAILQ",$/;
+		print "CRITICAL: Error code ".($?>>8)." returned from $utils::PATH_TO_MAILQ$mailq_args",$/;
 		exit $ERRORS{CRITICAL};
 	}
 	if ($msg_q < $opt_w) {
