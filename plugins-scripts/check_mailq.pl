@@ -507,7 +507,7 @@ elsif ( $mailq eq "exim" ) {
 	    #22m  1.7K 19aEEr-0007hx-Dy <> *** frozen ***
             #root@exlixams.glups.fr
 
-	    if ( (/\s[\w\d]{6}-[\w\d]{6}-[\w\d]{2}\s/) || (/\s[\w\d]{6}-[\w\d]{11}-[\w\d]{4}\s/) ) { # message id 19aEEr-0007hx-Dy
+	    if ( (/\s[\w\d]{6}-[\w\d]{6}-[\w\d]{2}\s/) || (/\s[\w\d]{6}-[\w\d]{11}-[\w\d]{4}\s/) ) { # message id 19aEEr-0007hx-Dy or 16VDhn-000000001bo-D342
 		$msg_q++ ;
 	    }
 	}
