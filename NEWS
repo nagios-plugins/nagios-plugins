@@ -1,5 +1,5 @@
 This file documents the major additions and syntax changes between releases.
-2.4.10 2024-XX-XX
+2.4.10 2024-04-30
 	FIXES
 	check_mailq: Add config directory option and update pattern matching for exim mailservers (#754)
 
