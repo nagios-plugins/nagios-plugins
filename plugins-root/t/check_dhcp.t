@@ -34,11 +34,11 @@ my $hostname_invalid   = getTestParameter( "NP_HOSTNAME_INVALID",
                                            "An invalid (not known to DNS) hostname",
                                            "nosuchhost" );
 
-# try to determince interface
-my $interface = '';
-if(`ifconfig -a 2>/dev/null` =~ m/^(e\w*\d+)/mx and $1 ne 'eth0') {
-    $interface = ' -i '.$1;
-}
+my $interface          = getTestParameter( "NP_LISTENING_INTERFACE",
+                                           "Network interface to to use for listening",
+                                           "eth0" );
+
+$interface = '-i '.$interface;
 
 my $res;
 SKIP: {
