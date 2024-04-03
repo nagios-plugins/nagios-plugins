@@ -1528,7 +1528,7 @@ static void finish(int sig) {
       }
     } else {
       /* !icmp_recv */
-      printf("%s", host->name);
+      printf("%s:", host->name);
       /* rta text output */
       if (rta_mode) {
         if (status == STATE_OK) {
