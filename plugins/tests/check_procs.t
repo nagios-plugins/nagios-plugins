@@ -68,9 +68,9 @@ SKIP: {
     like( $result->output, '/^PROCS OK: 0 processes with UID = -2 \(nobody\), args \'UsB\'/', "Output correct" );
 }
 
-$result = NPTest->testCmd( "$command --ereg-argument-array='mdworker.*501'" );
+$result = NPTest->testCmd( "$command --ereg-argument-array='com\.apple.*501'" );
 is( $result->return_code, 0, "Checking regexp search of arguments" );
-is( $result->output, "PROCS OK: 1 process with regex args 'mdworker.*501' | procs=1;;;0;", "Output correct" );
+is( $result->output, "PROCS OK: 1 process with regex args 'com\.apple.*501' | procs=1;;;0;", "Output correct" );
 
 $result = NPTest->testCmd( "$command --vsz 1000000" );
 is( $result->return_code, 0, "Checking filter by VSZ" );
