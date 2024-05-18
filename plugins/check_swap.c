@@ -4,7 +4,7 @@
 * 
 * License: GPL
 * Copyright (c) 2000 Karl DeBisschop (kdebisschop@users.sourceforge.net)
-* Copyright (c) 2000-2014 Nagios Plugins Development Team
+* Copyright (c) 2000-2023 Nagios Plugins Development Team
 * 
 * Description:
 * 
@@ -28,7 +28,7 @@
 *****************************************************************************/
 
 const char *progname = "check_swap";
-const char *copyright = "2000-2014";
+const char *copyright = "2000-2023";
 const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"
@@ -379,20 +379,23 @@ main (int argc, char **argv)
 int
 check_swap (int usp, double free_swap_mb)
 {
-	if (!free_swap_mb) return no_swap_state;
-
 	int result = STATE_UNKNOWN;
-	double free_swap = free_swap_mb * (1024 * 1024);		/* Convert back to bytes as warn and crit specified in bytes */
-	if (usp >= 0 && crit_percent != 0 && usp >= (100.0 - crit_percent))
-		result = STATE_CRITICAL;
-	else if (crit_size_bytes > 0 && free_swap <= crit_size_bytes)
-		result = STATE_CRITICAL;
-	else if (usp >= 0 && warn_percent != 0 && usp >= (100.0 - warn_percent))
-		result = STATE_WARNING;
-	else if (warn_size_bytes > 0 && free_swap <= warn_size_bytes)
-		result = STATE_WARNING;
-	else if (usp >= 0.0)
+	double free_swap = free_swap_mb * (1024 * 1024);                /* Convert back to bytes as warn and crit specified in bytes */
+	if (have_warn > 0 && have_crit > 0) {
+		if (!free_swap_mb) return no_swap_state;
+		if (usp >= 0 && crit_percent != 0 && usp >= (100.0 - crit_percent))
+			result = STATE_CRITICAL;
+		else if (crit_size_bytes > 0 && free_swap <= crit_size_bytes)
+			result = STATE_CRITICAL;
+		else if (usp >= 0 && warn_percent != 0 && usp >= (100.0 - warn_percent))
+			result = STATE_WARNING;
+		else if (warn_size_bytes > 0 && free_swap <= warn_size_bytes)
+			result = STATE_WARNING;
+		else if (usp >= 0.0)
+			result = STATE_OK;
+	} else {
 		result = STATE_OK;
+	}
 	return result;
 }
 
@@ -415,9 +418,6 @@ process_arguments (int argc, char **argv)
 		{"help", no_argument, 0, 'h'},
 		{0, 0, 0, 0}
 	};
-
-	if (argc < 2)
-		return ERROR;
 
 	while (1) {
 		c = getopt_long (argc, argv, "+?Vvhac:w:n:", longopts, &option);
@@ -445,7 +445,7 @@ process_arguments (int argc, char **argv)
 				break;
 			}
 			else {
-				usage4 (_("Warning threshold must be integer or percentage!"));
+				have_warn = FALSE;
 			}
 		case 'c':									/* critical size threshold */
 			if (is_intnonneg (optarg)) {
@@ -466,7 +466,7 @@ process_arguments (int argc, char **argv)
 				break;
 			}
 			else {
-				usage4 (_("Critical threshold must be integer or percentage!"));
+				have_crit = FALSE;
 			}
 		case 'a':									/* all swap */
 			allswaps = TRUE;
@@ -518,8 +518,14 @@ process_arguments (int argc, char **argv)
 int
 validate_arguments (void)
 {
-	if (have_crit == FALSE && have_warn == FALSE)
-		return ERROR;
+	if (have_warn > 0 && have_crit == 0) {
+		usage4
+			(_("Must define both warning and critical thresholds"));
+	}
+	else if (have_crit > 0 && have_warn == 0) {
+		usage4
+			(_("Must define both warning and critical thresholds"));
+	}
 	else if (warn_percent < 0 || crit_percent < 0 || warn_size_bytes < 0
 			|| crit_size_bytes < 0) {
 		return ERROR;
@@ -555,11 +561,11 @@ print_help (void)
 
   printf (" %s\n", "-w, --warning=INTEGER");
   printf ("    %s\n", _("Exit with WARNING status if less than INTEGER bytes of swap space are free"));
-  printf (" %s\n", "-w, --warning=PERCENT%%");
+  printf (" %s\n", "-w, --warning=PERCENT%");
   printf ("    %s\n", _("Exit with WARNING status if less than PERCENT of swap space is free"));
   printf (" %s\n", "-c, --critical=INTEGER");
   printf ("    %s\n", _("Exit with CRITICAL status if less than INTEGER bytes of swap space are free"));
-  printf (" %s\n", "-c, --critical=PERCENT%%");
+  printf (" %s\n", "-c, --critical=PERCENT%");
   printf ("    %s\n", _("Exit with CRITICAL status if less than PERCENT of swap space is free"));
   printf (" %s\n", "-a, --allswaps");
   printf ("    %s\n", _("Conduct comparisons for all swap partitions, one by one"));
@@ -571,6 +577,7 @@ print_help (void)
   printf ("\n");
   printf ("%s\n", _("Notes:"));
   printf (" %s\n", _("Both INTEGER and PERCENT thresholds can be specified, they are all checked."));
+  printf (" %s\n", _("Without thresholds, the plugin shows free swap space and performance data, but always returns OK."));
   printf (" %s\n", _("On AIX, if -a is specified, uses lsps -a, otherwise uses lsps -s."));
 
   printf (UT_SUPPORT);
@@ -581,6 +588,6 @@ void
 print_usage (void)
 {
   printf ("%s\n", _("Usage:"));
-  printf (" %s [-av] -w <percent_free>%% -c <percent_free>%%\n",progname);
-  printf ("  -w <bytes_free> -c <bytes_free> [-n <state>]\n");
+  printf (" %s [-av] [-w <percent_free>%% -c <percent_free>%%]\n",progname);
+  printf ("  [-w <bytes_free> -c <bytes_free>] [-n <state>]\n");
 }
