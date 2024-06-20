@@ -47,6 +47,12 @@ char *db_socket = NULL;
 char *db_pass = NULL;
 char *db_char_set = NULL;
 char *db = NULL;
+char *ca_cert = NULL;
+char *ca_dir = NULL;
+char *cert = NULL;
+char *key = NULL;
+char *ciphers = NULL;
+bool ssl = false;
 char *opt_file = NULL;
 char *opt_group = NULL;
 unsigned int db_port = MYSQL_PORT;
@@ -94,6 +100,8 @@ main (int argc, char **argv)
 	else
 		mysql_options(&mysql,MYSQL_READ_DEFAULT_GROUP,"client");
 
+	if (ssl)
+		mysql_ssl_set(&mysql,key,cert,ca_cert,ca_dir,ciphers);
 	/* establish a connection to the server and error checking */
 	if (!mysql_real_connect(&mysql,db_host,db_user,db_pass,db,db_port,db_socket,0)) {
 		if (mysql_errno (&mysql) == CR_UNKNOWN_HOST)
@@ -206,6 +214,12 @@ process_arguments (int argc, char **argv)
 		{"query", required_argument, 0, 'q'},
 		{"warning", required_argument, 0, 'w'},
 		{"critical", required_argument, 0, 'c'},
+		{"ssl", no_argument, 0, 'l'},
+		{"ca-cert", optional_argument, 0, 'C'},
+		{"key", required_argument,0,'k'},
+		{"cert", required_argument,0,'r'},
+		{"ca-dir", required_argument, 0, 'D'},
+		{"ciphers", required_argument, 0, 'L'},
 		{0, 0, 0, 0}
 	};
 
@@ -213,7 +227,7 @@ process_arguments (int argc, char **argv)
 		return ERROR;
 
 	while (1) {
-		c = getopt_long (argc, argv, "hvVP:p:u:d:H:s:q:w:c:f:g:a:", longopts, &option);
+		c = getopt_long (argc, argv, "hlvVP:p:u:d:H:s:q:w:c:f:g:a:k:C:D:L:", longopts, &option);
 
 		if (c == -1 || c == EOF)
 			break;
@@ -235,6 +249,24 @@ process_arguments (int argc, char **argv)
 			break;
 		case 'd':									/* database */
 			db = optarg;
+			break;
+		case 'l':
+			ssl = true;
+			break;
+		case 'C':
+			ca_cert = optarg;
+			break;
+		case 'r':
+			cert = optarg;
+			break;
+		case 'k':
+			key = optarg;
+			break;
+		case 'D':
+			ca_dir = optarg;
+			break;
+		case 'L':
+			ciphers = optarg;
 			break;
 		case 'u':									/* username */
 			db_user = optarg;
@@ -345,6 +377,18 @@ print_help (void)
 	printf ("    %s\n", _("Password to login with"));
 	printf ("    ==> %s <==\n", _("IMPORTANT: THIS FORM OF AUTHENTICATION IS NOT SECURE!!!"));
 	printf ("    %s\n", _("Your clear-text password could be visible as a process table entry"));
+	printf (" %s\n", "-l, --ssl");
+	printf ("    %s\n", _("Use ssl encryptation"));
+	printf (" %s\n", "-C, --ca-cert=STRING");
+	printf ("    %s\n", _("Path to CA signing the cert"));
+	printf (" %s\n", "-r, --cert=STRING");
+	printf ("    %s\n", _("Path to SSL certificate"));
+	printf (" %s\n", "-k, --key=STRING");
+	printf ("    %s\n", _("Path to private SSL key"));
+	printf (" %s\n", "-D, --ca-dir=STRING");
+	printf ("    %s\n", _("Path to CA directory"));
+	printf (" %s\n", "-L, --ciphers=STRING");
+	printf ("    %s\n", _("List of valid SSL ciphers"));
 
 	printf ("\n");
 	printf (" %s\n", _("A query is required. The result from the query should be numeric."));
@@ -364,5 +408,6 @@ print_usage (void)
 {
   printf ("%s\n", _("Usage:"));
   printf (" %s -q SQL_query [-w warn] [-c crit] [-H host] [-P port] [-s socket]\n",progname);
-  printf ("       [-d database] [-u user] [-p password] [-f optfile] [-g group] [-a character-set]\n");
+  printf ("       [-d database] [-u user] [-p password] [-l] [-r cert] [-k key]\n");
+  printf ("       [-C ca-cert] [-D ca-dir] [-L ciphers] [-f optfile] [-g group] [-a character-set]\n");
 }
