@@ -388,6 +388,8 @@ print_help (void)
   printf ("    %s\n",_("Pass STRING as argument(s) to dig"));
   printf (" %s\n","-r, --retries=INTEGER");
   printf ("    %s\n",_("Number of retries passed to dig, timeout is divided by this value (Default: 3)"));
+  printf (" %s\n","-e, --exact");
+  printf ("    %s\n",_("Match records exactly. If not set, fuzzy matches."));
   printf (UT_WARN_CRIT);
   printf (UT_CONN_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
   printf (UT_VERBOSE);
