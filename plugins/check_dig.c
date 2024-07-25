@@ -57,6 +57,7 @@ char *dns_server = NULL;
 char *dig_args = "";
 char *query_transport = "";
 int verbose = FALSE;
+int exact = FALSE;
 int server_port = DEFAULT_PORT;
 int number_tries = DEFAULT_TRIES;
 double warning_interval = UNDEFINED;
@@ -150,7 +151,7 @@ main (int argc, char **argv)
         }
 
         t = tt; /* consider the right-side token, does it match ex? */
-        if ( (strcasestr( t, ex ) == t) && (strlen( t ) == strlen( ex )) ) {
+        if ( (!exact && strcasestr( t, ex)) || ((strcasestr( t, ex ) == t) && (strlen( t ) == strlen( ex ))) ) {
           result = STATE_OK;
           msg = chld_out.line[i];
           break;
@@ -225,6 +226,7 @@ process_arguments (int argc, char **argv)
     {"verbose", no_argument, 0, 'v'},
     {"version", no_argument, 0, 'V'},
     {"help", no_argument, 0, 'h'},
+    {"exact", no_argument, 0, 'e'},
     {"record_type", required_argument, 0, 'T'},
     {"expected_address", required_argument, 0, 'a'},
     {"port", required_argument, 0, 'p'},
@@ -237,7 +239,7 @@ process_arguments (int argc, char **argv)
     return ERROR;
 
   while (1) {
-    c = getopt_long (argc, argv, "hVvt:l:H:w:c:T:p:a:A:46r:", longopts, &option);
+    c = getopt_long (argc, argv, "hVvt:l:H:w:c:T:p:a:A:46r:e", longopts, &option);
 
     if (c == -1 || c == EOF)
       break;
@@ -296,6 +298,9 @@ process_arguments (int argc, char **argv)
       break;
     case 'v':                 /* verbose */
       verbose = TRUE;
+      break;
+    case 'e':
+      exact = TRUE;
       break;
     case 'T':
       record_type = optarg;
