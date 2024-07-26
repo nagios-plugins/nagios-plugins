@@ -1,5 +1,9 @@
 This file documents the major additions and syntax changes between releases.
 
+2.4.10 2024-XX-XX
+	FIXES
+	check_dig: Fixed issue where exact matching broke backwards compatability, and added new option to enforce exact matching (#777)
+
 2.4.9 2024-03-21
 	FIXES
 	check_snmp: Robustly fixes incorrect integer return value parsing (#749)
