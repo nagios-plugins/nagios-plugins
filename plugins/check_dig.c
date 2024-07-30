@@ -36,6 +36,9 @@ const char *progname = "check_dig";
 const char *copyright = "2002-2014";
 const char *email = "devel@nagios-plugins.org";
 
+#define _GNU_SOURCE
+#include <ctype.h>
+
 #include "common.h"
 #include "netutils.h"
 #include "utils.h"
@@ -71,6 +74,7 @@ main (int argc, char **argv)
   char *msg = NULL;
   size_t i;
   char *t, *tt, *ex;
+  unsigned int exlen;
   long microsec;
   double elapsed_time;
   int result = STATE_UNKNOWN;
@@ -100,7 +104,17 @@ main (int argc, char **argv)
   alarm (timeout_interval);
   gettimeofday (&tv, NULL);
 
-  ex = ( (expected_address != NULL) ? expected_address : query_address );
+  if (expected_address != NULL) {
+    ex = expected_address;
+    exlen = strlen(ex);
+  } else {
+    /* allow absolute names to be found. */
+    ex = query_address;
+    exlen = strlen(ex);
+    if (exlen > 1 && ex[exlen-1] == '.')
+      ex[exlen-1] = '\0';
+  }
+
   if (verbose) {
     printf ("%s\n", command_line);
     printf (_("Looking for: '%s' length %lu\n"), ex, strlen( ex ));
@@ -141,7 +155,7 @@ main (int argc, char **argv)
         /* left match: does ex appear, followed by ". " ? */
         t = chld_out.line[i];
         if ((strcasestr( t, ex )) == t) {
-          t += strlen( ex );
+          t += exlen;
           if (strstr( t, ". " ) == t) {
             result = STATE_OK;
             msg = chld_out.line[i];
@@ -149,8 +163,9 @@ main (int argc, char **argv)
           }
         }
 
-        t = tt; /* consider the right-side token, does it match ex? */
-        if ( (strcasestr( t, ex ) == t) && (strlen( t ) == strlen( ex )) ) {
+        t = strcasestr( tt, ex ); /* consider the right-side token, does it match ex? */
+        if ( t && (strlen( t ) == exlen) &&
+             t > chld_out.line[i] && isspace(*(t-1))) {
           result = STATE_OK;
           msg = chld_out.line[i];
           break;
