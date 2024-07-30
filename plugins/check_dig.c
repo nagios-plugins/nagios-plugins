@@ -151,7 +151,7 @@ main (int argc, char **argv)
         }
 
         t = tt; /* consider the right-side token, does it match ex? */
-        if ( (!exact && strcasestr( t, ex )) || ((strcasestr( t, ex ) == t) && (strlen( t ) == strlen( ex ))) ) {
+        if ( (!exact && strcasestr( t, ex )) || (strcmp( t, ex ) == 0) ) {
           result = STATE_OK;
           msg = chld_out.line[i];
           break;
