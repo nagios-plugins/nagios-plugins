@@ -123,7 +123,8 @@ typedef struct rta_host {
   struct sockaddr_storage saddr_in;   /* the address of this host */
   struct sockaddr_storage error_addr; /* stores address of error replies */
   unsigned long long time_waited;     /* total time waited, in usecs */
-  unsigned int icmp_sent, icmp_recv, icmp_lost; /* counters */
+  unsigned int icmp_sent, icmp_recv, icmp_lost, icmp_invalid_seq_num, icmp_dup; /* counters */
+  unsigned int *icmp_recv_arr; /* array of received icmp */
   unsigned char icmp_type, icmp_code;           /* type and code from errors */
   unsigned short flags;                         /* control/status flags */
   double rta;                                   /* measured RTA */
@@ -247,11 +248,11 @@ static char *perfdata_sep = NULL;
 static unsigned short icmp_data_size = DEFAULT_PING_DATA_SIZE;
 static unsigned short icmp_pkt_size = DEFAULT_PING_DATA_SIZE + ICMP_MINLEN;
 
-static unsigned int icmp_sent = 0, icmp_recv = 0, icmp_lost = 0;
+static unsigned int icmp_sent = 0, icmp_recv = 0, icmp_lost = 0, icmp_invalid_seq_num = 0;
 #define icmp_pkts_en_route (icmp_sent - (icmp_recv + icmp_lost))
 static unsigned short targets_down = 0, targets = 0, packets = 0;
 #define targets_alive (targets - targets_down)
-static unsigned int retry_interval, pkt_interval, target_interval;
+static unsigned int retry_interval, pkt_interval, target_interval, min_send_delay;
 static int icmp_sock, tcp_sock, udp_sock, status = STATE_OK;
 static pid_t pid;
 static struct timezone tz;
@@ -549,7 +550,8 @@ int main(int argc, char **argv) {
   warn.score = 80;
 
   protocols = HAVE_ICMP | HAVE_UDP | HAVE_TCP;
-  pkt_interval = 80000; /* 80 msec packet interval by default */
+  min_send_delay = 250000; /* At least 250msec interval between each icmp packet */
+  pkt_interval = min_send_delay;
   packets = 5;
 
   if (!strcmp(progname, "check_icmp") || !strcmp(progname, "check_ping")) {
@@ -571,7 +573,7 @@ int main(int argc, char **argv) {
   /* parse the arguments */
   for (i = 1; i < argc; i++) {
     while ((arg = getopt(argc, argv,
-                         "vhVw:c:n:p:t:H:s:i:b:f:F:I:l:m:P:R:J:S:M:O:64")) != EOF) {
+                         "vhVw:c:n:p:t:H:s:i:b:f:F:I:D:l:m:P:R:J:S:M:O:64")) != EOF) {
       long size;
       switch (arg) {
       case 'v':
@@ -605,6 +607,10 @@ int main(int argc, char **argv) {
 
       case 'I':
         target_interval = get_timevar(optarg);
+        break;
+
+      case 'D':
+        min_send_delay = get_timevar(optarg);
         break;
 
       case 'w':
@@ -803,6 +809,14 @@ int main(int argc, char **argv) {
     }
   }
 
+  if (pkt_interval < min_send_delay) {
+    fprintf(stderr, "Warning: pkt_interval < min_send_delay\n"
+                    "This causes a timing issue when sending ICMP packets.\n"
+                    "Setting pkt_interval=min_send_delay to mitgate this problem\n"
+                    "Tweak -D and -i args to avoid timing issues\n");
+    pkt_interval = min_send_delay;
+  }
+
   /* Users should be able to give whatever thresholds they want */
   /* (nothing will break if they do), but some plugin maintainer */
   /* will probably add some printf() thing here later, so it might be */
@@ -849,16 +863,16 @@ int main(int argc, char **argv) {
   /* make sure we don't wait any longer than necessary */
   gettimeofday(&prog_start, &tz);
   max_completion_time =
-      ((targets * packets * pkt_interval) + (targets * target_interval)) +
+      ((targets * packets * min_send_delay) + (targets * target_interval)) +
       (targets * packets * crit.rta) + crit.rta;
 
   if (debug) {
     printf("packets: %u, targets: %u\n"
-           "target_interval: %0.3f, pkt_interval %0.3f\n"
+           "target_interval: %0.3f, pkt_interval %0.3f, min_send_delay %0.3f\n"
            "crit.rta: %0.3f\n"
            "max_completion_time: %0.3f\n",
            packets, targets, (float)target_interval / 1000,
-           (float)pkt_interval / 1000, (float)crit.rta / 1000,
+           (float)pkt_interval / 1000, (float)min_send_delay / 1000, (float)crit.rta / 1000,
            (float)max_completion_time / 1000);
   }
 
@@ -896,6 +910,14 @@ int main(int argc, char **argv) {
   i = 0;
   while (host) {
     host->id = i * packets;
+    if (debug > 2) {
+      printf("Allocating array of size %d bytes for icmp_recv_arr\n", packets * sizeof(unsigned int));
+    }
+    host->icmp_recv_arr = (unsigned int *) malloc(packets * sizeof(unsigned int));
+    for(size_t i = 0; i < packets; i++) {
+      host->icmp_recv_arr[i] = 0;
+    }
+
     table[i] = host;
     host = host->next;
     i++;
@@ -1090,7 +1112,42 @@ static int wait_for_reply(int sock, u_int t) {
       host = table[ntohs(packet.icp6->icmp6_seq) / packets];
     }
 
+    uint16_t desired_seq_num_index = ntohs(packet.icp->icmp_seq) - packets * ( ntohs(packet.icp->icmp_seq) / packets );
+
+    if (desired_seq_num_index >= packets) {
+      if (debug) {
+        printf("Invalid seq num (%d) found! Won't check for duplicates! Seq Index of reply (%d) > total packets %d!\n", 
+                ntohs(packet.icp->icmp_seq), 
+                desired_seq_num_index, 
+                packets
+              );
+      }
+    } else {
+      host->icmp_recv_arr[desired_seq_num_index]++;
+
+      if (debug > 3) {
+        printf("Array of received packets per seq number: [ ");
+        for(size_t index_recv_arr = 0; index_recv_arr < packets; index_recv_arr++) {
+          printf("%02u ", host->icmp_recv_arr[index_recv_arr]);
+        }
+        printf("]\n");
+      }
+
+      if (host->icmp_recv_arr[desired_seq_num_index] > 1) {
+        if (debug) {
+          printf("Duplicate found! - received more than 1 paket with this seq number! (%u pkts with seq num %d)\n", 
+                  host->icmp_recv_arr[desired_seq_num_index], 
+                  ntohs(packet.icp->icmp_seq)
+                );
+        }
+        continue;
+      }
+    }
+
     tdiff = get_timevaldiff(&data.stime, &now);
+    if (debug > 2) {
+      printf("tdiff usec: %d - %d = time waited:  %d\n", now.tv_usec, data.stime.tv_usec, tdiff);
+    }
 
     if (host->last_tdiff > 0) {
       /* Calculate jitter */
@@ -1151,6 +1208,16 @@ static int wait_for_reply(int sock, u_int t) {
       exit(STATE_OK);
     }
   }
+
+  int timeout = (min_send_delay - get_timevaldiff(&wait_start, NULL));
+
+  if (timeout > 0) {
+    if (debug > 1) {
+      printf("Taking a nap for %dus\n", timeout);
+    }
+    usleep(timeout);
+  }
+
   return 0;
 }
 
@@ -1185,6 +1252,9 @@ static int send_icmp_ping(int sock, struct rta_host *host) {
     return -1;
   }
 
+  if (debug > 2) {
+    printf("Sending packet with: time waited: %d\n", tv.tv_usec);
+  }
   data.ping_id = 10; /* host->icmp.icmp_sent; */
 
   memcpy(&data.stime, &tv, sizeof(tv));
@@ -1363,8 +1433,8 @@ static void finish(int sig) {
   }
 
   if (debug) {
-    printf("icmp_sent: %u  icmp_recv: %u  icmp_lost: %u\n", icmp_sent,
-           icmp_recv, icmp_lost);
+    printf("icmp_sent: %u  icmp_recv: %u  icmp_lost: %u  icmp_invalid_seq_num: %u\n", icmp_sent,
+           icmp_recv, icmp_lost, icmp_invalid_seq_num);
     printf("targets: %u  targets_alive: %u\n", targets, targets_alive);
   }
 
@@ -1386,6 +1456,24 @@ static void finish(int sig) {
     } else {
       pl = ((host->icmp_sent - host->icmp_recv) * 100) / host->icmp_sent;
       rta = (double)host->time_waited / host->icmp_recv;
+
+      if (debug > 1) {
+        printf("Array of received packets per seq number: [ ");
+        for(size_t index_recv_arr = 0; index_recv_arr < packets; index_recv_arr++) {
+          printf("%02u ", host->icmp_recv_arr[index_recv_arr]);
+        }
+        printf("]\n");
+      }
+
+      for (size_t index_recv_arr = 0; index_recv_arr < packets; index_recv_arr++) {
+        if (host->icmp_recv_arr[index_recv_arr] > 1) {
+          host->icmp_dup += host->icmp_recv_arr[index_recv_arr] - 1;
+        }
+      }
+
+      if (debug) {
+        printf("Received at least %u duplicates\n", host->icmp_dup);
+      }
     }
     if (host->icmp_recv > 1) {
       host->jitter = (host->jitter / (host->icmp_recv - 1) / 1000);
@@ -1588,6 +1676,10 @@ static void finish(int sig) {
         } else if (status == STATE_CRITICAL && host->order_status == status) {
           printf(" Packets out of order");
         }
+      }
+
+      if (host->icmp_dup > 0) {
+        printf(" Received %d duplicates", host->icmp_dup);
       }
     }
     host = host->next;
@@ -2114,10 +2206,13 @@ void print_help(void) {
   printf("%u)\n", packets);
   printf(" %s\n", "-i");
   printf("    %s", _("max packet interval (currently "));
-  printf("%0.3fms)\n", (float)pkt_interval / 1000);
+  printf("%0.3fms) - must be bigger or equal min delay\n", (float)pkt_interval / 1000);
   printf(" %s\n", "-I");
   printf("    %s", _("max target interval (currently "));
   printf("%0.3fms)\n", (float)target_interval / 1000);
+  printf(" %s\n", "-D");
+  printf("    %s", _("min delay between packets (currently "));
+  printf("%0.3fms) - must be smaller or equal max packet interval (-I)\n", (float)min_send_delay / 1000);
   printf(" %s\n", "-m");
   printf("    %s", _("number of alive hosts required for success"));
   printf("\n");
