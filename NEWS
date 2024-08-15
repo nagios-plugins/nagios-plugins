@@ -1,4 +1,9 @@
 This file documents the major additions and syntax changes between releases.
+2.4.12 2024-08-20
+	FIXES
+	check_snmp: Handle snmp IpAddress responses (#759)
+	check_icmp: Uncheck return values of set*id() family functions (#746)
+
 2.4.11 2024-08-01
 	FIXES
 	check_dig: Fixed issue where exact matching broke backwards compatability, and added new option to enforce exact matching (#777)
