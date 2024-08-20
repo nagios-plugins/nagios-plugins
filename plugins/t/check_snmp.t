@@ -49,8 +49,8 @@ SKIP: {
 
     $res = NPTest->testCmd( "./check_snmp -H $host_snmp -C $snmp_community -o system.sysUpTime.0 -w 1: -c 1:");
     cmp_ok( $res->return_code, '==', 0, "Exit OK when querying uptime" );
-    like($res->output, '/^SNMP OK - (\d+)/', "String contains SNMP OK");
-    $res->output =~ /^SNMP OK - (\d+)/;
+    like($res->output, '/^SNMP OK - Timeticks:\s\(\d+\)/', "String contains SNMP OK");
+    $res->output =~ /^SNMP OK - Timeticks:\s\((\d+)\)/;
     my $value = $1;
     cmp_ok( $value, ">", 0, "Got a time value" );
     like($res->perf_output, "/sysUpTime.*$1/", "Got perfdata with value '$1' in it");
@@ -78,7 +78,7 @@ SKIP: {
 
     $res = NPTest->testCmd( "./check_snmp -H $host_snmp -C $snmp_community -o .1.3.6.1.2.1.1.3.0 -w 1: -c 1:");
     cmp_ok( $res->return_code, '==', 0, "Test with numeric OID (no mibs loaded)" );
-    like($res->output, '/^SNMP OK - \d+/', "String contains SNMP OK");
+    like($res->output, '/^SNMP OK - Timeticks:\s\(\d+\)/', "String contains SNMP OK");
 
     $res = NPTest->testCmd( "./check_snmp -H $host_snmp -C $snmp_community -o system.sysDescr.0");
     cmp_ok( $res->return_code, '==', 0, "Exit OK when querying sysDescr" );
@@ -148,7 +148,7 @@ SKIP: {
 
     $res = NPTest->testCmd( "./check_snmp -H $host_snmp -C $snmp_community -o system.sysUpTime.0 -c 1000000000000: -u '1/100 sec'");
     cmp_ok( $res->return_code, '==', 2, "Timetick used as a threshold");
-    like($res->output, '/^SNMP CRITICAL - \*\d+\* 1\/100 sec.*$/', "Timetick used as a threshold, parsed as numeric");
+    like($res->output, '/^SNMP CRITICAL - \*Timeticks:\s\(\d+\)\s+(?:\d+ days?,\s+)?\d+:\d+:\d+\.\d+\* 1\/100 sec.*$/', "Timetick used as a threshold, parsed as numeric");
 
     $res = NPTest->testCmd( "./check_snmp -H $host_snmp -C $snmp_community -o system.sysUpTime.0");
     cmp_ok( $res->return_code, '==', 0, "Timetick used as a string");
