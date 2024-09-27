@@ -23,7 +23,6 @@ NP-VERSION-FILE
 /confdefs.h
 /config.*
 /configure
-/debian
 /depcomp
 /INSTALL
 /install-sh
