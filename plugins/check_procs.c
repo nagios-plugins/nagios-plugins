@@ -73,6 +73,7 @@ int options = 0; /* bitmask of filter criteria to test against */
 #define CGROUP_HIERARCHY 2048
 #define EXCLUDE_PROGS 4096
 #define JID 8192
+#define X_EREG_ARGS 16384
 
 #define KTHREAD_PARENT "kthreadd" /* the parent process of kernel threads:
 							ppid of procs are compared to pid of this proc*/
@@ -103,6 +104,7 @@ char *cgroup_hierarchy;
 char *args;
 char *input_filename = NULL;
 regex_t re_args;
+regex_t x_re_args;
 char *fmt;
 char *fails;
 char tmp[MAX_INPUT_BUFFER];
@@ -313,6 +315,8 @@ main (int argc, char **argv)
 				resultsum |= STAT;
 			if ((options & ARGS) && procargs && (strstr (procargs, args) != NULL))
 				resultsum |= ARGS;
+			if ((options & X_EREG_ARGS) && procargs && (regexec(&x_re_args, procargs, (size_t) 0, NULL, 0) != 0))
+				resultsum |= X_EREG_ARGS;
 			if ((options & EREG_ARGS) && procargs && (regexec(&re_args, procargs, (size_t) 0, NULL, 0) == 0))
 				resultsum |= EREG_ARGS;
 			if ((options & PROG) && procprog && (strcmp (prog, procprog) == 0))
@@ -482,6 +486,7 @@ process_arguments (int argc, char **argv)
 		{"version", no_argument, 0, 'V'},
 		{"verbose", no_argument, 0, 'v'},
 		{"ereg-argument-array", required_argument, 0, CHAR_MAX+1},
+		{"x-ereg-argument-array", required_argument, 0, CHAR_MAX+3},
 		{"input-file", required_argument, 0, CHAR_MAX+2},
 		{"no-kthreads", required_argument, 0, 'k'},
 		{"traditional-filter", no_argument, 0, 'T'},
@@ -681,6 +686,22 @@ process_arguments (int argc, char **argv)
 		case CHAR_MAX+2:
 			input_filename = optarg;
 			break;
+		case CHAR_MAX+3:
+			err = regcomp(&x_re_args, optarg, cflags);
+			if (err != 0) {
+				regerror (err, &x_re_args, errbuf, MAX_INPUT_BUFFER);
+				die (STATE_UNKNOWN, "PROCS %s: %s - %s\n", _("UNKNOWN"), _("Could not compile regular expression"), errbuf);
+			}
+			/* Strip off any | within the regex optarg */
+			temp_string = strdup(optarg);
+			while(temp_string[i]!='\0'){
+				if(temp_string[i]=='|')
+					temp_string[i]=',';
+				i++;
+			}
+			xasprintf (&fmt, "%s%sx_regex args '%s'", (fmt ? fmt : ""), (options ? ", " : ""), temp_string);
+			options |= X_EREG_ARGS;
+			break;
 		}
 	}
 
@@ -853,6 +874,8 @@ print_help (void)
   printf ("   %s\n", _("Only scan for processes with args that contain STRING."));
   printf (" %s\n", "--ereg-argument-array=STRING");
   printf ("   %s\n", _("Only scan for processes with args that contain the regex STRING."));
+  printf (" %s\n", "--x-ereg-argument-array=STRING");
+  printf ("   %s\n", _("Excude scan for processes with args that contain the regex STRING."));
   printf (" %s\n", "-C, --command=COMMAND");
   printf ("   %s\n", _("Only scan for exact matches of COMMAND (without path)."));
   printf (" %s\n", "-X, --exclude-process");
