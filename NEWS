@@ -3,6 +3,7 @@ This file documents the major additions and syntax changes between releases.
 	FIXES
 	check_ssh: Fixed issue where the remote-protocol flag was not functioning correctly (Sandor Gardil)
 	configure.ac: update egrep -> grep -E (Michael Orlitzky)
+	check_procs: Some stylistic fixes to --exclude-process (#726) (Edgar Fuß)
 
 2.4.12 2024-08-20
 	FIXES
