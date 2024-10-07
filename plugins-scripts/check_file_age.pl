@@ -18,7 +18,7 @@
 #
 # you should have received a copy of the GNU General Public License
 # along with this program (or with Nagios);  if not, write to the
-# Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+# Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 # Boston, MA 02110-1301, USA
 
 use strict;
@@ -35,13 +35,13 @@ use utils qw (%ERRORS &print_revision &support);
 sub print_help ();
 sub print_usage ();
 
-my ($opt_c, $opt_f, $opt_w, $opt_C, $opt_W, $opt_h, $opt_V, $opt_i);
+my ($opt_c, $opt_f, $opt_w, $opt_C, $opt_W, $opt_h, $opt_V, $opt_i, $opt_I);
 my ($result, $message, $age, $size, $st, $perfdata, $output, @filelist, $filename, $safe_filename, $counter, $summary, $high_water_mark, $this_level, $this_result);
 
 $PROGNAME="check_file_age";
 
 $ENV{'PATH'}='@TRUSTED_PATH@';
-$ENV{'BASH_ENV'}=''; 
+$ENV{'BASH_ENV'}='';
 $ENV{'ENV'}='';
 
 $opt_w = 240;
@@ -55,7 +55,8 @@ GetOptions(
 	"V"   => \$opt_V, "version"	=> \$opt_V,
 	"h"   => \$opt_h, "help"	=> \$opt_h,
 	"i"   => \$opt_i, "ignore-missing"	=> \$opt_i,
-	"f=s" => \$opt_f, "file"	=> \$opt_f,
+	"I=s" => \$opt_I, "ignore=s"	=> \$opt_I,
+	"f=s" => \$opt_f, "file=s"	=> \$opt_f,
 	"w=f" => \$opt_w, "warning-age=f" => \$opt_w,
 	"W=f" => \$opt_W, "warning-size=f" => \$opt_W,
 	"c=f" => \$opt_c, "critical-age=f" => \$opt_c,
@@ -86,6 +87,15 @@ $output = "";
 @filelist = glob($opt_f);
 $counter = 0;
 $high_water_mark = 0;
+
+if ($opt_I) {
+	@filelist = grep(!/${opt_I}/, @filelist)
+}
+
+if (! $opt_i && scalar @filelist == 0) {
+	print "FILE_AGE UNKNOWN: No files found for $opt_f\n";
+	exit $ERRORS{'UNKNOWN'};
+}
 
 $result = "OK";
 foreach $filename (@filelist) {
@@ -182,6 +192,7 @@ sub print_help () {
 	print_usage();
 	print "\n";
 	print "  -i | --ignore-missing :  return OK if the file does not exist\n";
+	print "  -I | --ignore         :  ignore files with a regex pattern (e.g. \.old$)\n";
 	print "  <secs>  File must be no more than this many seconds old (default: warn 240 secs, crit 600)\n";
 	print "  <size>  File must be at least this many bytes long (default: crit 0 bytes)\n";
 	print "\n";
