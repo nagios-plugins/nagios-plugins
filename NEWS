@@ -1,4 +1,7 @@
 This file documents the major additions and syntax changes between releases.
+2.5.13 xxxx-xx-xx
+	FIXES
+	check_ssh: Fixed issue where the remote-protocol flag was not functioning correctly
 2.4.12 2024-08-20
 	FIXES
 	check_snmp: Handle snmp IpAddress responses (#759)
