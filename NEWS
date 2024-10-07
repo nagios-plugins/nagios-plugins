@@ -2,6 +2,7 @@ This file documents the major additions and syntax changes between releases.
 2.4.13 xxxx-xx-xx
 	FIXES
 	check_ssh: Fixed issue where the remote-protocol flag was not functioning correctly (Sandor Gardil)
+	configure.ac: update egrep -> grep -E (Michael Orlitzky)
 
 2.4.12 2024-08-20
 	FIXES
