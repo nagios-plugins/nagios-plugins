@@ -54,6 +54,7 @@ char *data_vals=NULL;
 char *label=NULL;
 
 int verbose=0;
+int detailed=0;
 
 int process_arguments(int,char **);
 
@@ -123,7 +124,17 @@ int main(int argc, char **argv){
 
 	/* return the status of the cluster */
 	if(check_type==CHECK_SERVICES){
-		return_code=get_status(total_services_warning+total_services_unknown+total_services_critical, thresholds);
+		if (!detailed){
+		    return_code=get_status(total_services_warning+total_services_unknown+total_services_critical, thresholds);
+		}
+		else{
+            return_code=get_status(total_services_critical, thresholds);
+            if (return_code != STATE_CRITICAL){
+                /* Remove critical threshold before checking if there are WARNING services */
+                set_thresholds(&thresholds, warn_threshold, NULL);
+                return_code = get_status(total_services_warning, thresholds);
+            }
+		}
 		printf("CLUSTER %s: %s: %d ok, %d warning, %d unknown, %d critical\n",
 			state_text(return_code), (label==NULL)?"Service cluster":label,
 			total_services_ok,total_services_warning,
@@ -151,6 +162,7 @@ int process_arguments(int argc, char **argv){
 		{"label",    required_argument,0,'l'},
 		{"host",     no_argument,      0,'h'},
 		{"service",  no_argument,      0,'s'},
+		{"detailed", no_argument,      0,'e'},
 		{"verbose",  no_argument,      0,'v'},
 		{"version",  no_argument,      0,'V'},
 		{"help",     no_argument,      0,'H'},
@@ -163,7 +175,7 @@ int process_arguments(int argc, char **argv){
 
 	while(1){
 
-		c=getopt_long(argc,argv,"hHsvVw:c:d:l:",longopts,&option);
+		c=getopt_long(argc,argv,"hHsevVw:c:d:l:",longopts,&option);
 
 		if(c==-1 || c==EOF || c==1)
 			break;
@@ -192,6 +204,10 @@ int process_arguments(int argc, char **argv){
 
 		case 'l': /* text label */
 			label=(char *)strdup(optarg);
+			break;
+
+		case 'e': /* detailed */
+			detailed++;
 			break;
 
 		case 'v': /* verbose */
@@ -241,6 +257,8 @@ print_help(void)
 	printf ("    %s\n", _("Check host cluster status"));
 	printf (" %s\n", "-l, --label=STRING");
 	printf ("    %s\n", _("Optional prepended text output (i.e. \"Host cluster\")"));
+	printf (" %s\n", "-e, --detailed");
+	printf ("    %s\n", _("Details check service cluster status"));
 	printf (" %s\n", "-w, --warning=THRESHOLD");
 	printf ("    %s\n", _("Specifies the range of hosts or services in cluster that must be in a"));
 	printf ("    %s\n", _("non-OK state in order to return a WARNING status level"));
