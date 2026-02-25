@@ -38,7 +38,8 @@ check_tcp_programs = check_ftp check_imap check_nntp check_pop \
 EXTRA_PROGRAMS = check_mysql check_radius check_pgsql check_snmp check_hpjd \
 	check_swap check_fping check_ldap check_game check_dig \
 	check_nagios check_by_ssh check_dns check_nt check_ide_smart	\
-	check_procs check_mysql_query check_apt check_dbi check_uptime
+	check_procs check_mysql_query check_apt check_dbi check_uptime \
+	check_throughput
 
 EXTRA_DIST = t tests
 
@@ -100,6 +101,7 @@ check_procs_LDADD = $(BASEOBJS)
 check_radius_LDADD = $(NETLIBS) $(RADIUSLIBS)
 check_real_LDADD = $(NETLIBS)
 check_snmp_LDADD = $(BASEOBJS)
+check_throughput_LDADD = $(BASEOBJS) -lsqlite3
 check_smtp_LDADD = $(SSLOBJS)
 check_ssh_LDADD = $(NETLIBS)
 check_swap_LDADD = $(MATHLIBS) $(BASEOBJS)
