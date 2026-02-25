@@ -276,6 +276,23 @@ AS_IF([test "x$with_dbi" != "xno"], [
   LIBS="$_SAVEDLIBS"
 ])
 
+AC_ARG_WITH([sqlite3], [AS_HELP_STRING([--without-sqlite3], [Skips the throughput plugin])])
+dnl Check for SQLite3 library (required by check_throughput)
+AS_IF([test "x$with_sqlite3" != "xno"], [
+  _SAVEDLIBS="$LIBS"
+  AC_CHECK_LIB(sqlite3, sqlite3_open)
+  if test "$ac_cv_lib_sqlite3_sqlite3_open" = "yes"; then
+    SQLITELIBS="-lsqlite3"
+    AC_SUBST(SQLITELIBS)
+  else
+    AC_MSG_WARN([Skipping check_throughput plugin])
+    AC_MSG_WARN([install SQLite3 libs to compile this plugin (see REQUIREMENTS).])
+    AC_MSG_WARN([  Red Hat/CentOS/Fedora: sqlite-devel])
+    AC_MSG_WARN([  Debian/Ubuntu: libsqlite3-dev])
+  fi
+  LIBS="$_SAVEDLIBS"
+])
+
 AC_ARG_WITH([radius], [AS_HELP_STRING([--without-radius], [Skips the radius plugin])])
 
 dnl Check for radius libraries
@@ -1490,6 +1507,11 @@ if test -n "$PATH_TO_SNMPGET"
 then
 	AC_DEFINE_UNQUOTED(PATH_TO_SNMPGET,"$PATH_TO_SNMPGET",[path to snmpget binary])
 	EXTRAS="$EXTRAS check_hpjd check_snmp\$(EXEEXT)"
+	if test "x$SQLITELIBS" != "x"; then
+		EXTRAS="$EXTRAS check_throughput\$(EXEEXT)"
+	else
+		AC_MSG_WARN([Skipping check_throughput plugin: SQLite3 not found])
+	fi
 else
 	AC_MSG_WARN([Get snmpget from http://net-snmp.sourceforge.net to make check_hpjd and check_snmp plugins])
 fi
