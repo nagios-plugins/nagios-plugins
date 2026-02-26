@@ -332,6 +332,7 @@ int np_warn_if_not_root(void) {
 char *np_extract_value(const char *varlist, const char *name, char sep) {
 	char *tmp=NULL, *value=NULL;
 	int i;
+	size_t varlistlen;
 
 	while (1) {
 		/* Strip any leading space */
@@ -356,10 +357,11 @@ char *np_extract_value(const char *varlist, const char *name, char sep) {
 					value[tmp-varlist] = '\0';
 				} else {
 					/* Value is delimited by a \0 */
-					if (!strlen(varlist)) continue;
-					value = (char *)calloc(1, strlen(varlist) + 1);
-					strncpy(value, varlist, strlen(varlist));
-					value[strlen(varlist)] = '\0';
+					varlistlen = strlen(varlist);
+					if (!varlistlen) continue;
+					value = (char *)calloc(1, varlistlen + 1);
+					strncpy(value, varlist, varlistlen);
+					value[varlistlen] = '\0';
 				}
 				break;
 			}

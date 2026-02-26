@@ -85,13 +85,13 @@ is($result->output, 'UNKNOWN - check_by_ssh: Remote command \'exit 3\' returned 
 $result = NPTest->testCmd(
 	"./check_by_ssh -i $ssh_key -H $ssh_service -C 'exit 7'"
 	);
-cmp_ok($result->return_code, '==', 7, "Exit with return code 7 (out of bounds)");
+cmp_ok($result->return_code, '==', 3, "Exit with return code 7 (out of bounds)");
 is($result->output, 'UNKNOWN - check_by_ssh: Remote command \'exit 7\' returned status 7', "Status text if command returned none (out of bounds)");
 
 $result = NPTest->testCmd(
 	"./check_by_ssh -i $ssh_key -H $ssh_service -C '$check[4]; exit 8'"
 	);
-cmp_ok($result->return_code, '==', 8, "Exit with return code 8 (out of bounds)");
+cmp_ok($result->return_code, '==', 3, "Exit with return code 8 (out of bounds)");
 is($result->output, $response[4], "Return proper status text even with unknown status codes");
 
 $result = NPTest->testCmd(

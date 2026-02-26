@@ -10,7 +10,7 @@ use NPTest;
 
 plan skip_all => "check_dns not compiled" unless (-x "check_dns");
 
-plan tests => 19;
+plan tests => 20;
 
 my $successOutput = '/DNS OK: [\.0-9]+ seconds? response time/';
 

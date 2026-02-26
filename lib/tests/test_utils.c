@@ -364,10 +364,10 @@ main (int argc, char **argv)
 	temp_state_key = this_nagios_plugin->state;
 	sprintf(state_path, "/usr/local/nagios/var/%lu/check_test/funnykeyname", (unsigned long)geteuid());
 	ok( !strcmp(temp_state_key->plugin_name, "check_test"), "Got plugin name" );
-	ok( !strcmp(temp_state_key->name, state_path), "Got key name" );
+	ok( !strcmp(temp_state_key->name, "funnykeyname"), "Got key name" );
 
 
-	ok( !strcmp(temp_state_key->_filename, "/usr/local/nagios/var/check_test/funnykeyname"), "Got internal filename" );
+	ok( !strcmp(temp_state_key->_filename, state_path), "Got internal filename" );
 	ok( temp_state_key->data_version==54, "Version set" );
 
 	temp_state_data = np_state_read();

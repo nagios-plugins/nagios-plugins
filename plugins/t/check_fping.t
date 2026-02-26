@@ -31,7 +31,7 @@ if ( -x "./check_fping" )
 {
   $t += checkCmd( "./check_fping $host_responsive",    0,       $successOutput );
   $t += checkCmd( "./check_fping $host_nonresponsive", [ 1, 2 ] );
-  $t += checkCmd( "./check_fping $hostname_invalid",   [ 1, 2 ] );
+  $t += checkCmd( "./check_fping $hostname_invalid",   3 );
 }
 else
 {

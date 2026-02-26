@@ -560,7 +560,8 @@ char *perfd_truechimers (int num_truechimers)
 }
 
 int main(int argc, char *argv[]){
-	int result, offset_result, stratum, num_truechimers, oresult, jresult, sresult, tresult;
+	int result, offset_result, stratum, num_truechimers, oresult;
+	int jresult = STATE_OK, sresult = STATE_OK, tresult = STATE_OK;
 	double offset=0, jitter=0;
 	char *result_line, *perfdata_line;
 

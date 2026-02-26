@@ -222,7 +222,7 @@ main (int argc, char **argv)
 	                   TRUE, 0, FALSE, 0));
 	if (max_interface_bandwidth) {
 		incoming_percent = (incoming_rate * 100.0) / (double)max_interface_bandwidth;
-		outgoing_percent = (incoming_rate * 100.0) / (double)max_interface_bandwidth;
+		outgoing_percent = (outgoing_rate * 100.0) / (double)max_interface_bandwidth;
 		xasprintf(&error_message, "%s %s %s", error_message,
 			fperfdata("in_pct", incoming_percent, "%",
 					 FALSE, 0.0, FALSE, 0.0,

@@ -1,6 +1,65 @@
 This file documents the major additions and syntax changes between releases.
+2.4.13 xxxx-xx-xx
+	FIXES
+	check_ssh: Fixed issue where the remote-protocol flag was not functioning correctly (Sandor Gardil)
+	configure.ac: update egrep -> grep -E (Michael Orlitzky)
+	check_procs: Some stylistic fixes to --exclude-process (#726) (Edgar Fuß)
 
-2.4.3 2022-01-17
+2.4.12 2024-08-20
+	FIXES
+	check_snmp: Handle snmp IpAddress responses (#759)
+	check_icmp: Uncheck return values of set*id() family functions (#746)
+
+2.4.11 2024-08-01
+	FIXES
+	check_dig: Fixed issue where exact matching broke backwards compatability, and added new option to enforce exact matching (#777)
+	check_swap: Allow the plugin to run without warning/critical thresholds (#747)
+
+2.4.10 2024-04-30
+	FIXES
+	check_mailq: Add config directory option and update pattern matching for exim mailservers (#754)
+	check_icmp: Very minor change to plugin output
+
+	TESTS
+	Update majority of the test suite to working condition
+
+2.4.9 2024-03-21
+	FIXES
+	check_snmp: Robustly fixes incorrect integer return value parsing (#749)
+
+2.4.8 2023-12-7
+	FIXES
+	check_snmp: Fixed issue where Timeticks would incorrectly show "No valid data returned" (#743)
+
+2.4.7 2023-11-16
+	FIXES
+	check_ntp.pl: Fix warning/critical threshold information missing from performance data output (#735)
+	check_ntp.pl: Fix issues when NTP server has a positive time offset (#734)
+	check_snmp: Fixed issue where plugin returned OK for missing OID (#679)
+	check_snmp: Fixed issue where OID name with numeric data was misinterpreted as OID value (#720)
+
+2.4.6 2023-08-01
+	FIXES
+	check_log: Fixed issue where /tmp directory would fill with unnecessary information (#724)
+	check_mailq: Correctly handle "Mail queue is empty" when monitoring Postfix over SSMTP (#611)
+	check_oracle: Reduce false positives when looking for "OK" messages (#723)
+	utils: Fix compiler warnings (#583, #637)
+
+2.4.5 2023-06-01
+	FIXES
+	check_dns: Fix buffer overflow on Ubuntu 22.04 (#699)
+	check_sensors: Use grep instead of deprecated egrep (#697)
+	check_tcp: Add --sni as an alias to -N (#701)
+	check_by_ssh: Prevent users from using ProxyCommand/LocalCommand/PermitLocalCommand (./configure --with-unrestricted-ssh-options=yes to re-enable)
+	build: fix bug when using VPATH builds (#700)
+
+2.4.4 2023-04-14
+	FIXES
+	check_log: improve file readability test to accommodate CAP_DAC_READ_SEARCH and similar (#604)
+	check_mrtgtraf: fix incorrect out_pct performance data metric (#600)
+	check_ping: handle "bad checksum" warning from ping output (#616)
+
+2.4.3 2023-01-17
 	FIXES
 	check_dig: Improve matching logic when using -a (#652)
 	check_mailq: Fix garbled output when checking postfix (#663)
