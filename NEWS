@@ -1,5 +1,8 @@
 This file documents the major additions and syntax changes between releases.
 2.4.13 xxxx-xx-xx
+	ENHANCEMENTS
+	check_by_ssh: Add --unknown-timeout flag (Paul B. Henson)
+
 	FIXES
 	check_ssh: Fixed issue where the remote-protocol flag was not functioning correctly (Sandor Gardil)
 	configure.ac: update egrep -> grep -E (Michael Orlitzky)
