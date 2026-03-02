@@ -66,6 +66,18 @@ is( $res->return_code, 3, "No hostname" );
 like( $res->output, '/No hosts to check/', "Output with appropriate error message");
 
 $res = NPTest->testCmd(
+	"$sudo ./check_icmp 0.0.0.0"
+	);
+is( $res->return_code, 3, "Invalid IPv4 address" );
+like( $res->output, '/No hosts to check/', "Output with appropriate error message");
+
+$res = NPTest->testCmd(
+	"$sudo ./check_icmp -6 ::"
+	);
+is( $res->return_code, 3, "Invalid IPv6 address" );
+like( $res->output, '/No hosts to check/', "Output with appropriate error message");
+
+$res = NPTest->testCmd(
 	"$sudo ./check_icmp -H $host_nonresponsive -w 10000ms,100% -c 10000ms,100% -n 1 -m 0"
 	);
 is( $res->return_code, 0, "One host nonresponsive - zero required" );

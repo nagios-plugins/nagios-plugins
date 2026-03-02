@@ -1715,7 +1715,7 @@ static int add_target_ip(char *arg, struct sockaddr_storage *in) {
   if (((address_family == AF_INET && (sin->sin_addr.s_addr == INADDR_NONE ||
                                       sin->sin_addr.s_addr == INADDR_ANY))) ||
       (address_family == AF_INET6 &&
-       sin6->sin6_addr.s6_addr == in6addr_any.s6_addr)) {
+       IN6_IS_ADDR_UNSPECIFIED(&sin6->sin6_addr))) {
     return -1;
   }
 
