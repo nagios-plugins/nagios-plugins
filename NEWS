@@ -1,5 +1,5 @@
 This file documents the major additions and syntax changes between releases.
-2.4.13 xxxx-xx-xx
+2.5 xxxx-xx-xx
 	ENHANCEMENTS
 	check_by_ssh: Add --unknown-timeout flag (Paul B. Henson)
 
@@ -9,6 +9,7 @@ This file documents the major additions and syntax changes between releases.
 	check_procs: Some stylistic fixes to --exclude-process (#726) (Edgar Fuß)
 	check_icmp: Fixed issue where the "No hosts to check" message was not returned for IPv6 address :: (Andreas Hasenkopf)
 	check_dns: Fixed issue where reverse mapping regressed and failed (Marcel Telka)
+	check_http: Fixed issue which resulted in segfault when SSL connection failed (Marcel Telka)
 
 2.4.12 2024-08-20
 	FIXES
