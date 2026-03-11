@@ -82,7 +82,7 @@ const char *email = "devel@nagios-plugins.org";
 #include <signal.h>
 #include <sys/dlpi.h>
 #include <sys/poll.h>
-#include <sys/stropts.h>
+#include <stropts.h>
 
 #define bcopy(source, destination, length) memcpy(destination, source, length)
 
