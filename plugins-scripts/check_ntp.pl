@@ -230,6 +230,14 @@ while (<NTPDATE>) {
 	
 	}
 
+	# Parse output from ntpsec's ntpdate
+	if (/ ([+-.\d]+) \+\/-.* s(\d+) (no|add|del)-leap/) {
+		$offset = $1;
+		$stratum = $2;
+		$ntpdate_error = $ERRORS{"OK"};
+		print "ntperr = $ntpdate_error \n" if $verbose;
+	}
+
 	if (/no server suitable for synchronization found/) {
 		if ($stratum == 16) {
 			$ntpdate_error = $ERRORS{"WARNING"};
