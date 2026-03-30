@@ -1,5 +1,5 @@
 This file documents the major additions and syntax changes between releases.
-2.5 xxxx-xx-xx
+2.5 2026-03-31
 	ENHANCEMENTS
 	check_by_ssh: Add --unknown-timeout flag (Paul B. Henson)
 
