@@ -91,11 +91,14 @@ struct timeval tv_temp;
 #define CRLF "\r\n"
 
 int specify_port = FALSE;
-int server_port = HTTP_PORT;
+int server_port = 0;
 char server_port_text[6] = "";
 char server_type[6] = "http";
 char *server_address;
 char *host_name;
+int host_port = 0;
+int specify_host_port = FALSE;
+int proxy_connect = FALSE;
 char *server_url;
 char *user_agent;
 int server_url_length;
@@ -176,7 +179,7 @@ main (int argc, char **argv)
     if (display_html == TRUE)
         printf ("<A HREF=\"%s://%s:%d%s\" target=\"_blank\">",
                 use_ssl ? "https" : "http", host_name ? host_name : server_address,
-                server_port, server_url);
+                host_port, server_url);
 
     /* initialize alarm signal handling, set socket timeout, start timer */
     (void) signal (SIGALRM, socket_timeout_alarm_handler);
@@ -198,7 +201,7 @@ check_http_die(int state, char* fmt, ...)
     va_end(ap);
 
     if (show_url) {
-        die (state, "HTTP %s - %s://%s:%d%s - %s", state_text(state), use_ssl ? "https" : "http", host_name ? host_name : server_address, server_port, server_url, msg);
+        die (state, "HTTP %s - %s://%s:%d%s - %s", state_text(state), use_ssl ? "https" : "http", host_name ? host_name : server_address, host_port, server_url, msg);
     }
     else {
         die (state, "HTTP %s - %s", state_text(state), msg);
@@ -394,8 +397,6 @@ enable_ssl:
                 else
                     usage4 (_("Invalid option - Valid SSL/TLS versions: 2, 3, 1, 1.1, 1.2, 1.3 (with optional '+' suffix)"));
             }
-            if (specify_port == FALSE)
-                server_port = HTTPS_PORT;
 #else
             /* -C -J and -K fall through to here without SSL */
             usage4 (_("Invalid option - SSL is not available"));
@@ -431,14 +432,18 @@ enable_ssl:
             host_name = strdup(optarg);
             if (*host_name == '[') {
                 if ((p = strstr (host_name, "]:")) != NULL) /* [IPv6]:port */ {
-                    server_port = atoi (p + 2);
+                    host_port = atoi (p + 2);
+                    specify_host_port = TRUE;
                     *++p = '\0'; // Set The host_name sans ":port"
                 }
             } else if ((p = strchr (host_name, ':')) != NULL
                        && strchr (++p, ':') == NULL) /* IPv4:port or host:port */ {
-                server_port = atoi (p);
+                host_port = atoi (p);
+                specify_host_port = TRUE;
                 *--p = '\0'; // Set The host_name sans ":port"
             }
+            if ((specify_host_port == TRUE) && (host_port < 0 || host_port > MAX_PORT))
+                usage2 (_("Invalid port number"), optarg);
             break;
         case 'I': /* Server IP-address */
             server_address = strdup (optarg);
@@ -590,6 +595,12 @@ enable_ssl:
         usage4(_("Server name indication requires that a host name is defined with -H"));
     }
 
+    if (specify_port == FALSE)
+        server_port = (use_ssl == TRUE) ? HTTPS_PORT : HTTP_PORT;
+
+    if (specify_host_port == FALSE)
+        host_port = (use_ssl == TRUE) ? HTTPS_PORT : HTTP_PORT;
+
     if (server_address == NULL) {
         if (host_name == NULL)
             usage4 (_("You must specify a server address or host name"));
@@ -597,13 +608,30 @@ enable_ssl:
             server_address = strdup (host_name);
     }
 
+    if (http_method == NULL)
+        http_method = strdup ("GET");
+
+    /* if we are called with the -I option, the -j method is CONNECT and */
+    /* we received -S for SSL, then we tunnel the request through a proxy*/
+    /* @20100414, public[at]frank4dd.com, http://www.frank4dd.com/howto  */
+    if (server_address != NULL && strcmp(http_method, "CONNECT") == 0
+        && host_name != NULL && use_ssl == TRUE) {
+        proxy_connect = TRUE;
+    }
+
+    if (proxy_connect == FALSE) {
+        if (specify_host_port == TRUE && specify_port == TRUE)
+            usage4(_("Only with -S -j CONNECT -H <hostname> -I <address> is it allowed to set both a port with -p and within -H."));
+        else if (specify_port == TRUE)
+            host_port = server_port;
+        else if (specify_host_port == TRUE)
+            server_port = host_port;
+    }
+
     set_thresholds(&thlds, warning_thresholds, critical_thresholds);
 
     if (critical_thresholds && thlds->critical->end>(double)timeout_interval)
         timeout_interval = (int)thlds->critical->end + 1;
-
-    if (http_method == NULL)
-        http_method = strdup ("GET");
 
     if (client_cert && !client_privkey)
         usage4 (_("If you use a client certificate you must also specify a private key file"));
@@ -1053,17 +1081,15 @@ check_http (void)
         die (STATE_CRITICAL, _("HTTP CRITICAL - Unable to open TCP socket\n"));
     microsec_connect = deltime (tv_temp);
 
-    /* if we are called with the -I option, the -j method is CONNECT and */
-    /* we received -S for SSL, then we tunnel the request through a proxy*/
-    /* @20100414, public[at]frank4dd.com, http://www.frank4dd.com/howto  */
-
-    if ( server_address != NULL && strcmp(http_method, "CONNECT") == 0
-            && host_name != NULL && use_ssl == TRUE) {
-
-        if (verbose) printf ("Entering CONNECT tunnel mode with proxy %s:%d to dst %s:%d\n", server_address, server_port, host_name, HTTPS_PORT);
-        asprintf (&buf, "%s %s:%d HTTP/1.1\r\n%s\r\n", http_method, host_name, HTTPS_PORT, user_agent);
+    if (proxy_connect == TRUE) {
+        if (verbose) printf ("Entering CONNECT tunnel mode with proxy %s:%d to dst %s:%d\n", server_address, server_port, host_name, host_port);
+        asprintf (&buf, "%s %s:%d HTTP/1.1\r\n%s\r\n", http_method, host_name, host_port, user_agent);
         asprintf (&buf, "%sProxy-Connection: keep-alive\r\n", buf);
         asprintf (&buf, "%sHost: %s\r\n", buf, host_name);
+        if (strlen(proxy_auth)) {
+            base64_encode_alloc (proxy_auth, strlen (proxy_auth), &auth);
+            asprintf (&buf, "%sProxy-Authorization: Basic %s\r\n", buf, auth);
+        }
         /* we finished our request, send empty line with CRLF */
         asprintf (&buf, "%s%s", buf, CRLF);
         if (verbose) printf ("%s\n", buf);
@@ -1099,8 +1125,7 @@ check_http (void)
     }
 #endif /* HAVE_SSL */
 
-    if ( server_address != NULL && strcmp(http_method, "CONNECT") == 0
-            && host_name != NULL && use_ssl == TRUE)
+    if (proxy_connect == TRUE)
         asprintf (&buf, "%s %s %s\r\n%s\r\n", "GET", server_url, host_name ? "HTTP/1.1" : "HTTP/1.0", user_agent);
     else
         asprintf (&buf, "%s %s %s\r\n%s\r\n", http_method, server_url, host_name ? "HTTP/1.1" : "HTTP/1.0", user_agent);
@@ -1127,11 +1152,11 @@ check_http (void)
              * 14.23).  Some server applications/configurations cause trouble if the
              * (default) port is explicitly specified in the "Host:" header line.
              */
-            if ((use_ssl == FALSE && server_port == HTTP_PORT) ||
-                    (use_ssl == TRUE && server_port == HTTPS_PORT))
+            if ((use_ssl == FALSE && host_port == HTTP_PORT) ||
+                    (use_ssl == TRUE && host_port == HTTPS_PORT))
                 xasprintf (&buf, "%sHost: %s\r\n", buf, host_name);
             else
-                xasprintf (&buf, "%sHost: %s:%d\r\n", buf, host_name, server_port);
+                xasprintf (&buf, "%sHost: %s:%d\r\n", buf, host_name, host_port);
         }
     }
 
@@ -1283,8 +1308,8 @@ check_http (void)
 
     if (verbose)
         printf ("%s://%s:%d%s is %d characters\n",
-            use_ssl ? "https" : "http", server_address,
-            server_port, server_url, (int)pagesize);
+            use_ssl ? "https" : "http", host_name ? host_name : server_address,
+            host_port, server_url, (int)pagesize);
 
     /* find status line and null-terminate it */
     page += (size_t) strcspn (page, "\r\n");
@@ -1336,14 +1361,14 @@ check_http (void)
     /* make sure the status line matches the response we are looking for */
     if (!expected_statuscode (status_line, server_expect)) {
 
-        if (server_port == HTTP_PORT)
+        if (host_port == HTTP_PORT)
             xasprintf (&msg,
                        _("Invalid HTTP response received from host: %s\n"),
                        status_line);
         else
             xasprintf (&msg,
                        _("Invalid HTTP response received from host on port %d: %s\n"),
-                       server_port, status_line);
+                       host_port, status_line);
         bad_response = TRUE;
     }
 
@@ -1365,7 +1390,7 @@ check_http (void)
         if (status_line != NULL) {
 
             status_code = strchr(status_line, ' ');
-            if (status_code != NULL) 
+            if (status_code != NULL)
                 /* Normally the following line runs once, but some servers put extra whitespace between the version number and status code. */
                 while (*status_code == ' ') { status_code += sizeof(char); }
 
@@ -1407,7 +1432,7 @@ check_http (void)
             else
                 result = max_state_alt(onredirect, result);
             xasprintf (&msg, _("%s%s - "), msg, status_line);
-        } 
+        }
 
         /* end if (http_status >= 300) */
         else if (!bad_response) {
@@ -1438,7 +1463,7 @@ check_http (void)
             if(output_header_search[sizeof(output_header_search)-1]!='\0') {
                 bcopy("...",&output_header_search[sizeof(output_header_search)-4],4);
             }
-            xasprintf (&msg, _("%sheader '%s' not found on '%s://%s:%d%s', "), msg, output_header_search, use_ssl ? "https" : "http", host_name ? host_name : server_address, server_port, server_url);
+            xasprintf (&msg, _("%sheader '%s' not found on '%s://%s:%d%s', "), msg, output_header_search, use_ssl ? "https" : "http", host_name ? host_name : server_address, host_port, server_url);
             result = STATE_CRITICAL;
         }
     }
@@ -1449,7 +1474,7 @@ check_http (void)
             if(output_string_search[sizeof(output_string_search)-1]!='\0') {
                 bcopy("...",&output_string_search[sizeof(output_string_search)-4],4);
             }
-            xasprintf (&msg, _("%sstring '%s' not found on '%s://%s:%d%s', "), msg, output_string_search, use_ssl ? "https" : "http", host_name ? host_name : server_address, server_port, server_url);
+            xasprintf (&msg, _("%sstring '%s' not found on '%s://%s:%d%s', "), msg, output_string_search, use_ssl ? "https" : "http", host_name ? host_name : server_address, host_port, server_url);
             result = STATE_CRITICAL;
         }
     }
@@ -1501,7 +1526,7 @@ check_http (void)
 
     /* show checked URL */
     if (show_url)
-        xasprintf (&msg, _("%s - %s://%s:%d%s"), msg, use_ssl ? "https" : "http", host_name ? host_name : server_address, server_port, server_url);
+        xasprintf (&msg, _("%s - %s://%s:%d%s"), msg, use_ssl ? "https" : "http", host_name ? host_name : server_address, host_port, server_url);
 
 
 
@@ -1648,7 +1673,7 @@ redir (char *pos, char *status_line)
                     *x = '\0';
                 xasprintf (&url, "%s/%s", server_url, url);
             }
-            i = server_port;
+            i = host_port;
             strcpy (type, server_type);
             strcpy (addr, host_name ? host_name : server_address);
         }
@@ -1668,7 +1693,7 @@ redir (char *pos, char *status_line)
              _("HTTP WARNING - maximum redirection depth %d exceeded - %s://%s:%d%s%s\n"),
              max_depth, type, addr, i, url, (display_html ? "</A>" : ""));
 
-    if (server_port==i &&
+    if (host_port==i &&
             !strncmp(server_address, addr, MAX_IPV4_HOSTLENGTH) &&
             (host_name && !strncmp(host_name, addr, MAX_IPV4_HOSTLENGTH)) &&
             !strcmp(server_url, url))
@@ -1686,21 +1711,21 @@ redir (char *pos, char *status_line)
         server_address = strndup (addr, MAX_IPV4_HOSTLENGTH);
     }
     if (!(followsticky & STICKY_PORT)) {
-        server_port = i;
+        host_port = i;
     }
 
     free (server_url);
     server_url = url;
 
-    if (server_port > MAX_PORT)
+    if (host_port > MAX_PORT)
         die (STATE_UNKNOWN,
              _("HTTP UNKNOWN - Redirection to port above %d - %s://%s:%d%s%s\n"),
-             MAX_PORT, server_type, server_address, server_port, server_url,
+             MAX_PORT, server_type, server_address, host_port, server_url,
              display_html ? "</A>" : "");
 
     if (verbose)
         printf (_("Redirection to %s://%s:%d%s\n"), server_type,
-                host_name ? host_name : server_address, server_port, server_url);
+                host_name ? host_name : server_address, host_port, server_url);
 
     free(addr);
     check_http ();
