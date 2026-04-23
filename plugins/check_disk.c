@@ -288,6 +288,7 @@ main (int argc, char **argv)
           (strcmp(me->me_type, "sysfs") == 0 || strcmp(me->me_type, "proc") == 0
         || strcmp(me->me_type, "debugfs") == 0 || strcmp(me->me_type, "tracefs") == 0
         || strcmp(me->me_type, "fusectl") == 0 || strcmp(me->me_type, "fuse.gvfsd-fuse") == 0
+        || strcmp(me->me_type, "fuse.portal") == 0
         || strcmp(me->me_type, "cgroup") == 0 || strstr(me->me_type, "tmpfs") != NULL))
       {
         if (last_me == NULL)
