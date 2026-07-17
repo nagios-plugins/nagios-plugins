@@ -1331,9 +1331,13 @@ static int recvfrom_wto(int sock, void *buf, unsigned int len,
   }
 #endif /* SO_TIMESTAMP */
 
+#ifdef SO_TIMESTAMP
   if (!chdr) {
     gettimeofday(tv, &tz);
   }
+#else
+  gettimeofday(tv, &tz);
+#endif
   return (ret);
 }
 
