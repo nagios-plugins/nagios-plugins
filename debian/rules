@@ -1,0 +1,171 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+# GNU copyright 1997 to 1999 by Joey Hess.
+
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+
+# for hardening
+DPKG_EXPORT_BUILDFLAGS = 1
+include /usr/share/dpkg/buildflags.mk
+
+PACKAGE = nagios-plugins
+
+# These are used for cross-compiling and for saving the configure script
+# from having to guess our platform (since we know it already)
+include /usr/share/dpkg/architecture.mk
+
+DEBIANDIR=$(CURDIR)/debian
+NP_LIBEXEC:=/usr/local/nagios/libexec
+NP_DIR:=$(DEBIANDIR)/nagios-plugins
+
+PATH = /bin:/sbin:/usr/bin:/usr/sbin
+
+
+ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+	CFLAGS += -O0
+else
+	CFLAGS += -O2
+endif
+ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
+	INSTALL_PROGRAM += -s
+endif
+
+ifeq ($(DEB_HOST_ARCH_OS),linux)
+PING_CONFIGURE_ARGS = --with-ping-command="/bin/ping -4 -n -U -w %d -c %d %s" \
+                      --with-ping6-command="/bin/ping -6 -n -U -w %d -c %d %s"
+else
+PING_CONFIGURE_ARGS = --with-ping-command="/bin/ping -n -w %d -c %d %s" \
+                      --with-ping6-command="/bin/ping6 -n -w %d -c %d %s"
+endif
+
+
+config.status: configure
+	export PATH=$(PATH)
+	dh_testdir
+	
+	# if /proc is not mounted, check_nagios and check_procs are
+	# silently omitted from build.
+	@if ! [ -d /proc/$$$$ ]; then \
+	  echo "nagios-plugins needs a mounted /proc to correctly build"; \
+	  exit 1; \
+	fi
+	
+	ln -sf /usr/share/misc/config.sub build-aux
+	ln -sf /usr/share/misc/config.guess build-aux
+	rm -f config.cache
+	
+	# Add here commands to configure the package.
+	# Append 'All warnings', 'Immediate binding' and dpkg-buildflags flags
+	CFLAGS="$$(DEB_CFLAGS_MAINT_APPEND='-Wall -Wl,-z,now' dpkg-buildflags --get CFLAGS)" \
+	PATH_TO_APTGET=/usr/bin/apt-get \
+	PGINCLUDE="-I`pg_config --includedir`" PGLIBS="-lpq -lcrypt" \
+	./configure \
+		--disable-maintainer-mode \
+		--host=$(DEB_HOST_GNU_TYPE) \
+		--build=$(DEB_BUILD_GNU_TYPE) \
+		--prefix=/usr \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--libexecdir=${NP_LIBEXEC} \
+		--with-perl=/usr/bin/perl \
+		--with-openssl=/usr \
+		--with-pgsql=/usr \
+		--with-mysql=/usr \
+		--with-proc-loadavg=/proc/loadavg \
+		--with-ps-command="/bin/ps axwwo 'stat uid pid ppid vsz rss pcpu etime comm args'" \
+		--with-ps-format="%s %d %d %d %d %d %f %s %s %n" \
+		--with-ps-cols=10 \
+		--with-ps-varlist="procstat,&procuid,&procpid,&procppid,&procvsz,&procrss,&procpcpu,procetime,procprog,&pos" \
+		$(PING_CONFIGURE_ARGS) \
+		--with-nslookup-command="/usr/bin/nslookup -sil" \
+		--with-uptime-command="/usr/bin/uptime" \
+		--with-rpcinfo-command="/usr/sbin/rpcinfo" \
+		--with-smbclient-command="/usr/bin/smbclient" \
+		--with-snmpget-command="/usr/bin/snmpget" \
+		--with-snmpgetnext-command="/usr/bin/snmpgetnext" \
+		--with-qstat-command="/usr/bin/quakestat" \
+		--with-fping-command="/usr/bin/fping" \
+		--with-fping6-command="/usr/bin/fping6" \
+		--with-ssh-command="/usr/bin/ssh" \
+		--with-sudo-command="/usr/bin/sudo" \
+		--with-mailq-command="/usr/bin/mailq" \
+		--with-proc-meminfo="/proc/meminfo" \
+		--with-dig-command="/usr/bin/dig" \
+		--with-apt-get-command="/usr/bin/apt-get" \
+		--enable-extra-opts \
+		--disable-rpath
+
+
+build: build-arch build-indep
+build-arch: build-stamp
+build-indep: build-stamp
+
+build-stamp:  config.status
+	dh_testdir
+	$(MAKE)
+	touch build-stamp
+
+clean: really-clean
+
+really-clean:
+	dh_testdir
+	dh_testroot
+
+	# Add here commands to clean up after the build process.
+	[ ! -f Makefile ] || $(MAKE) distclean
+	find -type d -name autom4te.cache -print0 | xargs -0 -r rm -rf \;
+	-rm -f platform.h auto-include.h
+	find -type d -name build -print0 | xargs -0 -r rm -rf \;
+	find \( -name config.sub -o -name config.guess \) -print0 | xargs -0 -r rm -f \;
+	-rm -f $(DEBIANDIR)/nagios-plugins-basic.postrm $(DEBIANDIR)/nagios-plugins-standard.postrm
+	dh_clean
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_prep
+	dh_installdirs
+
+	# Add here commands to install the package into debian/nagios-plugins.
+	$(MAKE) install DESTDIR=${NP_DIR}
+	$(MAKE) install-root DESTDIR=${NP_DIR}
+	chmod 644 ${NP_DIR}${NP_LIBEXEC}/utils.pm
+
+# Build architecture-independent files here.
+binary-indep: build install
+	dh_testdir -i
+	dh_testroot -i
+	dh_installchangelogs -i NEWS
+	dh_installdocs -i
+	dh_link -i
+	dh_installexamples -i
+	dh_installman -i
+	dh_compress -i
+	dh_fixperms -i
+	dh_installdeb -i
+	dh_gencontrol -i
+	dh_md5sums -i
+	dh_builddeb -i
+
+# Build architecture-dependent files here.
+binary-arch: build install
+	dh_testdir -a
+	dh_testroot -a
+	dh_installchangelogs -a NEWS
+	dh_installdocs -a
+	dh_link -a
+	dh_installexamples -a
+	dh_installman -a
+	dh_strip -a
+	dh_compress -a
+	dh_fixperms -a -X utils.pm
+	dh_installdeb -a
+	dh_shlibdeps -a
+	dh_gencontrol -a
+	dh_md5sums -a
+	dh_builddeb -a
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install

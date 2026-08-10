@@ -1,0 +1,39 @@
+Source: nagios-plugins
+Section: net
+Priority: optional
+Maintainer: Nagios Development Team <devteam@nagios.com>
+Build-Depends: debhelper-compat (= 13),
+               libdbi-dev,
+               libradcli-dev | libfreeradius-client-dev,
+               libkrb5-dev,
+               libldap2-dev,
+               default-libmysqlclient-dev,
+               libnet-snmp-perl,
+               libpq-dev,
+               libssl-dev,
+               mawk | awk,
+               perl,
+               procps
+Rules-Requires-Root: binary-targets
+
+Package: nagios-plugins
+Architecture: any
+Depends: inetutils-ping [kfreebsd-any hurd-any],
+         iputils-ping [linux-any],
+         procps,
+         ucf,
+         bind9-host | host,
+         dnsutils,
+         libnet-snmp-perl,
+         rpcbind,
+         smbclient,
+         snmp,
+         sudo
+Provides: nagios-plugins-basic,
+          nagios-plugins-standard,
+          nagios-plugins-common,
+          monitoring-plugins,
+          monitoring-plugins-basic,
+          monitoring-plugins-standard,
+          monitoring-plugins-common
+Description: Plugins for Nagios compatible monitoring systems.

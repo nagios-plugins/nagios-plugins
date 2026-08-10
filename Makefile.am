@@ -22,6 +22,9 @@ DEFS = -DLOCALEDIR=\"$(localedir)\"
 ChangeLog: NP-VERSION-GEN
 	$(top_srcdir)/tools/generate-change-log > $@
 
+deb:
+	dpkg-buildpackage -us -uc -b
+
 dist-hook:
 	$(MAKE) THANKS
 	echo ${VERSION} >$(distdir)/release

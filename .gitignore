@@ -16,6 +16,7 @@ NP-VERSION-FILE
 # /
 /aclocal.m4
 /autom4te*.cache
+/build-stamp
 /Cache.pm
 /ChangeLog
 /command.cfg
@@ -23,7 +24,6 @@ NP-VERSION-FILE
 /confdefs.h
 /config.*
 /configure
-/debian
 /depcomp
 /INSTALL
 /install-sh
@@ -52,6 +52,12 @@ NP-VERSION-FILE
 /doc/developer-guidelines.html
 /doc/developer-guidelines.html.last
 /doc/jade-out.fot
+
+# /debian/
+/debian/.debhelper/
+/debian/nagios-plugins/
+/debian/files
+/debian/nagios-plugins.substvars
 
 # /tap/
 /tap/.deps
