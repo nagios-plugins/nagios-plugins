@@ -185,12 +185,19 @@ if [ $rc -eq 0 ]; then
 	exit "$STATE_UNKNOWN"
 fi
 
-# If the source log file doesn't exist, exit
+# If the source log file doesn't exist or isn't readable, exit.
+#
+# Note that we deliberately use "dd" to check for read access instead
+# of "[ -r $logfile ]", as the latter can return false-negatives on
+# Linux if the check_log plugin is being run via nrpe with additional
+# capabilities (e.g., CAP_DAC_READ_SEARCH).  In contrast, "dd"
+# actually attempts to open the file, which is a true test of whether
+# the file is readable.
 
 if [ ! -e "$logfile" ]; then
     echo "Log check error: Log file $logfile does not exist!"
     exit "$STATE_UNKNOWN"
-elif [ ! -r "$logfile" ] ; then
+elif ! dd if="$logfile" count=0 1>/dev/null 2>&1; then
     echo "Log check error: Log file $logfile is not readable!"
     exit "$STATE_UNKNOWN"
 fi
@@ -199,7 +206,6 @@ fi
 if [ ! -d "$TMPDIR" ];then
 	TMPDIR="/tmp"
 fi
-echo "$TMPDIR"
 
 # Copy the logfile to a temporary file, to prevent diff from
 # never finishing when $logfile continues to be written to
@@ -251,6 +257,8 @@ lastentry=$(egrep "$query" "$tempdiff" | tail -1)
 
 rm -f "$tempdiff"
 cat "$logfile" > "$oldlog"
+# Need to remove the temp file otherwise it just fills up the temp directory
+rm -f "$templog"
 
 if [ "$count" = "0" ]; then # no matches, exit with no error
     echo "Log check ok - 0 pattern matches found|match=$count;;;0"

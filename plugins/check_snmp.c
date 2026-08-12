@@ -94,6 +94,7 @@ void print_usage (void);
 void print_help (void);
 
 #include "regex.h"
+#include <ctype.h>
 char regex_expect[MAX_INPUT_BUFFER] = "";
 regex_t preg;
 regmatch_t pmatch[10];
@@ -182,7 +183,7 @@ static char *fix_snmp_range(char *th)
 int
 main (int argc, char **argv)
 {
-	int i, len, line, total_oids;
+	int i, j, len, line, total_oids;
 	unsigned int bk_count = 0, dq_count = 0;
 	int iresult = STATE_UNKNOWN;
 	int result = STATE_UNKNOWN;
@@ -203,7 +204,7 @@ main (int argc, char **argv)
 	char *previous_string=NULL;
 	char *ap=NULL;
 	char *state_string=NULL;
-	size_t response_length, current_length, string_length;
+	size_t response_length, current_length, string_length, show_length;
 	char *temp_string=NULL;
 	char *quote_string=NULL;
 	time_t current_time;
@@ -485,21 +486,33 @@ main (int argc, char **argv)
 		}
 		else if (strstr (response, "Timeticks: ")) {
 			show = strstr (response, "Timeticks: ");
-			show = strpbrk (show, "-0123456789");
 			is_ticks = 1;
 		}
-		else
+		else if (strstr (response, "IpAddress: ")) {
+			show = strstr (response, "IpAddress: ") + 11;
+		}
+		else {
+			/* This branch is expected to be error-handling only */
 			show = response;
-
+			show_length = strlen(show);
+			for (j = 0; j < show_length; j++){
+				if (isspace(show[j])){
+					die (STATE_UNKNOWN,_("Unrecognized OID name returned (%s)\n"), show);
+				}
+			}
+		}
 		iresult = STATE_DEPENDENT;
 
 		/* Process this block for numeric comparisons */
 		/* Make some special values,like Timeticks numeric only if a threshold is defined */
 		if (thlds[i]->warning || thlds[i]->critical || calculate_rate || is_ticks || offset != 0.0 || multiplier != 1.0) {
-			ptr = strpbrk (show, "-0123456789");
-
-			if (ptr == NULL)
+			/* Find the first instance of the '(' character - the value of the OID should be contained in parens */
+			if ((ptr = strpbrk(show, "(")) != NULL) { /* Timetick */
+				ptr++;
+			} else if ((ptr = strpbrk(show, "-0123456789")) == NULL) { /* Counter, gauge, or integer */
 				die (STATE_UNKNOWN,_("No valid data returned (%s)\n"), show);
+			}
+
 			while (i >= response_size) {
 				response_size += OID_COUNT_STEP;
 				response_value = realloc(response_value, response_size * sizeof(*response_value));

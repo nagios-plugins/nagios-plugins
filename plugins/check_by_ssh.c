@@ -27,7 +27,7 @@
 *****************************************************************************/
 
 const char *progname = "check_by_ssh";
-const char *copyright = "2000-2014";
+const char *copyright = "2000-";
 const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"
@@ -182,6 +182,7 @@ process_arguments (int argc, char **argv)
 		{"services", required_argument, 0, 's'},
 		{"identity", required_argument, 0, 'i'},
 		{"user", required_argument, 0, 'u'},
+		{"unknown-timeout", no_argument, 0, 'U'},
 		{"logname", required_argument, 0, 'l'},
 		{"command", required_argument, 0, 'C'},
 		{"skip", optional_argument, 0, 'S'}, /* backwards compatibility */
@@ -205,7 +206,7 @@ process_arguments (int argc, char **argv)
 			strcpy (argv[c], "-t");
 
 	while (1) {
-		c = getopt_long (argc, argv, "Vvh1246fqt:H:O:p:i:u:l:C:S::E::n:s:o:F:", longopts,
+		c = getopt_long (argc, argv, "Vvh1246fUqt:H:O:p:i:u:l:C:S::E::n:s:o:F:", longopts,
 		                 &option);
 
 		if (c == -1 || c == EOF)
@@ -304,6 +305,16 @@ process_arguments (int argc, char **argv)
 				skip_stderr = atoi (optarg);
 			break;
 		case 'o':									/* Extra options for the ssh command */
+
+			/* Don't allow the user to run commands local to the nagios server, unless they decide otherwise at compile time. */
+#ifndef HAVE_UNRESTRICTED_SSH_OPTIONS
+			if (   strcasestr(optarg, "ProxyCommand") != NULL
+				|| strcasestr(optarg, "PermitLocalCommand") != NULL
+				|| strcasestr(optarg, "LocalCommand") != NULL) {
+				break;
+			}
+#endif
+
 			comm_append("-o");
 			comm_append(optarg);
 			break;
@@ -313,6 +324,9 @@ process_arguments (int argc, char **argv)
 		case 'F': 									/* ssh configfile */
 			comm_append("-F");
 			comm_append(optarg);
+			break;
+		case 'U': 									/* return UNKNOWN on timeout */
+			timeout_state=STATE_UNKNOWN;
 			break;
 		default:									/* help */
 			usage5();
@@ -430,6 +444,8 @@ print_help (void)
   printf ("    %s\n", _("Tell ssh to use this configfile [optional]"));
   printf (" %s\n","-q, --quiet");
   printf ("    %s\n", _("Tell ssh to suppress warning and diagnostic messages [optional]"));
+  printf (" %s\n", "-U, --unknown-timeout");
+  printf ("    %s\n", _("Return UNKNOWN on timeouts"));
 	printf (UT_CONN_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
 	printf (UT_VERBOSE);
 	printf("\n");

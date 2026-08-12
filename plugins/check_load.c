@@ -101,7 +101,7 @@ get_threshold(char *arg, double *th)
 int
 main (int argc, char **argv)
 {
-	int result;
+	int result = 0;
 	int i, j;
 	long numcpus;
 
@@ -356,7 +356,7 @@ int cmpstringp(const void *p1, const void *p2) {
 #ifdef PS_USES_PROCETIME
 	char procetime[MAX_INPUT_BUFFER] = { '\0' };
 #endif /* PS_USES_PROCETIME */
-	char *procprog;
+	char *procprog = NULL;
 	char *proc_cgroup_hierarchy;
 	int pos;
 	sscanf (* (char * const *) p1, PS_FORMAT, PS_VARLIST);

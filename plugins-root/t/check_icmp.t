@@ -18,8 +18,8 @@ if ($allow_sudo eq "yes" or $> == 0) {
 }
 my $sudo = $> == 0 ? '' : 'sudo';
 
-my $successOutput = '/OK - .*?: rta (?:[\d\.]+ms)|(?:nan), lost \d+%/';
-my $failureOutput = '/(WARNING|CRITICAL) - .*?: rta [\d\.]+ms, lost \d%/';
+my $successOutput = '/OK - .*?: rta ((?:[\d\.]+ms)|(?:nan,)) lost \d+%/';
+my $failureOutput = '/(WARNING|CRITICAL) - .*?: ((rta ((?:[\d\.]+ms( >= [\d\.]+ms)?)|(?:nan,)))|(lost \d+%( >= [\d+%])? ))*/';
 
 my $host_responsive    = getTestParameter( "NP_HOST_RESPONSIVE",
 				"The hostname of system responsive to network requests",
@@ -63,6 +63,18 @@ $res = NPTest->testCmd(
 	"$sudo ./check_icmp -w 10000ms,100% -c 10000ms,100%"
 	);
 is( $res->return_code, 3, "No hostname" );
+like( $res->output, '/No hosts to check/', "Output with appropriate error message");
+
+$res = NPTest->testCmd(
+	"$sudo ./check_icmp 0.0.0.0"
+	);
+is( $res->return_code, 3, "Invalid IPv4 address" );
+like( $res->output, '/No hosts to check/', "Output with appropriate error message");
+
+$res = NPTest->testCmd(
+	"$sudo ./check_icmp -6 ::"
+	);
+is( $res->return_code, 3, "Invalid IPv6 address" );
 like( $res->output, '/No hosts to check/', "Output with appropriate error message");
 
 $res = NPTest->testCmd(

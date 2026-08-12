@@ -429,6 +429,7 @@ process_arguments (int argc, char **argv)
 		{"help", no_argument, 0, 'h'},
 		{"ssl", no_argument, 0, 'S'},
 		{"certificate", required_argument, 0, 'D'},
+		{"sni", required_argument, 0, 'N'},
 		{0, 0, 0, 0}
 	};
 

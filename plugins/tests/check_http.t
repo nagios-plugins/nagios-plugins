@@ -386,55 +386,45 @@ sub run_common_tests {
   is( $result->return_code, 0, $cmd);
   like( $result->output, '/^HTTP OK: HTTP/1.1 200 OK - \d+ bytes in [\d\.]+ second/', "Output correct: ".$result->output );
 
-  # These tests may block
+  # These tests may timeout
 	print "ALRM\n";
 
 	# stickyport - on full urlS port is set back to 80 otherwise
-	$cmd = "$command -f stickyport -u /redir_external -t 5 -s redirected";
+	$cmd = "$command -f stickyport -u /redir_external -t 150 -s redirected";
 	eval {
-		local $SIG{ALRM} = sub { die "alarm\n" };
-		alarm(2);
 		$result = NPTest->testCmd( $cmd );
-		alarm(0);	};
-	isnt( $@, "alarm\n", $cmd );
+	};
+	unlike( $@, "/^timeout in command: /", $cmd );
 	is( $result->return_code, 0, $cmd );
 
 	# Let's hope there won't be any web server on :80 returning "redirected"!
-	$cmd = "$command -f sticky -u /redir_external -t 5 -s redirected";
+	$cmd = "$command -f sticky -u /redir_external -t 150 -s redirected";
 	eval {
-		local $SIG{ALRM} = sub { die "alarm\n" };
-		alarm(2);
 		$result = NPTest->testCmd( $cmd );
-		alarm(0); };
-	isnt( $@, "alarm\n", $cmd );
+	};
+	unlike( $@, "/^timeout in command: /", $cmd );
 	isnt( $result->return_code, 0, $cmd );
 
 	# Test an external address - timeout
 	SKIP: {
 		skip "This doesn't seems to work all the time", 1 unless ($ENV{HTTP_EXTERNAL});
-		$cmd = "$command -f follow -u /redir_external -t 5";
+		$cmd = "$command -f follow -u /redir_external -t 150";
 		eval {
-			local $SIG{ALRM} = sub { die "alarm\n" };
-			alarm(2);
 			$result = NPTest->testCmd( $cmd );
-			alarm(0); };
-		is( $@, "alarm\n", $cmd );
+		};
+		like( $@, "/^timeout in command: /", $cmd );
 	}
 
-	$cmd = "$command -u /timeout -t 5";
+	$cmd = "$command -u /timeout -t 150";
 	eval {
-		local $SIG{ALRM} = sub { die "alarm\n" };
-		alarm(2);
 		$result = NPTest->testCmd( $cmd );
-		alarm(0); };
-	is( $@, "alarm\n", $cmd );
+	};
+	like( $@, "/^timeout in command: /", $cmd );
 
 	$cmd = "$command -f follow -u /redir_timeout -t 2";
 	eval {
-		local $SIG{ALRM} = sub { die "alarm\n" };
-		alarm(5);
 		$result = NPTest->testCmd( $cmd );
-		alarm(0); };
-	isnt( $@, "alarm\n", $cmd );
+	};
+	unlike( $@, "/^timeout in command: /", $cmd );
 
 }

@@ -584,7 +584,7 @@ process_arguments (int argc, char **argv)
 					     _("Could not realloc() units [%d]\n"), ncommands);
 			}
 			commands[ncommands] = (char *) malloc (sizeof(char) * 255);
-			strncpy (commands[ncommands], optarg, 255);
+			strncpy (commands[ncommands], optarg, 254);
 			ncommands++;
 			break;
 		case 'R':									/* server responses */
@@ -596,7 +596,7 @@ process_arguments (int argc, char **argv)
 					     _("Could not realloc() units [%d]\n"), nresponses);
 			}
 			responses[nresponses] = (char *) malloc (sizeof(char) * 255);
-			strncpy (responses[nresponses], optarg, 255);
+			strncpy (responses[nresponses], optarg, 254);
 			nresponses++;
 			break;
 		case 'c':									/* critical time threshold */

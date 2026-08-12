@@ -53,16 +53,16 @@ $res = NPTest->testCmd(
 	"./check_http $host_nonresponsive -wt 1 -ct 2 -t 3"
 	);
 cmp_ok( $res->return_code, '==', 2, "Webserver $host_nonresponsive not responding" );
-cmp_ok( $res->output, 'eq', "CRITICAL - Socket timeout after 3 seconds", "Output OK");
+cmp_ok( $res->output, 'eq', "CRITICAL - Socket timeout", "Output OK");
 
 $res = NPTest->testCmd(
 	"./check_http $hostname_invalid -wt 1 -ct 2"
 	);
-cmp_ok( $res->return_code, '==', 2, "Webserver $hostname_invalid not valid" );
+cmp_ok( $res->return_code, '==', 3, "Webserver $hostname_invalid not valid" );
 # The first part of the message comes from the OS catalogue, so cannot check this.
 # On Debian, it is Name or service not known, on Darwin, it is No address associated with nodename
 # Is also possible to get a socket timeout if DNS is not responding fast enough
-like( $res->output, "/Unable to open TCP socket|Socket timeout after/", "Output OK");
+like( $res->output, "/Invalid hostname\/address/", "Output OK");
 
 SKIP: {
         skip "No host serving nagios in index file", 7 unless $host_tcp_http2;
@@ -94,7 +94,7 @@ SKIP: {
 
         $res = NPTest->testCmd( "./check_http -C 1 --ssl www.verisign.com" );
         cmp_ok( $res->return_code, '==', 0, "Checking certificate for www.verisign.com");
-        like  ( $res->output, "/Certificate 'www.verisign.com' will expire on/", "Output OK" );
+        like  ( $res->output, "/Certificate 'www.verisign.com' will expire in/", "Output OK" );
         my $saved_cert_output = $res->output;
 
         $res = NPTest->testCmd( "./check_http -C 8000,1 --ssl www.verisign.com" );

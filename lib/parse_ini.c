@@ -118,7 +118,7 @@ static void parse_locator(const char *locator, const char *def_stanza, np_ini_in
 np_arg_list* np_get_defaults(const char *locator, const char *default_section){
 	FILE *inifile=NULL;
 	np_arg_list *defaults=NULL;
-	np_ini_info i;
+	np_ini_info i = {NULL, NULL};
 	struct stat fstat;
 	bool is_suid_set = np_suid();
 
@@ -324,11 +324,13 @@ static int add_option(FILE *f, np_arg_list **optlst){
 	optnew->arg=malloc(cfg_len+1);
 	/* 1-character params needs only one dash */
 	if(opt_len==1) {
-		strncpy(&optnew->arg[read_pos], "-", 1);
-		read_pos+=1;
+		optnew->arg[read_pos]='-';
+		++read_pos;
 	} else {
-		strncpy(&optnew->arg[read_pos], "--", 2);
-		read_pos+=2;
+		optnew->arg[read_pos]='-';
+		++read_pos;
+		optnew->arg[read_pos]='-';
+		++read_pos;
 	}
 	strncpy(&optnew->arg[read_pos], optptr, opt_len); read_pos+=opt_len;
 	if(value) {

@@ -44,7 +44,7 @@ my @perf_data = sort(split(/ /, $result->perf_output));
 # Calculate avg_free free on mountpoint1 and mountpoint2
 # because if you check in the middle, you should get different errors
 $_ = $result->output;
-my ($free_on_mp1, $free_on_mp2) = (m/\((\d+)%.*\((\d+)%/);
+my ($free_on_mp1, $free_on_mp2) = (m/\((\d+\.\d\d)%.*\((\d+\.\d\d)%/);
 die "Cannot parse output: $_" unless ($free_on_mp1 && $free_on_mp2);
 my $avg_free = ceil(($free_on_mp1+$free_on_mp2)/2);
 my ($more_free, $less_free);
@@ -111,15 +111,15 @@ is_deeply( \@perf_data, \@_, "perf data for both filesystems same when reversed"
 
 # Basic filesystem checks for sizes
 $result = NPTest->testCmd( "./check_disk -w 1 -c 1 -p $more_free" );
-cmp_ok( $result->return_code, '==', 0, "At least 1 MB available on $more_free");
+cmp_ok( $result->return_code, '==', 0, "At least 1 MiB available on $more_free");
 like  ( $result->output, $successOutput, "OK output" );
 like  ( $result->only_output, qr/free space/, "Have free space text");
 like  ( $result->only_output, qr/$more_free/, "Have disk name in text");
 
 $result = NPTest->testCmd( "./check_disk -w 1 -c 1 -p $more_free -p $less_free" );
-cmp_ok( $result->return_code, '==', 0, "At least 1 MB available on $more_free and $less_free");
+cmp_ok( $result->return_code, '==', 0, "At least 1 MiB available on $more_free and $less_free");
 $_ = $result->output;
-my ($free_mb_on_mp1, $free_mb_on_mp2) = (m/(\d+) MB .* (\d+) MB /g);
+my ($free_mb_on_mp1, $free_mb_on_mp2) = (m/(\d+) MiB .* (\d+) MiB /g);
 my $free_mb_on_all = $free_mb_on_mp1 + $free_mb_on_mp2;
 
 
