@@ -82,6 +82,16 @@ const char *email = "devel@nagios-plugins.org";
 #include <signal.h>
 #include <sys/dlpi.h>
 #include <sys/poll.h>
+
+/*
+ * Solaris 11.4 with GCC 14+:
+ * getmsg()/putmsg() prototypes are provided by <stropts.h>.
+ * GCC 14+ rejects implicit function declarations.
+ */
+#if defined(__sun__) && defined(__GNUC__) && (__GNUC__ >= 14)
+#include <stropts.h>
+#endif
+
 #include <stropts.h>
 
 #define bcopy(source, destination, length) memcpy(destination, source, length)
