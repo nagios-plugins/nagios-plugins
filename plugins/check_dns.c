@@ -263,7 +263,7 @@ main (int argc, char **argv)
         /* needed for non-query ptr\reverse lookup checks */
         else if (strstr(chld_out.line[i], ".in-addr.arpa") && !query_set) {
             if ((temp_buffer = strstr(chld_out.line[i], "name = "))) {
-                addresses[n_addresses++] = strdup(temp_buffer);
+                addresses[n_addresses++] = strdup(rindex(temp_buffer, ' ') + 1);
             }
             else {
                 xasprintf(&msg, "%s %s %s %s", _("Warning plugin error"));
@@ -358,7 +358,7 @@ main (int argc, char **argv)
     }
 
     /* compare query type to query found, if query type is ANY we can skip as any record is accepted*/
-    if (result == STATE_OK && strncmp(query_type, "", 1) && (strncmp(query_type, "-querytype=ANY", 15) != 0)) {
+    if (result == STATE_OK && query_set && (strncmp(query_type, "-querytype=ANY", 15) != 0)) {
         if (strncmp(query_type, query_found, 16) != 0) {
           if (verbose) {
               printf( "%s %s %s %s %s\n", _("Failed query for"), query_type, _("only found"), query_found, _(", or nothing"));
@@ -634,7 +634,6 @@ validate_arguments ()
         /*query_type = "-querytype=A";*/
         strcpy(query_type, "-querytype=");
         strcat(query_type, "A");
-        query_set = TRUE;
     }
 
     return OK;
