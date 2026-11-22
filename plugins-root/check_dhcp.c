@@ -92,7 +92,7 @@ const char *email = "devel@nagios-plugins.org";
 #include <stropts.h>
 #endif
 
-#include <stropts.h>
+#include <sys/stropts.h>
 
 #define bcopy(source, destination, length) memcpy(destination, source, length)
 
