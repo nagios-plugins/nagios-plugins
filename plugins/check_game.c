@@ -309,13 +309,13 @@ print_help (void)
   printf (UT_HELP_VRSN);
   printf (UT_EXTRA_OPTS);
 
-  printf (" %s\n", "-p");
-  printf ("    %s\n", _("Optional port of which to connect"));
-  printf (" %s\n", "gf");
+  printf (" %s\n", "-P");
+  printf ("    %s\n", _("Optional port on which to connect"));
+  printf (" %s\n", "g");
   printf ("    %s\n", _("Field number in raw qstat output that contains game name"));
-  printf (" %s\n", "-mf");
+  printf (" %s\n", "-m");
   printf ("    %s\n", _("Field number in raw qstat output that contains map name"));
-  printf (" %s\n", "-pf");
+  printf (" %s\n", "-p");
   printf ("    %s\n", _("Field number in raw qstat output that contains ping time"));
 
   printf (UT_CONN_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
