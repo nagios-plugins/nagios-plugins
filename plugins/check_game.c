@@ -70,6 +70,7 @@ main (int argc, char **argv)
   char *p, *ret[QSTAT_MAX_RETURN_ARGS];
   size_t i = 0;
   output chld_out;
+  output chld_err;
 
   setlocale (LC_ALL, "");
   bindtextdomain (PACKAGE, LOCALEDIR);
@@ -95,7 +96,7 @@ main (int argc, char **argv)
 
   /* run the command. historically, this plugin ignores output on stderr,
    * as well as return status of the qstat program */
-  (void)np_runcmd(command_line, &chld_out, NULL, 0);
+  (void)np_runcmd(command_line, &chld_out, &chld_err, 0);
 
   /* sanity check */
   /* was thinking about running qstat without any options, capturing the
@@ -107,8 +108,13 @@ main (int argc, char **argv)
      In the end, I figured I'd simply let an error occur & then trap it
    */
 
-  if (!strncmp (chld_out.line[0], "unknown option", 14)) {
+  if (chld_err.line != NULL && !strncmp (chld_err.line[0], "unknown option", 14)) {
     printf (_("CRITICAL - Host type parameter incorrect!\n"));
+    result = STATE_CRITICAL;
+    return result;
+  }
+  else if (chld_out.line == NULL) {
+    printf (_("CRITICAL - Error when running qstat!\n"));
     result = STATE_CRITICAL;
     return result;
   }
