@@ -1153,7 +1153,7 @@ msgstr ""
 
 #: plugins/check_game.c:321
 msgid ""
-"http://www.activesw.com/people/steve/qstat.html before you can use this "
+"https://github.com/rocketsciencegg/qstat before you can use this "
 "plugin."
 msgstr ""
 

@@ -70,6 +70,7 @@ main (int argc, char **argv)
   char *p, *ret[QSTAT_MAX_RETURN_ARGS];
   size_t i = 0;
   output chld_out;
+  output chld_err;
 
   setlocale (LC_ALL, "");
   bindtextdomain (PACKAGE, LOCALEDIR);
@@ -95,7 +96,7 @@ main (int argc, char **argv)
 
   /* run the command. historically, this plugin ignores output on stderr,
    * as well as return status of the qstat program */
-  (void)np_runcmd(command_line, &chld_out, NULL, 0);
+  (void)np_runcmd(command_line, &chld_out, &chld_err, 0);
 
   /* sanity check */
   /* was thinking about running qstat without any options, capturing the
@@ -107,8 +108,13 @@ main (int argc, char **argv)
      In the end, I figured I'd simply let an error occur & then trap it
    */
 
-  if (!strncmp (chld_out.line[0], "unknown option", 14)) {
+  if (chld_err.line != NULL && !strncmp (chld_err.line[0], "unknown option", 14)) {
     printf (_("CRITICAL - Host type parameter incorrect!\n"));
+    result = STATE_CRITICAL;
+    return result;
+  }
+  else if (chld_out.line == NULL) {
+    printf (_("CRITICAL - Error when running qstat!\n"));
     result = STATE_CRITICAL;
     return result;
   }
@@ -303,13 +309,13 @@ print_help (void)
   printf (UT_HELP_VRSN);
   printf (UT_EXTRA_OPTS);
 
-  printf (" %s\n", "-p");
-  printf ("    %s\n", _("Optional port of which to connect"));
-  printf (" %s\n", "gf");
+  printf (" %s\n", "-P");
+  printf ("    %s\n", _("Optional port on which to connect"));
+  printf (" %s\n", "g");
   printf ("    %s\n", _("Field number in raw qstat output that contains game name"));
-  printf (" %s\n", "-mf");
+  printf (" %s\n", "-m");
   printf ("    %s\n", _("Field number in raw qstat output that contains map name"));
-  printf (" %s\n", "-pf");
+  printf (" %s\n", "-p");
   printf ("    %s\n", _("Field number in raw qstat output that contains ping time"));
 
   printf (UT_CONN_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
@@ -318,7 +324,7 @@ print_help (void)
   printf ("%s\n", _("Notes:"));
   printf (" %s\n", _("This plugin uses the 'qstat' command, the popular game server status query tool."));
   printf (" %s\n", _("If you don't have the package installed, you will need to download it from"));
-  printf (" %s\n", _("http://www.activesw.com/people/steve/qstat.html before you can use this plugin."));
+  printf (" %s\n", _("https://github.com/rocketsciencegg/qstat before you can use this plugin."));
 
   printf (UT_SUPPORT);
 }

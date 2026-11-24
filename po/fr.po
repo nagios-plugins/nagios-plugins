@@ -1248,10 +1248,10 @@ msgstr ""
 
 #: plugins/check_game.c:321
 msgid ""
-"http://www.activesw.com/people/steve/qstat.html before you can use this "
+"https://github.com/rocketsciencegg/qstat before you can use this "
 "plugin."
 msgstr ""
-"http://www.activesw.com/people/steve/qstat.html avant de pouvoir utiliser ce "
+"https://github.com/rocketsciencegg/qstat avant de pouvoir utiliser ce "
 "plugin."
 
 #: plugins/check_hpjd.c:251
