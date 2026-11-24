@@ -1705,6 +1705,11 @@ static int add_target_ip(char *arg, struct sockaddr_storage *in) {
   struct sockaddr_in *sin = NULL, *host_sin;
   struct sockaddr_in6 *sin6 = NULL, *host_sin6;
 
+  if (targets == USHRT_MAX) {
+    crash("add_target_ip(%s, ...): maximum number of targets (%hu) exceeded",
+	  arg, USHRT_MAX);
+  }
+
   if (address_family == AF_INET) {
     sin = (struct sockaddr_in *)in;
   } else {
