@@ -191,6 +191,7 @@ int verbose = 0;
 int verbose_machine_output = 0;
 int newlines = FALSE;
 int erronly = FALSE;
+int problems_first = FALSE;
 int display_mntp = FALSE;
 int exact_match = FALSE;
 int freespace_ignore_reserved = FALSE;
@@ -219,6 +220,8 @@ main (int argc, char **argv)
   int result = STATE_UNKNOWN;
   int disk_result = STATE_UNKNOWN;
   char *output = NULL;
+  char *problem_output = NULL;
+  char *ok_output = NULL;
   char *details;
   char *perf;
   char *preamble;
@@ -261,6 +264,11 @@ main (int argc, char **argv)
 
   if (process_arguments (argc, argv) == ERROR)
     usage4 (_("Could not parse arguments"));
+
+  if (problems_first) {
+    problem_output = strdup ("");
+    ok_output = strdup ("");
+  }
 
   verbose_machine_output = (verbose >= 3 && !human_output);
 
@@ -551,14 +559,20 @@ main (int argc, char **argv)
         continue;
 
       if (!human_output) {
+          char **disk_output = &output;
+
+          if (problems_first) {
+              disk_output = (disk_result == STATE_OK) ? &ok_output : &problem_output;
+          }
+
           if (disk_result && verbose) {
               xasprintf(&flag_header, " %s [", state_text (disk_result));
           }
           else {
               xasprintf(&flag_header, "");
           }
-          xasprintf (&output, "%s %s %.0f %s (%.2f%%",
-                     output,
+          xasprintf (disk_output, "%s %s %.0f %s (%.2f%%",
+                     *disk_output,
                      (!strcmp(me->me_mountdir, "none") || display_mntp) ? me->me_devname : me->me_mountdir,
                      (double)path->dfree_units,
                      units,
@@ -566,15 +580,15 @@ main (int argc, char **argv)
           /* Whether or not to put all disks on new line */
           if (newlines) {
               if (path->dused_inodes_percent < 0) {
-                  xasprintf(&output, "%s inode=-)%s;\n", output, (disk_result ? "]" : ""));
+                  xasprintf(disk_output, "%s inode=-)%s;\n", *disk_output, (disk_result ? "]" : ""));
               } else {
-                  xasprintf(&output, "%s inode=%.0f%%)%s;\n", output, path->dfree_inodes_percent, ((disk_result && verbose) ? "]" : ""));
+                  xasprintf(disk_output, "%s inode=%.0f%%)%s;\n", *disk_output, path->dfree_inodes_percent, ((disk_result && verbose) ? "]" : ""));
               }
           } else {
               if (path->dused_inodes_percent < 0) {
-                  xasprintf(&output, "%s inode=-)%s;", output, (disk_result ? "]" : ""));
+                  xasprintf(disk_output, "%s inode=-)%s;", *disk_output, (disk_result ? "]" : ""));
               } else {
-                  xasprintf(&output, "%s inode=%.0f%%)%s;", output, path->dfree_inodes_percent, ((disk_result && verbose) ? "]" : ""));
+                  xasprintf(disk_output, "%s inode=%.0f%%)%s;", *disk_output, path->dfree_inodes_percent, ((disk_result && verbose) ? "]" : ""));
               }
           }
 
@@ -597,6 +611,11 @@ main (int argc, char **argv)
     if (human_output) {
         print_human_disk_entries(&human_disk_entries[0], num_human_disk_entries);
     } else {
+        if (problems_first) {
+            free(output);
+            xasprintf(&output, "%s%s", problem_output, ok_output);
+        }
+
         if (verbose >= 2)
             xasprintf (&output, "%s%s", output, details);
 
@@ -607,6 +626,9 @@ main (int argc, char **argv)
         }
 
     }
+
+    free(problem_output);
+    free(ok_output);
 
     return result;
 }
@@ -656,6 +678,7 @@ process_arguments (int argc, char **argv)
     SKIP_FAKE_FS = CHAR_MAX + 1,
     INODE_PERFDATA_ENABLED,
     COMBINED_THRESHOLDS,
+    PROBLEMS_FIRST,
   };
 
   int option = 0;
@@ -693,6 +716,7 @@ process_arguments (int argc, char **argv)
     {"stat-remote-fs", no_argument, 0, 'L'},
     {"mountpoint", no_argument, 0, 'M'},
     {"errors-only", no_argument, 0, 'e'},
+    {"problems-first", no_argument, 0, PROBLEMS_FIRST},
     {"exact-match", no_argument, 0, 'E'},
     {"all", no_argument, 0, 'A'},
     {"verbose", no_argument, 0, 'v'},
@@ -891,6 +915,9 @@ process_arguments (int argc, char **argv)
       break;
     case 'e':
       erronly = TRUE;
+      break;
+    case PROBLEMS_FIRST:
+      problems_first = TRUE;
       break;
     case 'E':
       if (path_selected)
@@ -1168,6 +1195,8 @@ print_help (void)
   printf ("    %s\n", _("For paths or partitions specified with -p, only check for exact paths"));
   printf (" %s\n", "-e, --errors-only");
   printf ("    %s\n", _("Display only devices/mountpoints with errors"));
+  printf (" %s\n", "    --problems-first");
+  printf ("    %s\n", _("Display problem devices/mountpoints before healthy ones"));
   printf (" %s\n", "-f, --freespace-ignore-reserved");
   printf ("    %s\n", _("Don't account root-reserved blocks into freespace in perfdata"));
   printf (" %s\n", "-g, --group=NAME");
@@ -1232,7 +1261,7 @@ print_usage (void)
 {
   printf ("%s\n", _("Usage:"));
   printf (" %s -w limit -c limit [-W limit] [-K limit] {-p path | -x device}\n", progname);
-  printf ("[-C] [-E] [-e] [-f] [-g group ] [-H] [-k] [-l] [-M] [-m] [-R path ] [-r path ]\n");
+  printf ("[-C] [-E] [-e] [--problems-first] [-f] [-g group ] [-H] [-k] [-l] [-M] [-m] [-R path ] [-r path ]\n");
   printf ("[-t timeout] [-u unit] [-v] [-X type] [-N type] [-n] [--combined-thresholds ]\n");
 }
 

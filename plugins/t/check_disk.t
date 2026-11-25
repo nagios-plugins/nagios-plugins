@@ -23,7 +23,7 @@ my $mountpoint2_valid = getTestParameter( "NP_MOUNTPOINT2_VALID", "Path to anoth
 if ($mountpoint_valid eq "" or $mountpoint2_valid eq "") {
 	plan skip_all => "Need 2 mountpoints to test";
 } else {
-	plan tests => 78;
+	plan tests => 82;
 }
 
 $result = NPTest->testCmd( 
@@ -165,6 +165,19 @@ isnt( $result->output, $all_disks, "-e gives different output");
 like( $result->output, qr/ $less_free /, "Found problem $less_free");
 unlike( $result->only_output, qr/ $more_free /, "Has ignored $more_free as not a problem");
 like( $result->perf_output, qr/ $more_free=/, "But $more_free is still in perf data");
+
+my $problems_first_args =
+	"-w $avg_free% -c $avg_free% -p $more_free " .
+	"-w $avg_free% -c 0% -p $less_free";
+my $normal_result = NPTest->testCmd( "./check_disk $problems_first_args" );
+$result = NPTest->testCmd( "./check_disk --problems-first $problems_first_args" );
+cmp_ok( $result->return_code, "==", 1, "--problems-first preserves the WARNING result" );
+like( $normal_result->only_output, qr/ \Q$more_free\E .*; \Q$less_free\E /,
+	"Without --problems-first, output retains path order" );
+like( $result->only_output, qr/ \Q$less_free\E .*; \Q$more_free\E /,
+	"--problems-first displays the problem path before the healthy path" );
+is( $result->perf_output, $normal_result->perf_output,
+	"--problems-first does not change performance data" );
 
 $result = NPTest->testCmd(
 	"./check_disk -w $avg_free% -c 0% -p $more_free"
