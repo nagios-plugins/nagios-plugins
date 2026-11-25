@@ -349,6 +349,7 @@ int cmpstringp(const void *p1, const void *p2) {
 	pid_t procpid = 0;
 	pid_t procppid = 0;
 	pid_t kthread_ppid = 0;
+	int procjid = 0;
 	int procvsz = 0;
 	int procrss = 0;
 	float procpcpu = 0;
