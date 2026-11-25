@@ -28,23 +28,23 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 * 
 * 
-*****************************************************************************/
+ *****************************************************************************/
 
 const char *progname = "check_mysql";
-const char *copyright = "1999-2014";
+const char *copyright = "1999-2019";
 const char *email = "devel@nagios-plugins.org";
 
-#define SLAVERESULTSIZE 70
+#define SLAVERESULTSIZE 150
 
 #include "common.h"
 #include "utils.h"
 #include "utils_base.h"
 #include "netutils.h"
 
+#include <ctype.h>
 #include <mysql.h>
 #include <mysqld_error.h>
 #include <errmsg.h>
-
 char *db_user = NULL;
 char *db_host = NULL;
 char *db_socket = NULL;
@@ -106,13 +106,14 @@ main (int argc, char **argv)
 
 	/* should be status */
 
+
 	char *result = NULL;
 	char *error = NULL;
-	char slaveresult[SLAVERESULTSIZE];
+	char slaveresult[SLAVERESULTSIZE] = {0};
+	char *finalslaveresult = malloc(2*SLAVERESULTSIZE*sizeof(char));
 	char* perf;
 
-        perf = strdup ("");
-
+	perf = strdup ("");
 	setlocale (LC_ALL, "");
 	bindtextdomain (PACKAGE, LOCALEDIR);
 	textdomain (PACKAGE);
@@ -192,13 +193,13 @@ main (int argc, char **argv)
 					continue;
 				}
 			}
-			for(i = 0; i < LENGTH_METRIC_COUNTER; i++) {
-				if (strcmp(row[0], metric_counter[i]) == 0) {
-					xasprintf(&perf, "%s%s ", perf, perfdata(metric_counter[i],
-						atol(row[1]), "c", FALSE, 0, FALSE, 0, FALSE, 0, FALSE, 0));
-					continue;
-				}
-			}
+            for(i = 0; i < LENGTH_METRIC_COUNTER; i++) {
+                if (strcmp(row[0], metric_counter[i]) == 0) {
+                    xasprintf(&perf, "%s%s ", perf, perfdata(metric_counter[i],
+                                                             atol(row[1]), "", FALSE, 0, FALSE, 0, FALSE, 0, FALSE, 0));
+                    continue;
+                }
+            }
 		}
 		/* remove trailing space */
                 if (strlen(perf) > 0)
@@ -224,59 +225,88 @@ main (int argc, char **argv)
 		if (mysql_num_rows(res) == 0) {
 			mysql_close(&mysql);
 			die (STATE_WARNING, "%s\n", _("No slaves defined"));
-		}
+        }
 
-		/* fetch the first row */
-		if ( (row = mysql_fetch_row (res)) == NULL) {
-			error = strdup(mysql_error(&mysql));
-			mysql_free_result (res);
-			mysql_close (&mysql);
+         /* fetch the first row */
+        while ((row = mysql_fetch_row (res)) != NULL) {
+            if (row == NULL) {
+                error = strdup(mysql_error(&mysql));
+                mysql_free_result (res);
+                mysql_close (&mysql);
 			die (STATE_CRITICAL, _("slave fetch row error: %s\n"), error);
 		}
 
-		if (mysql_field_count (&mysql) == 12) {
-			/* mysql 3.23.x */
-			snprintf (slaveresult, SLAVERESULTSIZE, _("Slave running: %s"), row[6]);
-			if (strcmp (row[6], "Yes") != 0) {
-				mysql_free_result (res);
-				mysql_close (&mysql);
+
+            if (mysql_field_count (&mysql) == 12) {
+                 /* mysql 3.23.x */
+                snprintf (slaveresult, sizeof(slaveresult), _("Slave running: %s"), row[6]);
+                if (strcmp (row[6], "Yes") != 0) {
+                    mysql_free_result (res);
+                    mysql_close (&mysql);
 				die (STATE_CRITICAL, "%s\n", slaveresult);
 			}
 
-		} else {
-			/* mysql 4.x.x and mysql 5.x.x */
-			int slave_io_field = -1 , slave_sql_field = -1, seconds_behind_field = -1, i, num_fields;
-			MYSQL_FIELD* fields;
 
-			num_fields = mysql_num_fields(res);
-			fields = mysql_fetch_fields(res);
-			for(i = 0; i < num_fields; i++) {
-				if (strcmp(fields[i].name, "Slave_IO_Running") == 0) {
-					slave_io_field = i;
-					continue;
+            } else {
+                 /* mysql 4.x.x and mysql 5.x.x */
+                int slave_io_field = -1 , slave_sql_field = -1, seconds_behind_field = -1, channel_name_field = -1, last_io_error = -1, last_io_errno = -1, last_sql_error = -1, last_sql_errno = -1, i, num_fields;
+                MYSQL_FIELD* fields;
+
+                num_fields = mysql_num_fields(res);
+                fields = mysql_fetch_fields(res);
+                for(i = 0; i < num_fields; i++) {
+                    if (strcmp(fields[i].name, "Channel_Name") == 0) {
+                        channel_name_field = i;
+                        continue;
+                    }
+                    if (strcmp(fields[i].name, "Slave_IO_Running") == 0) {
+                        slave_io_field = i;
+                        continue;
 				}
 				if (strcmp(fields[i].name, "Slave_SQL_Running") == 0) {
 					slave_sql_field = i;
 					continue;
 				}
 				if (strcmp(fields[i].name, "Seconds_Behind_Master") == 0) {
-					seconds_behind_field = i;
-					continue;
-				}
-			}
+                        seconds_behind_field = i;
+                        continue;
+                    }
+                    if (strcmp(fields[i].name, "Last_IO_Error") == 0) {
+                        last_io_error = i;
+                        continue;
+                    }
+                    if (strcmp(fields[i].name, "Last_IO_Errno") == 0) {
+                        last_io_errno = i;
+                        continue;
+                    }
+                    if (strcmp(fields[i].name, "Last_SQL_Error") == 0) {
+                        last_sql_error = i;
+                        continue;
+                    }
+                    if (strcmp(fields[i].name, "Last_SQL_Errno") == 0) {
+                        last_sql_errno = i;
+                        continue;
+                    }
+                }
 
-			/* Check if slave status is available */
+                 /* Check if slave status is available */
 			if ((slave_io_field < 0) || (slave_sql_field < 0) || (num_fields == 0)) {
 				mysql_free_result (res);
 				mysql_close (&mysql);
 				die (STATE_CRITICAL, "Slave status unavailable\n");
-			}
+                }
 
-			/* Save slave status in slaveresult */
-			snprintf (slaveresult, SLAVERESULTSIZE, "Slave IO: %s Slave SQL: %s Seconds Behind Master: %s", row[slave_io_field], row[slave_sql_field], seconds_behind_field!=-1?row[seconds_behind_field]:"Unknown");
+                 /* Save slave status in slaveresult */
+                snprintf (slaveresult, sizeof(slaveresult),
+                          "Channel: %s Last IO Error: %s Last IO Errno: %s Slave IO: %s Slave SQL: %s Seconds Behind Master: %s Last SQL Errno: %s Last SQL Error: %s",
+                          isalpha(row[channel_name_field][0])?row[channel_name_field]:"Master",
+                          row[last_io_error], row[last_io_errno],
+                          row[slave_io_field], row[slave_sql_field],
+                          seconds_behind_field!=-1?row[seconds_behind_field]:"Unknown",
+                          row[last_sql_error], row[last_sql_errno]);
 
-			/* Raise critical error if SQL THREAD or IO THREAD are stopped */
-			if (strcmp (row[slave_io_field], "Yes") != 0 || strcmp (row[slave_sql_field], "Yes") != 0) {
+                 /* Raise critical error if SQL THREAD or IO THREAD are stopped */
+                if (strcmp (row[slave_io_field], "Yes") != 0 || strcmp (row[slave_sql_field], "Yes") != 0) {
 				mysql_free_result (res);
 				mysql_close (&mysql);
 				die (STATE_CRITICAL, "%s\n", slaveresult);
@@ -309,24 +339,31 @@ main (int argc, char **argv)
 				} else if (status == STATE_CRITICAL) {
 					printf("SLOW_SLAVE %s: %s|%s\n", _("CRITICAL"), slaveresult, perf);
 					exit(STATE_CRITICAL);
-				}
-			}
-		}
+                    }
+                }
+            }
+            finalslaveresult = realloc(finalslaveresult,
+                                       (SLAVERESULTSIZE + strlen(slaveresult) + 1)*sizeof(char));
+            strcat(finalslaveresult, "; ");
+            strcat(finalslaveresult, slaveresult);
 
-		/* free the result */
-		mysql_free_result (res);
+            if (slaveresult == NULL) {
+                printf("FAILED to realloc\n");
+                return -1;
+            }
+        }
+         /* free the result */
+        mysql_free_result (res);
 	}
-
 	/* close the connection */
 	mysql_close (&mysql);
 
-	/* print out the result of stats */
+	 /* print out the result of stats */
 	if (check_slave) {
-		printf ("%s %s|%s\n", result, slaveresult, perf);
+        printf ("%s %s|%s\n", result, finalslaveresult, perf);
 	} else {
-		printf ("%s|%s\n", result, perf);
+        printf ("%s|%s\n", result, perf);
 	}
-
 	return STATE_OK;
 }
 

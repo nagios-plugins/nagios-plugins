@@ -1,41 +1,41 @@
 /*****************************************************************************
-* 
+*
 * Nagios check_ntp_time plugin
-* 
+*
 * License: GPL
 * Copyright (c) 2006 Sean Finney <seanius@seanius.net>
 * Copyright (c) 2006-2014 Nagios Plugins Development Team
-* 
+*
 * Description:
-* 
+*
 * This file contains the check_ntp_time plugin
-* 
+*
 * This plugin checks the clock offset between the local host and a
 * remote NTP server. It is independent of any commandline programs or
 * external libraries.
-* 
+*
 * If you'd rather want to monitor an NTP server, please use
 * check_ntp_peer.
-* 
-* 
+*
+*
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation, either version 3 of the License, or
 * (at your option) any later version.
-* 
+*
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 * GNU General Public License for more details.
-* 
+*
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-* 
-* 
+*
+*
 *****************************************************************************/
 
 const char *progname = "check_ntp_time";
-const char *copyright = "2006-2014";
+const char *copyright = "2006-2023";
 const char *email = "devel@nagios-plugins.org";
 
 #include "common.h"
@@ -43,6 +43,7 @@ const char *email = "devel@nagios-plugins.org";
 #include "utils.h"
 
 static char *server_address=NULL;
+static char *server_ip=NULL;
 static char *port="123";
 static int verbose=0;
 static int quiet=0;
@@ -378,12 +379,14 @@ double offset_request(const char *host, int *status){
 	struct addrinfo *ai=NULL, *ai_tmp=NULL, hints;
 	struct pollfd *ufds=NULL;
 
+	struct sockaddr_in *tmpaddr_in = NULL;
 
 	/* setup hints to only return results from getaddrinfo that we'd like */
 	memset(&hints, 0, sizeof(struct addrinfo));
 	hints.ai_family = address_family;
 	hints.ai_protocol = IPPROTO_UDP;
 	hints.ai_socktype = SOCK_DGRAM;
+	hints.ai_flags = AI_CANONNAME;
 
 	/* fill in ai with the list of hosts resolved by the host name */
 	ga_result = getaddrinfo(host, port, &hints, &ai);
@@ -420,6 +423,8 @@ double offset_request(const char *host, int *status){
 			 */
 			DBG(printf("can't create socket connection on peer %i: %s\n", i, strerror(errno)));
 		} else {
+	        tmpaddr_in = (struct sockaddr_in *) ai_tmp->ai_addr;
+	        server_ip = strdup(inet_ntoa(tmpaddr_in->sin_addr));
 			ufds[i].fd=socklist[i];
 			ufds[i].events=POLLIN;
 			ufds[i].revents=0;
@@ -704,6 +709,17 @@ int main(int argc, char *argv[]){
 			xasprintf(&result_line, _("NTP UNKNOWN:"));
 			break;
 	}
+	struct sockaddr_in sa;
+	char hostname[1024];
+
+	sa.sin_family = AF_INET;
+	sa.sin_addr.s_addr = inet_addr(server_ip);
+
+	getnameinfo((struct sockaddr*)&sa, sizeof sa, hostname, sizeof hostname, NULL, 0, 0);
+	char* domain = strstr(hostname, ".");
+	domain[0] = '\0';
+	xasprintf(&result_line, "%s %s", result_line, hostname);
+
 	if(offset_result == STATE_UNKNOWN){
 		xasprintf(&result_line, "%s %s", result_line, _("Offset unknown"));
 		xasprintf(&perfdata_line, "");
@@ -781,4 +797,3 @@ print_usage(void)
 	printf ("%s\n", _("Usage:"));
 	printf(" %s -H <host> [-4|-6] [-w <warn>] [-c <crit>] [-v verbose] [-o <time offset>] [-d <delay>] [-W <stratum warn>] [-C <stratum crit>]\n", progname);
 }
-
