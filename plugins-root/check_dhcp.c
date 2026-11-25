@@ -199,6 +199,7 @@ typedef struct requested_server_struct {
 u_int8_t unicast = 0;   /* unicast mode: mimic a DHCP relay */
 struct in_addr my_ip;   /* our address (required for relay) */
 struct in_addr dhcp_ip; /* server to query (if in unicast mode) */
+struct in_addr giaddr_arg; /* IP address of gateway manually forced */
 unsigned char client_hardware_address[MAX_DHCP_CHADDR_LENGTH] = "";
 unsigned char *user_specified_mac = NULL;
 
@@ -534,7 +535,11 @@ int send_dhcp_discover(int sock) {
 
   /* unicast fields */
   if (unicast) {
-    discover_packet.giaddr.s_addr = my_ip.s_addr;
+      if (giaddr_arg.s_addr) {
+        discover_packet.giaddr.s_addr = giaddr_arg.s_addr;
+      } else {
+        discover_packet.giaddr.s_addr = my_ip.s_addr;
+      }
   }
 
   /* see RFC 1542, 4.1.1 */
@@ -1160,6 +1165,7 @@ int process_arguments(int argc, char **argv) {
       {"interface", required_argument, 0, 'i'},
       {"mac", required_argument, 0, 'm'},
       {"unicast", no_argument, 0, 'u'},
+      {"giaddr", required_argument, 0, 'g'},
       {"verbose", no_argument, 0, 'v'},
       {"version", no_argument, 0, 'V'},
       {"help", no_argument, 0, 'h'},
@@ -1170,7 +1176,7 @@ int process_arguments(int argc, char **argv) {
   }
 
   while (1) {
-    c = getopt_long(argc, argv, "+hVvt:s:r:t:i:m:u", long_options,
+    c = getopt_long(argc, argv, "+hVvt:s:r:t:i:m:g:u", long_options,
                     &option_index);
 
     if (c == -1 || c == EOF || c == 1) {
@@ -1230,6 +1236,10 @@ int process_arguments(int argc, char **argv) {
 
     case 'u': /* unicast testing */
       unicast = 1;
+      break;
+
+    case 'g': /* gateway IP address */
+      resolve_host(optarg, &giaddr_arg);
       break;
 
     case 'V': /* version */
@@ -1465,13 +1475,15 @@ void print_help(void) {
   printf("    %s\n", _("MAC address to use in the DHCP request"));
   printf(" %s\n", "-u, --unicast");
   printf("    %s\n", _("Unicast testing: mimic a DHCP relay, requires -s"));
+  printf(" %s\n", "-g, --giaddr=IPADDRESS");
+  printf("    %s\n", _("Unicast testing: gateway address to use in the DHCP request, requires -u"));
   printf(UT_SUPPORT);
   return;
 }
 
 void print_usage(void) {
   printf("%s\n", _("Usage:"));
-  printf(" %s [-v] [-u] [-s serverip] [-r requestedip] [-t timeout]\n",
+  printf(" %s [-v] [-u] [-s serverip] [-g giaddr] [-r requestedip] [-t timeout]\n",
          progname);
   printf("                  [-i interface] [-m mac]\n");
   return;
