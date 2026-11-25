@@ -66,6 +66,8 @@ const char *email = "devel@nagios-plugins.org";
 #define L_OFFSET CHAR_MAX+4
 #define STRICT_MODE CHAR_MAX+5
 #define L_MULTIPLIER CHAR_MAX+6
+#define L_DECIMALPLACES CHAR_MAX+7
+
 
 /* Gobble to string - stop incrementing c when c[0] match one of the
  * characters in s */
@@ -158,6 +160,7 @@ double *previous_value;
 size_t previous_size = OID_COUNT_STEP;
 int perf_labels = 1;
 char* ip_version = "";
+int decimalplaces = 0;
 
 static char *fix_snmp_range(char *th)
 {
@@ -214,6 +217,7 @@ main (int argc, char **argv)
 	int is_counter=0;
 	int command_interval;
 	int is_ticks= 0;
+    int decimal_places=0;
 
 	setlocale (LC_ALL, "");
 	bindtextdomain (PACKAGE, LOCALEDIR);
@@ -399,9 +403,9 @@ main (int argc, char **argv)
 	for (line=0, i=0; line < chld_out.lines; line++, i++) {
 		if(calculate_rate)
 			conv = "%.10g";
-		else
-			conv = "%.0f";
-
+		else {
+            xasprintf(&conv,"%%.%df",decimalplaces); /* copies conversion string with given decimalplaces to conv. %.0f, for zero places */
+        }
 		ptr = chld_out.line[line];
 		oidname = strpcpy (oidname, ptr, delimiter);
 		response = strstr (ptr, delimiter);
@@ -786,6 +790,7 @@ process_arguments (int argc, char **argv)
 		{"rate-multiplier", required_argument, 0, L_RATE_MULTIPLIER},
 		{"offset", required_argument, 0, L_OFFSET},
 		{"multiplier", required_argument, 0, L_MULTIPLIER},
+		{"decimalplaces", required_argument, 0, L_DECIMALPLACES},  
 		{"invert-search", no_argument, 0, L_INVERT_SEARCH},
 		{"perf-oids", no_argument, 0, 'O'},
 		{"ipv4", no_argument, 0, '4'},
@@ -1027,7 +1032,10 @@ process_arguments (int argc, char **argv)
 			break;
 		case L_MULTIPLIER:
 			multiplier=strtod(optarg,NULL);
-
+			break;
+		case L_DECIMALPLACES:                       /* decimal places 0 ... 10 */
+			if(!is_integer(optarg)||((decimalplaces=atoi(optarg))<0)||(decimalplaces>10))
+				usage2(_("Decimalplaces range 0 ... 10"),optarg);
 			break;
 		case L_INVERT_SEARCH:
 			invert_search=1;
@@ -1304,6 +1312,8 @@ print_help (void)
 	printf ("    %s\n", _("Add/subtract the specified OFFSET to numeric sensor data"));
 	printf (" %s\n", "--multiplier=MULTIPLIER");
 	printf ("    %s\n", _("Multiply the numeric sensor data by MULTIPLIER before doing comparisons"));
+	printf (" %s\n", "--decimalplaces=DECIMALPLACES");
+	printf ("    %s\n", _("Number of decimalplaces shown after applying a multiplier or offset"));
 
 	/* Tests Against Strings */
 	printf (" %s\n", "-s, --string=STRING");
