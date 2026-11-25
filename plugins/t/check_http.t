@@ -159,7 +159,7 @@ SKIP: {
         cmp_ok( $res->return_code, "==", 0, "Can read https for www.e-paycobalt.com (uses AES certificate)" );
 
 
-        $res = NPTest->testCmd( "./check_http -H www.mozilla.com -u /firefox -f follow" );
+        $res = NPTest->testCmd( "./check_http -H www.mozilla.com --sni -u /firefox -f follow" );
         is( $res->return_code, 0, "Redirection based on location is okay");
 
         $res = NPTest->testCmd( "./check_http -H www.mozilla.com --extended-perfdata" );
