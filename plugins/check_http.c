@@ -55,6 +55,8 @@ enum {
     MAX_PORT = 65535
 };
 
+const static char *proxy_prefix = "PROXY TCP4 0.0.0.0 0.0.0.0 80 80\r\n";
+
 #ifdef HAVE_SSL
 int check_cert = FALSE;
 int continue_after_check_cert = FALSE;
@@ -122,6 +124,7 @@ int verbose = FALSE;
 int show_extended_perfdata = FALSE;
 int show_output_body_as_perfdata = FALSE;
 int show_url = FALSE;
+int proxy_protocol = FALSE;
 int sd;
 int min_page_len = 0;
 int max_page_len = 0;
@@ -226,7 +229,8 @@ process_arguments (int argc, char **argv)
         INVERT_REGEX = CHAR_MAX + 1,
         SNI_OPTION,
         VERIFY_HOST,
-        CONTINUE_AFTER_CHECK_CERT
+        CONTINUE_AFTER_CHECK_CERT,
+        PROXY_PROTOCOL
     };
 
     int option = 0;
@@ -245,6 +249,7 @@ process_arguments (int argc, char **argv)
         {"port", required_argument, 0, 'p'},
         {"authorization", required_argument, 0, 'a'},
         {"proxy-authorization", required_argument, 0, 'b'},
+        {"proxy", no_argument, 0, PROXY_PROTOCOL},
         {"header-string", required_argument, 0, 'd'},
         {"string", required_argument, 0, 's'},
         {"expect", required_argument, 0, 'e'},
@@ -574,6 +579,9 @@ enable_ssl:
             break;
         case 'U': /* show checked url in output msg */
           show_url = TRUE;
+          break;
+        case PROXY_PROTOCOL:
+          proxy_protocol = TRUE;
           break;
         }
     }
@@ -1052,6 +1060,14 @@ check_http (void)
     if (my_tcp_connect (server_address, server_port, &sd) != STATE_OK)
         die (STATE_CRITICAL, _("HTTP CRITICAL - Unable to open TCP socket\n"));
     microsec_connect = deltime (tv_temp);
+
+    /* Prepend PROXY protocol v1 header if requested */
+    if (proxy_protocol == TRUE) {
+        if (verbose)
+            printf ("Sending header %s\n", proxy_prefix);
+
+        send(sd, proxy_prefix, strlen(proxy_prefix), 0);
+    }
 
     /* if we are called with the -I option, the -j method is CONNECT and */
     /* we received -S for SSL, then we tunnel the request through a proxy*/
@@ -1866,6 +1882,8 @@ print_help (void)
     printf ("    %s\n", _("Username:password on sites with basic authentication"));
     printf (" %s\n", "-b, --proxy-authorization=AUTH_PAIR");
     printf ("    %s\n", _("Username:password on proxy-servers with basic authentication"));
+    printf (" %s\n", "--proxy");
+    printf ("    %s\n", _("Prepend PROXY protocol header"));
     printf (" %s\n", "-A, --useragent=STRING");
     printf ("    %s\n", _("String to be sent in http header as \"User Agent\""));
     printf (" %s\n", "-k, --header=STRING");
@@ -1951,7 +1969,7 @@ print_usage (void)
     printf (" %s -H <vhost> | -I <IP-address> [-u <uri>] [-p <port>]\n",progname);
     printf ("       [-J <client certificate file>] [-K <private key>]\n");
     printf ("       [-w <warn time>] [-c <critical time>] [-t <timeout>] [-L] [-E] [-U] [-a auth]\n");
-    printf ("       [-b proxy_auth] [-f <ok|warning|critical|follow|sticky|stickyport>]\n");
+    printf ("       [-b proxy_auth] [--proxy] [-f <ok|warning|critical|follow|sticky|stickyport>]\n");
     printf ("       [-e <expect>] [-d string] [-s string] [-l] [-r <regex> | -R <case-insensitive regex>]\n");
     printf ("       [-P string] [-m <min_pg_size>:<max_pg_size>] [-4|-6] [-N] [-M <age>]\n");
 
